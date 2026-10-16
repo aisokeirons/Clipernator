@@ -1103,14 +1103,20 @@ function drawBullet(b) {
   ctx.restore();
 }
 
+function getScreenShakeOffset() {
+  const shakeX = Math.max(-12, Math.min(12, gs.shakeX || 0));
+  const shakeY = Math.max(-12, Math.min(12, gs.shakeY || 0));
+  return { x: Math.round(shakeX * 0.4), y: Math.round(shakeY * 0.4) };
+}
+
 function draw() {
   ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const dpr = window.devicePixelRatio || 1;
   ctx.scale(dpr * renderScale, dpr * renderScale);  // combine dpr + renderScale
-const clampedShakeX = Math.max(-12, Math.min(12, gs.shakeX));
-const clampedShakeY = Math.max(-12, Math.min(12, gs.shakeY));
-ctx.translate(Math.round(clampedShakeX*.4), Math.round(clampedShakeY*.4));
+  const shake = getScreenShakeOffset();
+  ctx.translate(shake.x, shake.y);
   // Background + grid
   if (gs.floor === 2) {
     ctx.fillStyle = 'rgba(25,8,0,1)';

@@ -1484,10 +1484,13 @@ if (Math.abs(gs.shakeY) < 0.1) gs.shakeY = 0;
     worldW=gs.transitionStartW+(gs.transitionEndW-gs.transitionStartW)*ease;
     worldH=gs.transitionStartH+(gs.transitionEndH-gs.transitionStartH)*ease;
     renderScale=CFG.W/worldW;
-    canvas.height=Math.round(worldH*renderScale);
+    canvas.height=Math.round(worldH*renderScale*dpr);
+    canvas.style.height=`${worldH*renderScale}px`;
     if (gs.transitionT>=1) {
       worldW=gs.transitionEndW; worldH=gs.transitionEndH;
-      renderScale=CFG.W/worldW; canvas.height=Math.round(worldH*renderScale);
+      renderScale=CFG.W/worldW;
+      canvas.height=Math.round(worldH*renderScale*dpr);
+      canvas.style.height=`${worldH*renderScale}px`;
       gs.transitionDone=true; gs.transitioning=false;
       gs.floor=2;
       unlockGlowsticks(); trySpawnFieldItems();
@@ -1700,6 +1703,11 @@ function sysSpawner() {
 }
 
 function update() {
+  if (Number.isFinite(mouse.screenX) && typeof getScreenShakeOffset === 'function') {
+    const shake = getScreenShakeOffset();
+    mouse.x = mouse.screenX - shake.x;
+    mouse.y = mouse.screenY - shake.y;
+  }
   sysPlayerMovement(); sysAI(); sysBullets(); sysBulletEnemyCollision();
   sysDashCollision(); sysEnemyPlayerCollision(); sysConfusedEnemyCollision();  sysEnemyBullets();
   sysFieldItemPickup(); sysPopcorn();  sysRagingRings(); sysMirrorMaze(); 

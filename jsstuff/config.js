@@ -281,4 +281,3 @@ canvas.width  = CFG.W * dpr;
 canvas.height = CFG.H * dpr;
 canvas.style.width  = CFG.W + 'px';
 canvas.style.height = CFG.H + 'px';
-ctx.scale(dpr, dpr);

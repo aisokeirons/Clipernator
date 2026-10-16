@@ -662,8 +662,8 @@ canvas {
  canvas.addEventListener('mousemove', function(e) {
     if (typeof mouse === 'undefined') return;
     const rect = canvas.getBoundingClientRect();
-    mouse.x = (e.clientX - rect.left) / (rect.width  / canvas.width)  / renderScale;
-    mouse.y = (e.clientY - rect.top)  / (rect.height / canvas.height) / renderScale;
+    mouse.screenX = ((e.clientX - rect.left) / rect.width) * worldW;
+    mouse.screenY = ((e.clientY - rect.top) / rect.height) * worldH;
 });
 
   // ── Minimize: collapse wrapper to just titlebar ──
