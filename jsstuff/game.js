@@ -180,7 +180,10 @@ clippyPickupTimer: 0,
   gs.playerId = pId;
 
  //Apply difficulty chosen in intro
-  if (typeof INTRO !== 'undefined') INTRO.applyDifficultyToGs(gs);
+  if (typeof INTRO !== 'undefined') {
+    INTRO.applyDifficultyToGs(gs);
+    INTRO.applyDraftItemsToGs(gs);
+  }
  
 }
 

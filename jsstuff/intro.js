@@ -215,6 +215,7 @@ function stopSound(key) {
   // Item draft
   let draftItems = [];
   let draftSelected = 0;
+  let draftChosenItems = [];
   let draftPhase = 'choosing';
   let draftCount = 0;
 
@@ -592,6 +593,7 @@ setTimeout(() => {
     detachKeys();
     draftSelected = 0;
     draftPhase = 'transition';
+    draftChosenItems = [];
 
     if (draftCount === 0) { setTimeout(() => startDesktopLoad(), 400); return; }
 
@@ -640,7 +642,10 @@ setTimeout(() => {
         ? [...ALL_ITEM_IDS, ...BASE_ITEM_IDS]
         : [...BASE_ITEM_IDS];
       // Remove already-unlocked items
-const owned = (typeof gs !== 'undefined' && gs && gs.unlockedItems) ? gs.unlockedItems : [];
+const owned = [
+  ...((typeof gs !== 'undefined' && gs && gs.unlockedItems) ? gs.unlockedItems : []),
+  ...draftChosenItems,
+];
 const available = allIds.filter(id => !owned.includes(id));      // Shuffle
       for (let i = available.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -691,9 +696,8 @@ const available = allIds.filter(id => !owned.includes(id));      // Shuffle
             detachKeys();            // remove listener right away
 
             const chosen = draftItems[draftSelected];
-            if (chosen && chosen.id && !gs.unlockedItems.includes(chosen.id)) {
-              gs.unlockedItems.push(chosen.id);
-              chosen.effect(gs);
+            if (chosen && chosen.id && !draftChosenItems.includes(chosen.id)) {
+              draftChosenItems.push(chosen.id);
             }
             pickedCount++;
 
@@ -1480,6 +1484,16 @@ const available = allIds.filter(id => !owned.includes(id));      // Shuffle
     }
   }
 
+  function applyDraftItemsToGs(gsRef) {
+    for (const id of draftChosenItems) {
+      const item = ITEM_DEFS[id];
+      if (!item || typeof item.effect !== 'function') continue;
+      if (!gsRef.unlockedItems.includes(id)) gsRef.unlockedItems.push(id);
+      item.effect(gsRef);
+    }
+    draftChosenItems = [];
+  }
+
   // ================================================================
   // FINISH
   // ================================================================
@@ -1514,5 +1528,5 @@ const available = allIds.filter(id => !owned.includes(id));      // Shuffle
     setTimeout(() => startBIOS(), 200);
   }
 
-  return { start, applyDifficultyToGs };
+  return { start, applyDifficultyToGs, applyDraftItemsToGs };
 })();

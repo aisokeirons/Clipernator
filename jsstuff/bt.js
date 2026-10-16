@@ -1,4 +1,4 @@
-// ── Behavior Tree base classes ──
+// ── Behavior Tree base classes ──  
 const BT = { SUCCESS: 'S', FAILURE: 'F', RUNNING: 'R' };
 
 class BTAction {
