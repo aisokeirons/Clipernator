@@ -4,7 +4,6 @@
 * replace the cake boss etc with cartoon style and make fight better
 
 * the game becomes unplayable after you beat the cake boss; the screen creates infinite after images and you cant see anything you do.
-* the game crashes if you choose either normal or hard mode
  
   
 * the cake boss should not mindlessly go to the center all the time. it should just hover around the stage as a idle animation

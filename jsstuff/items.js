@@ -577,6 +577,18 @@ const ITEM_DEFS = {
 };
 
 // ── Item pool lists ──
+function isCakeItemAvailable(id, state, pendingIds = []) {
+  const pending = new Set(pendingIds);
+  const hasDouble = Boolean(state?.hasDoubleCake || pending.has('doubledCake'));
+  const hasTriple = Boolean(state?.hasTripleCake || pending.has('tripleCake'));
+  const hasQuad = Boolean(state?.hasQuadCake || pending.has('quadCake'));
+
+  if (id === 'doubledCake') return !hasDouble && !hasTriple && !hasQuad;
+  if (id === 'tripleCake') return hasDouble && !hasTriple && !hasQuad;
+  if (id === 'quadCake') return hasTriple && !hasQuad;
+  return true;
+}
+
 const ALL_ITEM_IDS = [
   'birthday', 'cookie', 'doubledCake', 'bouncy', 'dash',
   'tripleCake', 'quadCake', 'shakeFizzlePop', 'flawlessBaking', 'cursedCandles'

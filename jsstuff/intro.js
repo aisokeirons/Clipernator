@@ -646,7 +646,9 @@ const owned = [
   ...((typeof gs !== 'undefined' && gs && gs.unlockedItems) ? gs.unlockedItems : []),
   ...draftChosenItems,
 ];
-const available = allIds.filter(id => !owned.includes(id));      // Shuffle
+const available = allIds.filter(id =>
+  !owned.includes(id) && isCakeItemAvailable(id, gs, draftChosenItems)
+);      // Shuffle
       for (let i = available.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [available[i], available[j]] = [available[j], available[i]];

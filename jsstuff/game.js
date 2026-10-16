@@ -902,12 +902,9 @@ function offerItemChoice() {
   cardsEl.innerHTML = '';
 
   const floorPool = gs.floor === 2 ? FLOOR2_ITEM_IDS : ALL_ITEM_IDS;
-  let floorAvailable = floorPool.filter(id => {
-    if (id==='doubledCake' && (gs.hasTripleCake||gs.hasQuadCake)) return false;
-    if (id==='tripleCake'  && (!gs.hasDoubleCake||(gs.hasTripleCake||gs.hasQuadCake))) return false;
-    if (id==='quadCake'    && (!gs.hasTripleCake||gs.hasQuadCake)) return false;
-    return !gs.unlockedItems.includes(id);
-  });
+  let floorAvailable = floorPool.filter(id =>
+    !gs.unlockedItems.includes(id) && isCakeItemAvailable(id, gs)
+  );
   const upgradePool = [];
   if (gs.hasClownish && !gs.hasClownishUpgrade)   upgradePool.push('clownishUpgrade');
   if (gs.hasPopcornBucket && !gs.hasPopcornBowl) upgradePool.push('popcornBowl');
