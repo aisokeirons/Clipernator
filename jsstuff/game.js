@@ -130,7 +130,7 @@ function initGameState() {
   viewportSize = { width: worldW, height: worldH };
 
   gs = {
-    score: 0, wave: 5,
+    score: 0, wave: 1,
     health: CFG.MAX_HEALTH, maxHealth: CFG.MAX_HEALTH,
     ammo: CFG.MAX_AMMO, maxAmmo: CFG.MAX_AMMO,
     reloading: false, reloadTimer: 0,
@@ -139,7 +139,7 @@ function initGameState() {
     bullets: [], enemyBullets: [], particles: [], fieldItems: [], dashTrail: [],
     shakeX: 0, shakeY: 0,
     spawnTimer: 0, spawnInterval: CFG.SPAWN_INTERVAL_BASE,
-    waveEnemiesLeft: 8, waveKills: 0,
+    waveEnemiesLeft: CFG.WAVE_ENEMIES_BASE + CFG.WAVE_ENEMIES_GROWTH, waveKills: 0,
     unlockedItems: [], itemCooldowns: {},
     pendingChoice: false,
     heldGiftBox: null,
@@ -938,6 +938,7 @@ function offerItemChoice() {
   gs.pendingChoice = true; gameRunning = false; cancelAnimationFrame(animId); draw();
   const choiceEl = document.getElementById('item-choice');
   const cardsEl  = document.getElementById('item-cards');
+  choiceEl.dataset.floor = String(gs.floor);
   cardsEl.innerHTML = '';
 
   const floorPool = gs.floor === 2 ? FLOOR2_ITEM_IDS : ALL_ITEM_IDS;

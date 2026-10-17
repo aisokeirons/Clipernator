@@ -231,7 +231,7 @@ canvas {
     z-index: 55;
   }
   #item-choice-dialog {
-    background: #d4d0c8;
+    background: var(--item-pool-background, #d4d0c8);
     border-top: 2px solid #fff;
     border-left: 2px solid #fff;
     border-right: 2px solid #404040;
@@ -257,6 +257,8 @@ canvas {
     justify-content: center;
    
   }
+  #item-choice[data-floor="1"] { --item-pool-background: #dce5f3; }
+  #item-choice[data-floor="2"] { --item-pool-background: #f2e2d5; }
   .item-card {
     font-family: 'MS Sans Serif',Arial,sans-serif;
     width: 30%;
@@ -264,7 +266,7 @@ canvas {
     border-left: 2px solid #fff;
     border-right: 2px solid #404040;
     border-bottom: 2px solid #404040;
-    background: #d4d0c8;
+    background: var(--item-pool-background, #d4d0c8);
     padding: 8px 6px;
     cursor: pointer;
     display: flex;
