@@ -341,7 +341,7 @@ c.style.cssText = 'display:block; width:100%; height:100%; image-rendering: pixe
     bootInputEl.spellcheck = false;
     bootInputEl.setAttribute('aria-label', 'Start program response or secret code');
     bootInputEl.style.cssText = `
-      position: absolute; left: 20.8%; top: 21%; width: 20%; height: 30px;
+      position: absolute; left: 20.8%; top: 24%; width: 20%; height: 30px;
       padding: 2px 6px; border: 1px solid #00ff66; border-radius: 0;
       outline: none; background: #000; color: #00ff66;
       font: 13px "Fixedsys", "Courier New", monospace;
@@ -428,8 +428,7 @@ setTimeout(() => {
       biosPhase = 'typing';
       bootInputEl.style.display = 'none';
       let acc = 0;
-      BIOS_LINES_PRE.slice(2).forEach((line, remainingIndex) => {
-        const i = remainingIndex + 2;
+      BIOS_LINES_PRE.forEach((line, i) => {
         acc += (line.delay || 0);
         setTimeout(() => {
           if (stage !== 'BIOS') return;
@@ -442,15 +441,6 @@ setTimeout(() => {
         }, acc + i * 110);
       });
     }
-
-    let acc = 0;
-    BIOS_LINES_PRE.slice(0, 2).forEach((line, i) => {
-      acc += (line.delay || 0);
-      setTimeout(() => {
-        if (stage !== 'BIOS') return;
-        biosPreLines.push({ ...line });
-      }, acc + i * 110);
-    });
 
     attachKeys((e) => {
       if (stage !== 'BIOS') return;
@@ -555,7 +545,7 @@ setTimeout(() => {
     c.fillStyle = '#000000'; c.fillRect(0, 0, W, H);
 
     const logo = imgs.drawalogo;
-    if (logo && logo.complete && logo.naturalWidth > 0) {
+    if (biosPhase !== 'bootPrompt' && logo && logo.complete && logo.naturalWidth > 0) {
       const lw = 180, lh = Math.round(logo.naturalHeight * (lw / logo.naturalWidth));
       c.drawImage(logo, W / 2 - lw / 2, 20, lw, lh);
     }
