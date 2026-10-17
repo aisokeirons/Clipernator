@@ -1108,6 +1108,8 @@ function getScreenShakeOffset() {
 function draw() {
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const dpr = window.devicePixelRatio || 1;
   ctx.scale(dpr * renderScale, dpr * renderScale);  // combine dpr + renderScale
@@ -1334,6 +1336,7 @@ if (tearSrc.complete && tearSrc.naturalWidth > 0) {
   }
   ctx.restore();
 }
+    ctx.restore();
   }
 
   // Enemies
@@ -1657,8 +1660,6 @@ if (meleeSwingTimer > 0) {
   meleeSwingTimer--;
 }
 
-  ctx.restore();
-
   // Boss slam overlays
   for (const id of ECS.query('enemy')) {
     const type = ECS.get(id, 'enemy').type;
@@ -1748,4 +1749,5 @@ if (gs.drivingCar !== null) {
     ctx.fillStyle = '#ffdd00'; ctx.fillRect(worldW/2-bw/2, 38, bw*Math.min(1,ratio), 5);
     ctx.restore();
   }
+  ctx.restore();
 }
