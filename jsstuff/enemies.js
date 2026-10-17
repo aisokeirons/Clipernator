@@ -30,6 +30,7 @@ const BT_UTENSIL = new BTSelector(
     // ── Init ──
     if (ai.uState        === undefined) ai.uState        = 'IDLE';
     if (ai.uOrbitAngle   === undefined) ai.uOrbitAngle   = Math.random() * Math.PI * 2;
+    if (ai.uOrbitDirection === undefined) ai.uOrbitDirection = Math.random() < 0.5 ? -1 : 1;
     if (ai.uLaunchTimer  === undefined) ai.uLaunchTimer  = 80 + Math.floor(Math.random() * 60);
     if (ai.uActiveIdx    === undefined) ai.uActiveIdx    = -1;
     if (ai.uLaunchDir    === undefined) ai.uLaunchDir    = null;
@@ -45,8 +46,11 @@ const BT_UTENSIL = new BTSelector(
     // ── Body drifts toward player ──
   const UTENSIL_STOP_DIST = 360;
 const driftMult = dist > UTENSIL_STOP_DIST ? 0.28 : (dist > 100 ? 0.04 : -0.18);
-vel.vx = (vel.vx || 0) * 0.88 + (dx / dist) * phy.speed * driftMult;
-vel.vy = (vel.vy || 0) * 0.88 + (dy / dist) * phy.speed * driftMult;
+const orbitMult = dist > UTENSIL_STOP_DIST ? 0.08 : 0.18;
+const driftX = dx / dist * driftMult - dy / dist * orbitMult * ai.uOrbitDirection;
+const driftY = dy / dist * driftMult + dx / dist * orbitMult * ai.uOrbitDirection;
+vel.vx = (vel.vx || 0) * 0.88 + driftX * phy.speed;
+vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
     const spd = Math.hypot(vel.vx, vel.vy);
     if (spd > phy.speed) { vel.vx = vel.vx / spd * phy.speed; vel.vy = vel.vy / spd * phy.speed; }
 

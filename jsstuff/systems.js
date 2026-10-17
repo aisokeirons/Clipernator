@@ -667,8 +667,8 @@ const topSpd = slowed ? CFG.PLAYER_SPEED * 0.45 : CFG.PLAYER_SPEED * speedMult;
       // Minimal drag only
       vel.vx *= 0.96; vel.vy *= 0.96;
     } else {
-      if (ix||iy){vel.vx+=ix*0.38*topSpd;vel.vy+=iy*0.38*topSpd;}
-      else{vel.vx*=0.82;vel.vy*=0.82;}
+      if (ix||iy){vel.vx+=ix*0.5*topSpd;vel.vy+=iy*0.5*topSpd;}
+      else{vel.vx*=0.76;vel.vy*=0.76;}
       const spd=Math.hypot(vel.vx,vel.vy);
       if (spd>topSpd){vel.vx=vel.vx/spd*topSpd;vel.vy=vel.vy/spd*topSpd;}
     }
@@ -696,7 +696,7 @@ if (gs.knockingPinsActive) {
   const moveSpd=Math.hypot(vel.vx,vel.vy);
   if (moveSpd>0.5){playerMoveAngle=Math.atan2(vel.vy,vel.vx);}
   else{let da=gunAngle-playerMoveAngle;while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;playerMoveAngle+=da*0.04;}
-  if (moveSpd>0.5) playerBobTimer+=moveSpd*0.08; else playerBobTimer*=0.85;
+  if (moveSpd>0.5) playerBobTimer+=moveSpd*0.11; else playerBobTimer*=0.85;
   const MAX_HOLD_DIST=50, mdx=mouse.x-pos.x, mdy=mouse.y-pos.y;
   const mouseDist=Math.hypot(mdx,mdy)||1, holdDist=Math.min(mouseDist,MAX_HOLD_DIST);
   gunX+=(pos.x+(mdx/mouseDist)*holdDist-gunX)*0.18;

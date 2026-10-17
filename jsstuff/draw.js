@@ -895,13 +895,14 @@ if (gs.clippyIntroLines && !gs.clippyIntroDone) {
 const BODY_W = 48;
 const BODY_H = 48; // square since image is 959x959
 
-    const bob = Math.sin(playerBobTimer) * 2.5;
+    const playerVel = ECS.get(gs.playerId, 'vel');
+    const bob = Math.sin(playerBobTimer) * 3.25;
+    const lean = playerVel ? Math.max(-0.12, Math.min(0.12, playerVel.vy * 0.025)) : 0;
 const movingLeft = Math.cos(playerMoveAngle) < 0;
 
-   
-    
 ctx.save();
 ctx.translate(x, y + bob);
+ctx.rotate(lean);
 if (movingLeft) ctx.scale(-1, 1);
 ctx.drawImage(
   sourceImg,
@@ -1332,6 +1333,7 @@ for(const id of ECS.query('enemy','pos','hp')) {
   const epos = ECS.get(id,'pos');
   const ehp  = ECS.get(id,'hp');
   const ai   = ECS.get(id,'ai');
+  const evel = ECS.get(id,'vel');
   const type = ECS.get(id,'enemy').type;
   const isPhased = ai && ai.phased;
   const alpha = isPhased ? 0.22 : (ehp.hitFlash > 0 ? (Math.random()>.5?1:.3) : 1);
@@ -1341,6 +1343,23 @@ for(const id of ECS.query('enemy','pos','hp')) {
 
   ctx.save();
   ctx.globalAlpha = alpha;
+
+  if (evel && !frozen) {
+    const speed = Math.hypot(evel.vx, evel.vy);
+    if (speed > 1.2) {
+      const trailLength = Math.min(12, speed * 2.5);
+      const dx = evel.vx / speed, dy = evel.vy / speed;
+      ctx.globalAlpha *= Math.min(0.35, speed / 12);
+      ctx.strokeStyle = ENEMY_DEFS[type]?.color || '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(epos.x - dx * 4, epos.y - dy * 4);
+      ctx.lineTo(epos.x - dx * trailLength, epos.y - dy * trailLength);
+      ctx.stroke();
+      ctx.globalAlpha = alpha;
+    }
+  }
 
   // Scale up + red tint for buffed/critical mass enemies
   if (sizeScale !== 1.0) {
