@@ -140,7 +140,9 @@ function stopSound(key) {
   let _introDone = false; // guard against double-firing onDone
   let container = null;
   let overlayEl = null;
+  let bootInputEl = null;
   let keyHandler = null;
+  let skippyMode = false;
 
   // ── BIOS state ──
   let biosPhase = 'typing';
@@ -330,6 +332,22 @@ c.style.cssText = 'display:block; width:100%; height:100%; image-rendering: pixe
     c.width = 960; c.height = 600;
     overlayEl.appendChild(c);
     container = c;
+
+    bootInputEl = document.createElement('input');
+    bootInputEl.type = 'text';
+    bootInputEl.maxLength = 32;
+    bootInputEl.autocomplete = 'off';
+    bootInputEl.autocapitalize = 'off';
+    bootInputEl.spellcheck = false;
+    bootInputEl.setAttribute('aria-label', 'Start program response or secret code');
+    bootInputEl.style.cssText = `
+      position: absolute; left: 20.8%; top: 24%; width: 35%; height: 30px;
+      padding: 2px 6px; border: 1px solid #00ff66; border-radius: 0;
+      outline: none; background: #000; color: #00ff66;
+      font: 13px "Fixedsys", "Courier New", monospace;
+    `;
+    bootInputEl.style.display = 'none';
+    overlayEl.appendChild(bootInputEl);
   }
 
   function getCtx() { return container ? container.getContext('2d') : null; }
@@ -368,12 +386,16 @@ function detachKeys() {
   // ================================================================
   function startBIOS() {
     stage = 'BIOS';
-    biosPhase = 'typing';
+    biosPhase = 'bootPrompt';
     biosPreLines = []; biosPostMemLines = []; biosPostIdeLines = [];
     memTestValue = 0; memTestDone = false; memTestStarted = false; memTestLineVisible = false;
     postMemStarted = false; postIdeStarted = false;
     ideLineIdx = 0; ideAnimTimer = 0; ideAnimStarted = false; ideLines = [];
     biosCursor = true; biosCursorTimer = 0;
+    skippyMode = false;
+    bootInputEl.value = '';
+    bootInputEl.style.display = 'block';
+    bootInputEl.focus();
 
    // Try to autoplay startup1; queue for first interaction if browser blocks it
 (function() {
@@ -402,20 +424,53 @@ setTimeout(() => {
     }
 }, 2000);
 
+    function continueBIOSAfterPrompt() {
+      biosPhase = 'typing';
+      bootInputEl.style.display = 'none';
+      let acc = 0;
+      BIOS_LINES_PRE.slice(2).forEach((line, remainingIndex) => {
+        const i = remainingIndex + 2;
+        acc += (line.delay || 0);
+        setTimeout(() => {
+          if (stage !== 'BIOS') return;
+          biosPreLines.push({ ...line });
+          if (i === BIOS_LINES_PRE.length - 1) {
+            setTimeout(() => {
+              if (stage === 'BIOS') { memTestLineVisible = true; memTestStarted = true; }
+            }, 300);
+          }
+        }, acc + i * 110);
+      });
+    }
+
     let acc = 0;
-    BIOS_LINES_PRE.forEach((line, i) => {
+    BIOS_LINES_PRE.slice(0, 2).forEach((line, i) => {
       acc += (line.delay || 0);
       setTimeout(() => {
         if (stage !== 'BIOS') return;
         biosPreLines.push({ ...line });
-        if (i === BIOS_LINES_PRE.length - 1) {
-          setTimeout(() => { if (stage === 'BIOS') { memTestLineVisible = true; memTestStarted = true; } }, 300);
-        }
       }, acc + i * 110);
     });
 
     attachKeys((e) => {
       if (stage !== 'BIOS') return;
+      if (biosPhase === 'bootPrompt') {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const response = bootInputEl.value.trim().toLowerCase();
+        if (response === 'y') {
+          continueBIOSAfterPrompt();
+        } else if (response === 'skippy') {
+          skippyMode = true;
+          difficultySelected = 1;
+          biosPhase = 'difficulty';
+          bootInputEl.style.display = 'none';
+          biosPostIdeLines = [{ ...BIOS_LINES_POST_IDE[BIOS_LINES_POST_IDE.length - 1] }];
+        } else {
+          window.location.reload();
+        }
+        return;
+      }
       if (biosPhase === 'difficulty') {
         if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
           playSound('switch');
@@ -428,7 +483,12 @@ setTimeout(() => {
           applyDifficulty(difficultySelected);
           biosPhase = 'done';
           draftCount = difficultySelected === 0 ? 0 : difficultySelected === 1 ? 1 : 2;
-          setTimeout(() => startItemDraft(), 600);
+          if (skippyMode) {
+            draftChosenItems = chooseRandomDraftItems(draftCount);
+            finishIntro();
+          } else {
+            setTimeout(() => startItemDraft(), 600);
+          }
         }
       }
     });
@@ -532,7 +592,7 @@ setTimeout(() => {
     for (const line of biosPostIdeLines) {
       if (line.isDifficultyPrompt) {
         c.fillStyle = '#ffffff';
-        c.fillText('>>> PROCESSOR CALIBRATION <<<', textX, y);
+        c.fillText(skippyMode ? '>>> SELECT DIFFICULTY <<<' : '>>> PROCESSOR CALIBRATION <<<', textX, y);
         y += lineH + 8;
 
         const opts = ['Easy', 'Normal', 'Hard'];
@@ -565,6 +625,16 @@ setTimeout(() => {
       }
     }
 
+    if (biosPhase === 'bootPrompt') {
+      c.fillStyle = '#ffffff';
+      c.fillText('Start Program?', textX, y);
+      y += lineH;
+      c.fillText('Y     N', textX, y);
+      y += lineH;
+      c.fillStyle = '#555555';
+      c.fillText('Type a response and press ENTER', textX, y);
+    }
+
     if (biosPhase === 'typing' && biosCursor) {
       const allLines = [
         ...biosPreLines,
@@ -587,6 +657,51 @@ setTimeout(() => {
   // STAGE: ITEM DRAFT
   // ================================================================
   const BASE_ITEM_IDS = ['paperCuts', 'extraClips'];
+
+  function buildDraftPool() {
+    const allIds = typeof ALL_ITEM_IDS !== 'undefined'
+      ? [...ALL_ITEM_IDS, ...BASE_ITEM_IDS]
+      : [...BASE_ITEM_IDS];
+    const owned = [
+      ...((typeof gs !== 'undefined' && gs && gs.unlockedItems) ? gs.unlockedItems : []),
+      ...draftChosenItems,
+    ];
+    const available = allIds.filter(id =>
+      !owned.includes(id) && isCakeItemAvailable(id, gs, draftChosenItems)
+    );
+    for (let i = available.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [available[i], available[j]] = [available[j], available[i]];
+    }
+    const seen = new Set();
+    const chosen = [];
+    for (const id of available) {
+      if (!seen.has(id)) {
+        seen.add(id);
+        chosen.push(id);
+      }
+      if (chosen.length >= 3) break;
+    }
+    let padIdx = 0;
+    while (chosen.length < 3) {
+      chosen.push(BASE_ITEM_IDS[padIdx % BASE_ITEM_IDS.length]);
+      padIdx++;
+    }
+    return chosen.map(id => ITEM_DEFS[id]).filter(Boolean);
+  }
+
+  function chooseRandomDraftItems(count) {
+    const chosenItems = [];
+    draftChosenItems = [];
+    while (chosenItems.length < count) {
+      const candidates = buildDraftPool().filter(item => !draftChosenItems.includes(item.id));
+      if (candidates.length === 0) break;
+      const item = candidates[Math.floor(Math.random() * candidates.length)];
+      chosenItems.push(item.id);
+      draftChosenItems.push(item.id);
+    }
+    return chosenItems;
+  }
 
   function startItemDraft() {
     stage = 'ITEM_DRAFT';
@@ -633,40 +748,6 @@ setTimeout(() => {
         requestAnimationFrame(tick);
       }
       requestAnimationFrame(tick);
-    }
-
-    // Build a pool of up to 3 unique items the player doesn't own yet.
-    // Draws from ALL_ITEM_IDS first, then falls back to BASE_ITEM_IDS.
-    function buildDraftPool() {
-      const allIds = typeof ALL_ITEM_IDS !== 'undefined'
-        ? [...ALL_ITEM_IDS, ...BASE_ITEM_IDS]
-        : [...BASE_ITEM_IDS];
-      // Remove already-unlocked items
-const owned = [
-  ...((typeof gs !== 'undefined' && gs && gs.unlockedItems) ? gs.unlockedItems : []),
-  ...draftChosenItems,
-];
-const available = allIds.filter(id =>
-  !owned.includes(id) && isCakeItemAvailable(id, gs, draftChosenItems)
-);      // Shuffle
-      for (let i = available.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [available[i], available[j]] = [available[j], available[i]];
-      }
-      // Deduplicate and take up to 3
-      const seen = new Set();
-      const chosen = [];
-      for (const id of available) {
-        if (!seen.has(id)) { seen.add(id); chosen.push(id); }
-        if (chosen.length >= 3) break;
-      }
-      // Pad with BASE_ITEM_IDS if fewer than 3 unique items available
-      let padIdx = 0;
-      while (chosen.length < 3) {
-        chosen.push(BASE_ITEM_IDS[padIdx % BASE_ITEM_IDS.length]);
-        padIdx++;
-      }
-      return chosen.map(id => ITEM_DEFS[id]).filter(Boolean);
     }
 
     runScanlineFlash(() => {
@@ -1509,6 +1590,14 @@ const available = allIds.filter(id =>
     detachDesktopClicks();
     stopAllMusic();
 
+    if (skippyMode) {
+      if (overlayEl) { overlayEl.parentNode.removeChild(overlayEl); overlayEl = null; }
+      container = null;
+      bootInputEl = null;
+      if (onDone) onDone();
+      return;
+    }
+
     let alpha = 0;
     const fadeInterval = setInterval(() => {
       alpha += 0.05;
@@ -1526,6 +1615,7 @@ const available = allIds.filter(id =>
   function start(callback) {
     onDone = callback;
     _introDone = false;
+    skippyMode = false;
     buildOverlay();
     setTimeout(() => startBIOS(), 200);
   }
