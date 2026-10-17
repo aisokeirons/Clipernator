@@ -279,5 +279,3 @@ function formatKey(k) {
 const dpr = window.devicePixelRatio || 1;
 canvas.width  = CFG.W * dpr;
 canvas.height = CFG.H * dpr;
-canvas.style.width  = CFG.W + 'px';
-canvas.style.height = CFG.H + 'px';

@@ -1483,14 +1483,10 @@ if (Math.abs(gs.shakeY) < 0.1) gs.shakeY = 0;
     const t=gs.transitionT, ease=t<0.5?2*t*t:-1+(4-2*t)*t;
     worldW=gs.transitionStartW+(gs.transitionEndW-gs.transitionStartW)*ease;
     worldH=gs.transitionStartH+(gs.transitionEndH-gs.transitionStartH)*ease;
-    renderScale=CFG.W/worldW;
-    canvas.height=Math.round(worldH*renderScale*dpr);
-    canvas.style.height=`${worldH*renderScale}px`;
+    renderScale=canvas.clientWidth/worldW;
     if (gs.transitionT>=1) {
       worldW=gs.transitionEndW; worldH=gs.transitionEndH;
-      renderScale=CFG.W/worldW;
-      canvas.height=Math.round(worldH*renderScale*dpr);
-      canvas.style.height=`${worldH*renderScale}px`;
+      renderScale=canvas.clientWidth/worldW;
       gs.transitionDone=true; gs.transitioning=false;
       gs.floor=2;
       unlockGlowsticks(); trySpawnFieldItems();
@@ -2007,8 +2003,8 @@ function handleBossDeath(id) {
     gs.transitionT = 0;
     gs.transitionStartW = worldW;
     gs.transitionStartH = worldH;
-    gs.transitionEndW = 1050;
-    gs.transitionEndH = 690;
+    gs.transitionEndW = gs.transitionStartW * 1.5;
+    gs.transitionEndH = gs.transitionStartH * 1.5;
     gs.transitionDone = false;
   }, 1200);
 }

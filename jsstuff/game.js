@@ -12,6 +12,41 @@ let muzzleFlash = 0;
 let meleeSwingTimer = 0;
 let isPaused = false;
 let lastTime = 0;
+let viewportSize = {
+  width: canvas.clientWidth || CFG.W,
+  height: canvas.clientHeight || CFG.H,
+};
+
+function resizeGameViewport() {
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  if (!width || !height) return;
+
+  const scaleX = width / viewportSize.width;
+  const scaleY = height / viewportSize.height;
+  if (scaleX !== 1 || scaleY !== 1) {
+    if (gameRunning) {
+      worldW *= scaleX;
+      worldH *= scaleY;
+      if (gs.transitioning) {
+        gs.transitionStartW *= scaleX;
+        gs.transitionEndW *= scaleX;
+        gs.transitionStartH *= scaleY;
+        gs.transitionEndH *= scaleY;
+      }
+    } else {
+      worldW = width;
+      worldH = height;
+      renderScale = 1;
+    }
+    viewportSize = { width, height };
+  }
+
+  canvas.width = Math.round(width * dpr);
+  canvas.height = Math.round(height * dpr);
+}
+
+new ResizeObserver(resizeGameViewport).observe(document.getElementById('wrapper'));
 
 // ================================================================
 // ECS CORE
@@ -89,6 +124,10 @@ let gs = {};
 
 function initGameState() {
   ECS.clear();
+  worldW = canvas.clientWidth || CFG.W;
+  worldH = canvas.clientHeight || CFG.H;
+  renderScale = 1;
+  viewportSize = { width: worldW, height: worldH };
 
   gs = {
     score: 0, wave: 5,
@@ -879,9 +918,9 @@ document.getElementById('startBtn').addEventListener('click', startGame);
 document.getElementById('floor-btn').addEventListener('click', () => {
   document.getElementById('floor-transition').style.display = 'none';
   gs.floor = 2;
-  worldW = 1050;
-  worldH = 690;
-  renderScale = CFG.W / worldW;
+  worldW *= 1.5;
+  worldH *= 1.5;
+  renderScale = canvas.clientWidth / worldW;
   unlockGlowsticks();
   trySpawnFieldItems();
   showMsg('WELCOME TO THE BIG TOP!');

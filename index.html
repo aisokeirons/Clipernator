@@ -43,6 +43,16 @@ body::before { display: none; }
 
 #wrapper {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 704px;
+  height: 508px;
+  min-width: 424px;
+  min-height: 260px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  resize: both;
+  overflow: hidden;
   background: #d4d0c8;
   border-top: 2px solid #ffffff;
   border-left: 2px solid #ffffff;
@@ -51,6 +61,23 @@ body::before { display: none; }
   box-shadow: 1px 1px 0 #000000, -1px -1px 0 #e8e8e0;
   outline: none;
 }
+
+#hud { flex: 0 0 18px; }
+
+#menubar {
+  width: 100% !important;
+  flex: 0 0 22px;
+}
+
+#c {
+  display: block;
+  flex: 1 1 0;
+  width: 100% !important;
+  height: 0;
+  min-height: 180px;
+}
+
+#bottom-bar { flex: 0 0 4px; }
 
 #hud {
   background: linear-gradient(to right, #0a246a 0%, #3a6ea8 100%);
