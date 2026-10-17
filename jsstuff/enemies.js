@@ -629,8 +629,7 @@ ai.wbShootTimer -= hatMult / (ai.clownCooldownMult || 1);
               homing: false,
               homingStrength: 0,
               rmDmgMult: 1,
-              gravX: Math.sin(ai.orientAngle) * 0.045,
-              gravY: Math.cos(ai.orientAngle) * 0.045,
+              curveRate: 0.0035,
             });
             spawnParticles(pos.x, pos.y, '#44aaff', 5);
           }
@@ -975,7 +974,7 @@ function _giftBoxExplode(id, pos, gs) {
   // Handle player hit — but defer triggerSFPHit until after all enemy loops
   let triggerSFP = false;
   const ppos = ECS.get(gs.playerId, 'pos');
-  if (ppos && Math.hypot(pos.x - ppos.x, pos.y - ppos.y) < 110 && gs.invincible <= 0) {
+  if (ppos && Math.hypot(pos.x - ppos.x, pos.y - ppos.y) < CFG.GIFT_BOX_EXPLOSION_RADIUS && gs.invincible <= 0) {
     gs.health -= 30; gs.invincible = CFG.INVINCIBLE_FRAMES;
     gs.flawlessThisWave = false;
     triggerSFP = true;
@@ -990,7 +989,7 @@ function _giftBoxExplode(id, pos, gs) {
     if (!ECS.has(eid, 'pos')) continue;          // guard: may already be gone
     const ep = ECS.get(eid, 'pos');
     const eh = ECS.get(eid, 'hp');
-    if (Math.hypot(ep.x - pos.x, ep.y - pos.y) < 110) {
+    if (Math.hypot(ep.x - pos.x, ep.y - pos.y) < CFG.GIFT_BOX_EXPLOSION_RADIUS) {
       eh.hp -= 8; eh.hitFlash = 14;
       if (eh.hp <= 0) toKill.push({ eid, x: ep.x, y: ep.y });
     }

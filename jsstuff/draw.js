@@ -216,7 +216,6 @@ function drawWaterBalloon(epos, ehp, ai, frozen) {
   ctx.translate(x, y);
   ctx.rotate(orientAngle + Math.PI / 2);
   if (frozen) { ctx.globalAlpha = 0.7; ctx.shadowColor = '#aaccff'; ctx.shadowBlur = 16; }
-  else { drawCheapGlow(0, 0, 28, hasHat ? '#ff4444' : '#44aaff', 0.22); }
 
  const idleSheet  = hasHat ? waterBalloonIdleSheetRed  : waterBalloonIdleSheet;
   const turnSheet  = hasHat ? waterBalloonTurnSheetRed  : waterBalloonTurnSheet;
@@ -318,10 +317,6 @@ ctx.save();
 ctx.translate(x, y);
 ctx.rotate(angle);
   if (frozen) { ctx.globalAlpha = 0.7; ctx.shadowColor = '#aaccff'; ctx.shadowBlur = 16; }
-  else {
-   drawCheapGlow(0, 0, 22, drawState === 'DIVE' ? '#ff2200' : '#ffdd00', 0.25);
-
-  }
 
   if (sheet && sheet.complete && sheet.naturalWidth > 0) {
     const frameW = Math.floor(sheet.naturalWidth  / cols);
@@ -347,15 +342,6 @@ ctx.rotate(angle);
     ctx.fillRect(x - bw/2, y - 44, bw * (ehp.hp / ehp.maxHp), 5);
   }
 
-  if (state === 'TELEGRAPH') {
-    const prog = 1 - (ai.hatTimer / 32);
-    ctx.save();
-    ctx.globalAlpha = prog * 0.6;
-    ctx.strokeStyle = '#ff4400'; ctx.lineWidth = 2;
-    ctx.shadowColor = '#ff4400'; ctx.shadowBlur = 10;
-    ctx.beginPath(); ctx.arc(x, y, 20 + prog * 14, 0, Math.PI * 2); ctx.stroke();
-    ctx.restore();
-  }
 }
 
 function drawGiftBox(epos, ehp, ai, frozen) {
@@ -418,13 +404,13 @@ function drawGiftBox(epos, ehp, ai, frozen) {
   ctx.fillStyle = ehp.hp < ehp.maxHp / 2 ? '#ff6666' : '#ffaa00';
   ctx.fillRect(x - bw/2, y - 46, bw * (ehp.hp / ehp.maxHp), 5);
 
-  // Windup warning ring
+  // Show the full damage radius during the windup.
   if (windupRatio > 0.2) {
     ctx.save();
     ctx.globalAlpha = windupRatio * 0.7;
     ctx.strokeStyle = '#ff4400'; ctx.lineWidth = 2;
     ctx.shadowColor = '#ff4400'; ctx.shadowBlur = 10;
-    ctx.beginPath(); ctx.arc(x, y, 34 + windupRatio * 10, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y, CFG.GIFT_BOX_EXPLOSION_RADIUS, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
   }
 }

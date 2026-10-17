@@ -803,7 +803,7 @@ for (const id of [...ECS.query('enemy','pos','vel','ai','physics')]) {
           if (ai2.shootCooldown<=0) {
             ai2.shootCooldown=90;
             const aim=Math.atan2(pp2.y-pos2.y,pp2.x-pos2.x);
-            gs.enemyBullets.push({x:pos2.x,y:pos2.y,vx:Math.cos(aim)*0.5,vy:Math.sin(aim)*0.5,life:140,maxLife:140,color:'#44aaff',isTear:true,gravity:0.045});
+            gs.enemyBullets.push({x:pos2.x,y:pos2.y,vx:Math.cos(aim)*0.5,vy:Math.sin(aim)*0.5,life:140,maxLife:140,color:'#44aaff',isTear:true,curveRate:0.0035});
           }
         }
       }
@@ -1294,7 +1294,15 @@ function sysEnemyBullets() {
   const bulletsToAdd = []; // deferred — added after filter completes
   
   gs.enemyBullets = gs.enemyBullets.filter(eb => {
-    if (!gs.frozen){eb.x+=eb.vx;eb.y+=eb.vy;eb.life--;}
+    if (!gs.frozen) {
+      if (eb.curveRate) {
+        const speed = Math.hypot(eb.vx, eb.vy);
+        const angle = Math.atan2(eb.vy, eb.vx) + eb.curveRate;
+        eb.vx = Math.cos(angle) * speed;
+        eb.vy = Math.sin(angle) * speed;
+      }
+      eb.x+=eb.vx;eb.y+=eb.vy;eb.life--;
+    }
 if (eb.isTear) {
   if (eb.gravX !== undefined) { eb.vx += eb.gravX; eb.vy += eb.gravY; }
   else if (eb.gravity) eb.vy += eb.gravity;
