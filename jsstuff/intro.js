@@ -341,7 +341,7 @@ c.style.cssText = 'display:block; width:100%; height:100%; image-rendering: pixe
     bootInputEl.spellcheck = false;
     bootInputEl.setAttribute('aria-label', 'Start program response or secret code');
     bootInputEl.style.cssText = `
-      position: absolute; left: 20.8%; top: 24%; width: 35%; height: 30px;
+      position: absolute; left: 20.8%; top: 24%; width: 20%; height: 30px;
       padding: 2px 6px; border: 1px solid #00ff66; border-radius: 0;
       outline: none; background: #000; color: #00ff66;
       font: 13px "Fixedsys", "Courier New", monospace;
@@ -630,9 +630,6 @@ setTimeout(() => {
       c.fillText('Start Program?', textX, y);
       y += lineH;
       c.fillText('Y     N', textX, y);
-      y += lineH;
-      c.fillStyle = '#555555';
-      c.fillText('Type a response and press ENTER', textX, y);
     }
 
     if (biosPhase === 'typing' && biosCursor) {
