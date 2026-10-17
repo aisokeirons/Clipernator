@@ -14,7 +14,7 @@ const CLIPPY_PICKUP_TIPS = {
   flawlessBaking:  "It looks like you want more ammo! Simply don't take damage. Simple.",
   cursedCandles:   "You're killing me to get more bullets. Totally fine. I'm fine.",
   mirrorMaze:      "Shoot the diamond thing. It will redirect bullets at enemies... hopefully.",
-  popcornBucket:   "Collect popcorn... from corpses... for a frenzy. This is normal.",
+  popcornBucket:   "Collect popcorn. From corpses. For a frenzy. This is normal.",
   ragingRings:     "It looks like your bullets keep missing! Now they orbit you instead. Problem solved.",
   tightropeBoots:  "200% speed boost. Try not to run into a wall... it hurts.",
   clownish:        "It looks like you grew a nose! It honks. Enemies (and me) find this deeply unsettling.",
