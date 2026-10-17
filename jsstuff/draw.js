@@ -918,7 +918,7 @@ const movingLeft = Math.cos(playerMoveAngle) < 0;
     
 ctx.save();
 ctx.translate(x, y + bob);
-if (blinking) ctx.globalAlpha = 0.35;
+if (blinking) ctx.globalAlpha = 0.65;
 if (movingLeft) ctx.scale(-1, 1);
 ctx.drawImage(
   sourceImg,
@@ -934,7 +934,7 @@ ctx.restore();
     ctx.translate(gx, gy);
     ctx.rotate(gunAngle);
     if (aimingLeft) ctx.scale(1, -1);
-    if (blinking) ctx.globalAlpha = 0.35;
+    if (blinking) ctx.globalAlpha = 0.65;
     ctx.drawImage(
   shotgunImg,
   0, 0, 1536, 1024,      // use full image, no crop
@@ -1127,6 +1127,21 @@ function draw() {
   }
   for(let x=0; x<worldW; x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,worldH); ctx.stroke(); }
   for(let y=0; y<worldH; y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(worldW,y); ctx.stroke(); }
+
+  // Keep the vignette sized to the current arena and behind gameplay sprites.
+  ctx.save();
+  const vignetteX = worldW / 2;
+  const vignetteY = worldH / 2;
+  const vignetteRadius = Math.hypot(worldW, worldH) / 2;
+  const g = ctx.createRadialGradient(
+    vignetteX, vignetteY, Math.min(worldW, worldH) * 0.28,
+    vignetteX, vignetteY, vignetteRadius
+  );
+  g.addColorStop(0, 'transparent');
+  g.addColorStop(1, gs.floor === 2 ? 'rgba(40,5,0,0.65)' : 'rgba(0,0,0,0.55)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, worldW, worldH);
+  ctx.restore();
 
   // Party freeze tint
   if (gs.partyFreezeTimer > 0) {
@@ -1716,12 +1731,6 @@ if (gs.drivingCar !== null) {
   ctx.fillText('CAR EXPLODING SOON', worldW/2, worldH - 32);
 }
 
-  // Vignette
-  const g=ctx.createRadialGradient(CFG.W/2,CFG.H/2,CFG.H*.28,CFG.W/2,CFG.H/2,CFG.H*.9);
-  g.addColorStop(0,'transparent');
-  g.addColorStop(1, gs.floor===2 ? 'rgba(40,5,0,0.65)' : 'rgba(0,0,0,0.55)');
-  ctx.fillStyle=g; ctx.fillRect(0,0,CFG.W,CFG.H);
-
   // Freeze label
   if (gs.partyFreezeTimer > 0) {
     ctx.save(); ctx.font='7px "Press Start 2P"'; ctx.textAlign='center';
@@ -1743,4 +1752,3 @@ if (gs.drivingCar !== null) {
     ctx.restore();
   }
 }
-
