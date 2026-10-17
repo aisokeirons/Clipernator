@@ -881,8 +881,6 @@ if (gs.clippyIntroLines && !gs.clippyIntroDone) {
     y += (Math.random() - 0.5) * shake;
   }
 
-  const blinking = gs.invincible > 0 && Math.floor(gs.invincible / 5) % 2 === 0;
-
   if (gs.hasShakeFizzlePop) {
     const ratio = gs.sfpFull ? 1 : gs.sfpMeter / gs.sfpMax;
     ctx.save();
@@ -918,7 +916,6 @@ const movingLeft = Math.cos(playerMoveAngle) < 0;
     
 ctx.save();
 ctx.translate(x, y + bob);
-if (blinking) ctx.globalAlpha = 0.65;
 if (movingLeft) ctx.scale(-1, 1);
 ctx.drawImage(
   sourceImg,
@@ -934,7 +931,6 @@ ctx.restore();
     ctx.translate(gx, gy);
     ctx.rotate(gunAngle);
     if (aimingLeft) ctx.scale(1, -1);
-    if (blinking) ctx.globalAlpha = 0.65;
     ctx.drawImage(
   shotgunImg,
   0, 0, 1536, 1024,      // use full image, no crop
@@ -1121,9 +1117,9 @@ function draw() {
   if (gs.floor === 2) {
     ctx.fillStyle = 'rgba(25,8,0,1)';
     ctx.fillRect(0, 0, worldW, worldH);
-    ctx.strokeStyle = 'rgba(255,80,0,0.045)'; ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,80,0,0.09)'; ctx.lineWidth = 1;
   } else {
-    ctx.strokeStyle = 'rgba(0,255,100,0.035)'; ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(0,255,100,0.09)'; ctx.lineWidth = 1;
   }
   for(let x=0; x<worldW; x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,worldH); ctx.stroke(); }
   for(let y=0; y<worldH; y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(worldW,y); ctx.stroke(); }
@@ -1317,6 +1313,7 @@ if (b.isArcBall) {
         ctx.fillStyle = bColor; ctx.shadowColor = bGlow; ctx.shadowBlur = 14 * bScale;
         ctx.beginPath(); ctx.arc(0, 0, bR, 0, Math.PI*2); ctx.fill();
       }
+      ctx.restore();
       ctx.restore();
       continue; // skip default bullet drawing
     }
