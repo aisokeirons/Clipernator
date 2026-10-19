@@ -50,6 +50,12 @@ MINI_CLOWN_SPEED: 3.8,
   MELEE_DAMAGE: 4,
   GLOW_COOLDOWN: 45,
   MELEE_ACTIVE_FRAMES: 8,  // how many frames the hitbox is live
+  CHIPPY_SPIN_COLS: 5,
+  CHIPPY_SPIN_ROWS: 5,
+  CHIPPY_FRAME_SIZE: 256,
+  CHIPPY_RISE_FRAMES: 72,
+  CHIPPY_SPIN_FRAMES: 300,
+  CHIPPY_LANDING_FRAMES: 120,
 };
 
 let worldW = CFG.W;
@@ -139,6 +145,9 @@ const clownNoseImg = new Image();
 clownNoseImg.src = '/Clipernator/sprites/items/clownish/clownNose.png'; // adjust path to your sprite
 const clownWaveImg = new Image();
 clownWaveImg.src = '/Clipernator/sprites/items/clownish/clownWave.png'; // adjust path
+
+const chippySpinSheet = new Image();
+chippySpinSheet.src = '/Clipernator/sprites/objects/Chippy/ChippySpin.png';
 
 // At the top of draw.js, add this with the other image loaders (near playerImg/shotgunImg)
 

@@ -17,6 +17,57 @@ function resetShadow() {
   ctx.shadowColor = 'transparent';
 }
 
+function drawChippyMachine(pos, machine) {
+  if (!chippySpinSheet.complete || chippySpinSheet.naturalWidth === 0) return;
+
+  const frameSize = CFG.CHIPPY_FRAME_SIZE;
+  const frame = machine.phase === 'spinning' ? machine.spinFrame : 0;
+  const col = frame % CFG.CHIPPY_SPIN_COLS;
+  const row = Math.floor(frame / CFG.CHIPPY_SPIN_COLS);
+  const riseProgress = machine.phase === 'spinning'
+    ? Math.min(1, machine.elapsed / CFG.CHIPPY_RISE_FRAMES)
+    : 1;
+  const landingProgress = machine.phase === 'landing'
+    ? Math.min(1, machine.elapsed / CFG.CHIPPY_LANDING_FRAMES)
+    : 1;
+  const settle = Math.sin(landingProgress * Math.PI * 3 + Math.PI / 2)
+    * Math.exp(-5 * landingProgress);
+  const scaleX = machine.phase === 'landing' ? 1 + settle * 0.1 : 1;
+  const scaleY = (machine.phase === 'spinning' ? Math.max(0.08, riseProgress) : 1)
+    * (machine.phase === 'landing' ? 1 - settle * 0.1 : 1);
+  const whiteAlpha = machine.phase === 'landing' ? 1 - landingProgress : 0;
+  const size = 128;
+  const groundY = pos.y;
+
+  ctx.save();
+  ctx.globalAlpha = 0.2 + riseProgress * 0.18;
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.ellipse(pos.x, groundY + 2, 28 * riseProgress, 8 * riseProgress, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(pos.x, groundY - riseProgress * 18);
+  ctx.scale(scaleX, scaleY);
+  ctx.drawImage(
+    chippySpinSheet,
+    col * frameSize, row * frameSize, frameSize, frameSize,
+    -size / 2, -size, size, size
+  );
+  if (whiteAlpha > 0) {
+    ctx.globalAlpha = whiteAlpha;
+    ctx.filter = 'brightness(0) invert(1)';
+    ctx.drawImage(
+      chippySpinSheet,
+      col * frameSize, row * frameSize, frameSize, frameSize,
+      -size / 2, -size, size, size
+    );
+    ctx.filter = 'none';
+  }
+  ctx.restore();
+}
+
 function _drawUtensilShape(ctx, type, color, scale = 1) {
   ctx.strokeStyle = color;
   ctx.fillStyle   = color; 
@@ -1324,6 +1375,11 @@ if (tearSrc.complete && tearSrc.naturalWidth > 0) {
   ctx.restore();
 }
     ctx.restore();
+  }
+
+  // Chippy playtest spawn
+  for (const id of ECS.query('chippyMachine', 'pos')) {
+    drawChippyMachine(ECS.get(id, 'pos'), ECS.get(id, 'chippyMachine'));
   }
 
   // Enemies

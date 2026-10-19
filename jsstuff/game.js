@@ -218,6 +218,10 @@ clippyPickupTimer: 0,
   ECS.add(pId, 'vel',    { vx: 0, vy: 0 });
   gs.playerId = pId;
 
+  const chippyId = ECS.createEntity();
+  ECS.add(chippyId, 'chippyMachine', { phase: 'spinning', elapsed: 0, spinFrame: 0 });
+  ECS.add(chippyId, 'pos', { x: worldW / 2 - 115, y: worldH / 2 + 20 });
+
  //Apply difficulty chosen in intro
   if (typeof INTRO !== 'undefined') {
     INTRO.applyDifficultyToGs(gs);

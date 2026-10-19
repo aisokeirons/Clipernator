@@ -1706,6 +1706,30 @@ function sysSpawner() {
   if (gs.spawnTimer>=gs.spawnInterval){gs.spawnTimer=0;spawnEnemy();}
 }
 
+function sysChippyMachine() {
+  for (const id of ECS.query('chippyMachine')) {
+    const machine = ECS.get(id, 'chippyMachine');
+    if (machine.phase === 'spinning') {
+      machine.elapsed++;
+      const progress = Math.min(1, machine.elapsed / CFG.CHIPPY_SPIN_FRAMES);
+      machine.spinFrame = Math.floor(
+        CFG.CHIPPY_SPIN_FRAMES / 2 * (2 * progress - progress * progress)
+      ) % (CFG.CHIPPY_SPIN_COLS * CFG.CHIPPY_SPIN_ROWS);
+      if (machine.elapsed >= CFG.CHIPPY_SPIN_FRAMES) {
+        machine.phase = 'landing';
+        machine.elapsed = 0;
+        machine.spinFrame = 0;
+      }
+    } else if (machine.phase === 'landing') {
+      machine.elapsed++;
+      if (machine.elapsed >= CFG.CHIPPY_LANDING_FRAMES) {
+        machine.phase = 'idle';
+        machine.elapsed = CFG.CHIPPY_LANDING_FRAMES;
+      }
+    }
+  }
+}
+
 function update() {
   if (Number.isFinite(mouse.screenX) && typeof getScreenShakeOffset === 'function') {
     const shake = getScreenShakeOffset();
@@ -1715,7 +1739,7 @@ function update() {
   sysPlayerMovement(); sysAI(); sysBullets(); sysBulletEnemyCollision();
   sysDashCollision(); sysEnemyPlayerCollision(); sysConfusedEnemyCollision();  sysEnemyBullets();
   sysFieldItemPickup(); sysPopcorn();  sysRagingRings(); sysMirrorMaze(); 
-  sysOobCleanup(); sysTimers(); sysSpawner(); 
+  sysOobCleanup(); sysTimers(); sysSpawner(); sysChippyMachine();
   tickMeleeWindow(); 
 }
 
