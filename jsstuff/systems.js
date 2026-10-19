@@ -1460,12 +1460,39 @@ function sysChipPickup() {
   const ppos = ECS.get(gs.playerId, 'pos');
   for (let i = gs.chipDrops.length - 1; i >= 0; i--) {
     const chip = gs.chipDrops[i];
-    if (Math.hypot(ppos.x - chip.x, ppos.y - chip.y) >= CFG.CHIP_PICKUP_RANGE) continue;
-    gs.chipDrops.splice(i, 1);
-    gs.chips++;
-    spawnParticles(chip.x, chip.y, '#ffcc44', 8);
-    showMsg('+1 CHIP');
-    updateHUD();
+    const dx = ppos.x - chip.x, dy = ppos.y - chip.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance <= CFG.CHIP_MAGNET_RANGE) chip.magnetized = true;
+
+    if (chip.magnetized && distance > 0) {
+      const acceleration = CFG.CHIP_MAGNET_ACCEL * (1 + (1 - Math.min(distance, CFG.CHIP_MAGNET_RANGE) / CFG.CHIP_MAGNET_RANGE));
+      chip.vx = (chip.vx || 0) + dx / distance * acceleration;
+      chip.vy = (chip.vy || 0) + dy / distance * acceleration;
+      const speed = Math.hypot(chip.vx, chip.vy);
+      if (speed > CFG.CHIP_MAX_SPEED) {
+        chip.vx = chip.vx / speed * CFG.CHIP_MAX_SPEED;
+        chip.vy = chip.vy / speed * CFG.CHIP_MAX_SPEED;
+      }
+      chip.x += chip.vx;
+      chip.y += chip.vy;
+      chip.trail = chip.trail || [];
+      chip.trail.push({ x: chip.x, y: chip.y });
+      if (chip.trail.length > CFG.CHIP_TRAIL_LENGTH) chip.trail.shift();
+    }
+
+    if (Math.hypot(ppos.x - chip.x, ppos.y - chip.y) <= CFG.CHIP_PICKUP_RANGE) {
+      gs.chipDrops.splice(i, 1);
+      if (chip.golden) {
+        gs.goldenChips++;
+        spawnParticles(chip.x, chip.y, '#ffe45c', 12);
+        showMsg('+1 GOLDEN CHIP');
+      } else {
+        gs.chips++;
+        spawnParticles(chip.x, chip.y, '#ffcc44', 8);
+        showMsg('+1 CHIP');
+      }
+      updateHUD();
+    }
   }
 }
 

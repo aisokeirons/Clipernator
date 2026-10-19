@@ -1190,23 +1190,44 @@ function draw() {
 
   // Enemy chip drops
   for (const chip of gs.chipDrops) {
+    const image = chip.golden ? goldenChipImg : chipImg;
+    const tint = chip.golden ? '#ffe45c' : '#dce0eb';
+    const glow = chip.golden ? '#ffd52a' : '#b6c8ff';
+    if (chip.magnetized && chip.trail && chip.trail.length > 1) {
+      for (let i = 1; i < chip.trail.length; i++) {
+        const from = chip.trail[i - 1], to = chip.trail[i];
+        ctx.save();
+        ctx.globalAlpha = (i / chip.trail.length) * 0.38;
+        ctx.strokeStyle = tint;
+        ctx.shadowColor = glow;
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 2 + 3 * i / chip.trail.length;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
     ctx.save();
     ctx.translate(chip.x, chip.y);
-    ctx.fillStyle = '#ffcc44';
-    ctx.strokeStyle = '#fff0a0';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = '#ffaa22';
-    ctx.shadowBlur = 10;
-    ctx.beginPath();
-    ctx.arc(0, 0, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#704400';
-    ctx.font = 'bold 10px "MS Sans Serif", Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('C', 0, 0);
+    const glowPulse = chip.magnetized ? 13 + Math.sin(Date.now() / 70) * 3 : 0;
+    if (chip.magnetized) {
+      ctx.globalAlpha = 0.2 + (glowPulse / 100);
+      ctx.fillStyle = glow;
+      ctx.shadowColor = glow;
+      ctx.shadowBlur = 22;
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+    if (image.complete && image.naturalWidth > 0) {
+      ctx.shadowColor = chip.magnetized ? glow : 'transparent';
+      ctx.shadowBlur = glowPulse;
+      ctx.drawImage(image, -13, -13, 26, 26);
+    }
     ctx.restore();
   }
 

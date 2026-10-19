@@ -58,7 +58,11 @@ MINI_CLOWN_SPEED: 3.8,
   CHIPPY_SPIN_FRAMES: 300,
   CHIPPY_LANDING_FRAMES: 120,
   CHIP_DROP_CHANCE: 0.1,
-  CHIP_PICKUP_RANGE: 30,
+  CHIP_MAGNET_RANGE: 130,
+  CHIP_PICKUP_RANGE: 24,
+  CHIP_MAGNET_ACCEL: 0.22,
+  CHIP_MAX_SPEED: 8,
+  CHIP_TRAIL_LENGTH: 9,
   GOLDEN_CHIP_WAVE_STREAK: 5,
 };
 
@@ -152,6 +156,12 @@ clownWaveImg.src = '/Clipernator/sprites/items/clownish/clownWave.png'; // adjus
 
 const chippySpinSheet = new Image();
 chippySpinSheet.src = '/Clipernator/sprites/objects/Chippy/ChippySpin.png';
+
+const chipImg = new Image();
+chipImg.src = '/Clipernator/sprites/objects/Chips/Chip.png';
+
+const goldenChipImg = new Image();
+goldenChipImg.src = '/Clipernator/sprites/objects/Chips/GoldenChip.png';
 
 // At the top of draw.js, add this with the other image loaders (near playerImg/shotgunImg)
 
