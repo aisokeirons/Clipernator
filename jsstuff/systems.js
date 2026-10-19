@@ -1712,9 +1712,10 @@ function sysChippyMachine() {
     if (machine.phase === 'spinning') {
       machine.elapsed++;
       const progress = Math.min(1, machine.elapsed / CFG.CHIPPY_SPIN_FRAMES);
+      const spinSteps = CFG.CHIPPY_SPIN_FRAME_COUNT * 12;
       machine.spinFrame = Math.floor(
-        CFG.CHIPPY_SPIN_FRAMES / 2 * (2 * progress - progress * progress)
-      ) % (CFG.CHIPPY_SPIN_COLS * CFG.CHIPPY_SPIN_ROWS);
+        spinSteps * (2 * progress - progress * progress)
+      ) % CFG.CHIPPY_SPIN_FRAME_COUNT;
       if (machine.elapsed >= CFG.CHIPPY_SPIN_FRAMES) {
         machine.phase = 'landing';
         machine.elapsed = 0;
