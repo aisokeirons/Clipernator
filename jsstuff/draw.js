@@ -1188,6 +1188,28 @@ function draw() {
   // Field items
   for(const fi of gs.fieldItems) ITEM_DEFS[fi.id].draw(fi);
 
+  // Enemy chip drops
+  for (const chip of gs.chipDrops) {
+    ctx.save();
+    ctx.translate(chip.x, chip.y);
+    ctx.fillStyle = '#ffcc44';
+    ctx.strokeStyle = '#fff0a0';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#ffaa22';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(0, 0, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#704400';
+    ctx.font = 'bold 10px "MS Sans Serif", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('C', 0, 0);
+    ctx.restore();
+  }
+
   // Raging ring bullets
 if (gs.hasRagingRings && gs.ragingRingBullets) {
   for (const rb of gs.ragingRingBullets) {

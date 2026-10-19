@@ -131,6 +131,7 @@ function initGameState() {
 
   gs = {
     score: 0, wave: 1,
+    chips: 0, goldenChips: 0, chipDrops: [], flawlessWaveStreak: 0,
     health: CFG.MAX_HEALTH, maxHealth: CFG.MAX_HEALTH,
     ammo: CFG.MAX_AMMO, maxAmmo: CFG.MAX_AMMO,
     reloading: false, reloadTimer: 0,
@@ -168,7 +169,7 @@ clippyPickupTimer: 0,
     hasShakeFizzlePop: false,
     sfpMeter: 0, sfpMax: 600, sfpFull: false,
     hasFlawlessBaking: false,
-    flawlessThisWave: false,
+    flawlessThisWave: true,
     hasCursedCandles: false,
     candlesLit: 0, candleHpTimer: 0, candleRelightDelay: 0,
     hasRagingRings: false,
@@ -234,7 +235,6 @@ clippyPickupTimer: 0,
 // HUD / MESSAGES
 // ================================================================
 function updateHUD() {
-  document.getElementById('score-val').textContent = gs.score;
   document.getElementById('health-bar').style.width =
     Math.max(0, (gs.health / gs.maxHealth) * 100) + '%';
   document.getElementById('health-bar').style.background =
@@ -242,12 +242,8 @@ function updateHUD() {
   document.getElementById('health-num').textContent = Math.max(0, gs.health);
   document.getElementById('ammo-val').textContent = gs.ammo + '/' + gs.maxAmmo;
   document.getElementById('wave-val').textContent = gs.wave;
-
-  const ticketHud = document.getElementById('ticket-hud');
-  if (ticketHud) {
-    ticketHud.style.display = gs.floor === 2 ? 'flex' : 'none';
-    document.getElementById('ticket-val').textContent = gs.tickets || 0;
-  }
+  document.getElementById('chips-val').textContent = gs.chips;
+  document.getElementById('golden-chips-val').textContent = gs.goldenChips;
 }
 
 function showMsg(txt) {
@@ -520,7 +516,7 @@ function gameOver() {
   const h1 = overlay.querySelector('h1');
   const sub = overlay.querySelector('.sub');
   const btn = document.getElementById('startBtn');
-  if (h1) { h1.innerHTML = `GAME OVER<br>SCORE: ${gs.score}`; h1.style.color = '#ff3333'; h1.style.textShadow = '0 0 20px #ff3333'; }
+  if (h1) { h1.innerHTML = 'GAME OVER'; h1.style.color = '#ff3333'; h1.style.textShadow = '0 0 20px #ff3333'; }
   if (sub) sub.textContent = `WAVE ${gs.wave} · PRESS PLAY TO RETRY`;
   if (btn) btn.textContent = 'PLAY AGAIN';
 }
@@ -557,7 +553,6 @@ function renderPauseMenu() {
   let lines = [
     `HP .............. ${Math.max(0,gs.health)} / ${gs.maxHealth}`,
     `Wave ............ ${gs.wave}`,
-    `Score ........... ${gs.score}`,
     `Damage .......... ${dmgLabel}`,
     `Speed ........... ${speedVal}`,
     `Clip Size ....... ${gs.maxAmmo}`,

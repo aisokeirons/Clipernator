@@ -100,7 +100,7 @@ function detonateExplosiveBullet(b, hitX, hitY) {
     if (epos) spawnParticles(epos.x, epos.y, '#ff2222', 18);
     ECS.destroyEntity(eid);
     gs.score += Math.round(15*gs.wave); gs.waveKills++;
-    tryDropTicket(); gs.health = Math.min(gs.maxHealth, gs.health+CFG.HEALTH_REGEN); updateHUD();
+    tryDropTicket(epos.x, epos.y); gs.health = Math.min(gs.maxHealth, gs.health+CFG.HEALTH_REGEN); updateHUD();
     if (killedType === 'cakeBoss' || killedType === 'boss2') handleBossDeath(eid);
   }
   if (toKill.length > 0) checkWave();
@@ -125,7 +125,7 @@ function triggerSFPHit() {
           spawnParticles(epos.x, epos.y, '#ff2222', 18);
           ECS.destroyEntity(id);
           gs.score += Math.round(10*gs.wave); gs.waveKills++;
-          tryDropTicket(); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD();
+          tryDropTicket(epos.x, epos.y); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD();
         }
       }
     }
@@ -289,7 +289,7 @@ if (gs.hasRagingRings && gs.ragingRingBullets) {
         spawnParticles(epos.x, epos.y, '#ff2222', 18);
         ECS.destroyEntity(id);
         gs.score += Math.round(15 * gs.wave); gs.waveKills++;
-        tryDropTicket(); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
+        tryDropTicket(epos.x, epos.y); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
         updateHUD(); checkWave();
       }
   }
@@ -360,7 +360,7 @@ function sysRagingRings() {
           spawnParticles(epos.x, epos.y, '#ff2222', 18);
           ECS.destroyEntity(eid);
           gs.score += Math.round(10 * gs.wave); gs.waveKills++;
-          tryDropTicket(); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
+          tryDropTicket(epos.x, epos.y); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
           updateHUD(); checkWave();
         }
         break;
@@ -603,7 +603,7 @@ function _clownCarExplode(id, pos, gs, playerDriving) {
     spawnParticles(x, y, '#ff2222', 14);
     ECS.destroyEntity(eid);
     gs.score += Math.round(10 * gs.wave); gs.waveKills++;
-    tryDropTicket(); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
+    tryDropTicket(x, y); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
     updateHUD();
   }
 
@@ -619,6 +619,7 @@ function _clownCarExplode(id, pos, gs, playerDriving) {
   }
 
   if (ECS.has(id, 'pos')) {
+    tryDropTicket(pos.x, pos.y);
     ECS.destroyEntity(id);
     gs.waveKills++;
   }
@@ -741,7 +742,7 @@ const confusedIds = [...ECS.query('enemy', 'pos', 'hp', 'ai')].filter(id => {
     ECS.destroyEntity(id);
     gs.score += Math.round(10 * gs.wave);
     gs.waveKills++;
-    tryDropTicket();
+    tryDropTicket(x, y);
     gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
     updateHUD();
   }
@@ -896,7 +897,7 @@ if (ai2&&ai2.reflectedByGlowstick&&ECS.has(id,'enemy')&&ECS.get(id,'enemy').type
         spawnParticles(pos.x,pos.y,'#ff4400',30); gs.shakeX=22;gs.shakeY=22;
         showMsg('CANNONBALL EXPLODES!!!');
         ECS.destroyEntity(id); gs.score+=Math.round(25*gs.wave); gs.waveKills++;
-        tryDropTicket(); updateHUD(); checkWave(); continue;
+        tryDropTicket(pos.x, pos.y); updateHUD(); checkWave(); continue;
       }
     }
 
@@ -938,7 +939,7 @@ if (ai2&&ai2.reflectedByGlowstick&&ECS.has(id,'enemy')&&ECS.get(id,'enemy').type
       spawnParticles(nearEnemy.pos.x, nearEnemy.pos.y, '#ff2222', 14);
       ECS.destroyEntity(nearEnemy.id);
       gs.score += Math.round(10 * gs.wave); gs.waveKills++;
-      tryDropTicket(); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
+      tryDropTicket(nearEnemy.pos.x, nearEnemy.pos.y); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
       updateHUD(); setTimeout(() => checkWave(), 0);
     }
   }
@@ -999,7 +1000,7 @@ if (ai2&&ai2.reflectedByGlowstick&&ECS.has(id,'enemy')&&ECS.get(id,'enemy').type
           if (ehp.hp<=0) {
             const epos=ECS.get(id,'pos'); if (epos) spawnParticles(epos.x,epos.y,'#ff2222',10);
             ECS.destroyEntity(id); gs.score+=Math.round(5*gs.wave); gs.waveKills++;
-            tryDropTicket(); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
+            tryDropTicket(epos?.x, epos?.y); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
           }
         }
       }
@@ -1110,7 +1111,7 @@ if (bbType === 'clownCar') {
               
               ECS.destroyEntity(id);
               gs.score += Math.round(10*gs.wave*(dmg>1?1.6:1)); gs.waveKills++;
-              tryDropTicket(); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN);
+              tryDropTicket(epos.x, epos.y); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN);
               updateHUD(); checkWave();
             }
           }
@@ -1169,7 +1170,7 @@ if (gs.hasMirrorMaze) {
   spawnParticles(epos.x, epos.y, '#ccddff', 10);
 }
           gs.score+=Math.round(10*gs.wave*(dmg>1?1.6:1)); gs.waveKills++;
-          tryDropTicket(); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
+          tryDropTicket(epos.x, epos.y); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
         }
         break;
       }
@@ -1187,7 +1188,7 @@ function sysDashCollision() {
     if (!ai.dashHit&&Math.hypot(ppos.x-epos.x,ppos.y-epos.y)<32) {
       ehp.hp-=baseBulletDamage()*2*speedScale; ehp.hitFlash=14; ai.dashHit=true;
       spawnParticles(epos.x,epos.y,'#ffaa00',10);
-      if (ehp.hp<=0){spawnParticles(epos.x,epos.y,'#ff2222',16);ECS.destroyEntity(id);gs.score+=10*gs.wave;gs.waveKills++;tryDropTicket();gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN);updateHUD();checkWave();}
+      if (ehp.hp<=0){spawnParticles(epos.x,epos.y,'#ff2222',16);ECS.destroyEntity(id);gs.score+=10*gs.wave;gs.waveKills++;tryDropTicket(epos.x,epos.y);gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN);updateHUD();checkWave();}
     }
   }
 }
@@ -1259,7 +1260,7 @@ if (eaiCheck && eaiCheck.criticalMass && gs.invincible <= 0) {
             spawnParticles(epos.x,epos.y,'#ff2222',18);
             ECS.destroyEntity(id);
             gs.score+=Math.round(12*gs.wave); gs.waveKills++;
-            tryDropTicket(); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
+            tryDropTicket(epos.x, epos.y); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
             if (gs.health<=0){gameOver();return;}
             return;
           }
@@ -1394,7 +1395,7 @@ gs.health -= Math.round(18 * (eb.rmDmgMult || 1) * scale * (gs._enemyDmgMult || 
           if (ehp2.hp<=0) {
             spawnParticles(epos2.x,epos2.y,'#ff2222',14); ECS.destroyEntity(eid);
             gs.score+=Math.round(8*gs.wave); gs.waveKills++;
-            tryDropTicket(); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
+            tryDropTicket(epos2.x, epos2.y); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
           }
           return false;
         }
@@ -1452,6 +1453,19 @@ function sysFieldItemPickup() {
       const permanent=new Set(['bouncy','dash','doubledCake','tripleCake','quadCake','shakeFizzlePop','flawlessBaking','cursedCandles','glowsticks','paperCuts','extraClips','clownishUpgrade','popcornBowl']);
       if (!permanent.has(fi.id)) setTimeout(()=>{if(gameRunning)trySpawnFieldItems();},def.spawnCooldown);
     }
+  }
+}
+
+function sysChipPickup() {
+  const ppos = ECS.get(gs.playerId, 'pos');
+  for (let i = gs.chipDrops.length - 1; i >= 0; i--) {
+    const chip = gs.chipDrops[i];
+    if (Math.hypot(ppos.x - chip.x, ppos.y - chip.y) >= CFG.CHIP_PICKUP_RANGE) continue;
+    gs.chipDrops.splice(i, 1);
+    gs.chips++;
+    spawnParticles(chip.x, chip.y, '#ffcc44', 8);
+    showMsg('+1 CHIP');
+    updateHUD();
   }
 }
 
@@ -1691,6 +1705,7 @@ function sysOobCleanup() {
     if (oob) {
       ai._oobTimer = (ai._oobTimer || 0) + 1;
       if (ai._oobTimer >= 300) { // 5 seconds at 60fps
+        tryDropTicket(pos.x, pos.y);
         ECS.destroyEntity(id);
         gs.waveKills++;
         checkWave();
@@ -1739,7 +1754,7 @@ function update() {
   }
   sysPlayerMovement(); sysAI(); sysBullets(); sysBulletEnemyCollision();
   sysDashCollision(); sysEnemyPlayerCollision(); sysConfusedEnemyCollision();  sysEnemyBullets();
-  sysFieldItemPickup(); sysPopcorn();  sysRagingRings(); sysMirrorMaze(); 
+  sysFieldItemPickup(); sysChipPickup(); sysPopcorn();  sysRagingRings(); sysMirrorMaze();
   sysOobCleanup(); sysTimers(); sysSpawner(); sysChippyMachine();
   tickMeleeWindow(); 
 }
@@ -1900,6 +1915,20 @@ function checkWave() {
   const total = ECS.query('enemy').size;
   if (gs.waveKills + total < gs.waveEnemiesLeft || total > 0) return;
   const completed = gs.wave;
+  if (gs.flawlessThisWave) {
+    gs.flawlessWaveStreak++;
+    if (gs.flawlessWaveStreak >= CFG.GOLDEN_CHIP_WAVE_STREAK) {
+      gs.goldenChips++;
+      gs.flawlessWaveStreak = 0;
+      const ppos = ECS.get(gs.playerId, 'pos');
+      spawnPartyParticles(ppos.x, ppos.y);
+      setTimeout(() => showMsg('GOLDEN CHIP EARNED — 5 FLAWLESS WAVES!'), 0);
+      updateHUD();
+    }
+  } else {
+    gs.flawlessWaveStreak = 0;
+  }
+
     if (gs.hasFlawlessBaking && gs.flawlessThisWave) {
       gs.maxAmmo += 2;
       if (gs.hasExtraClips) gs.maxAmmo = Math.ceil(gs.maxAmmo * 1.25);
@@ -2002,7 +2031,10 @@ const GENERAL_ITEM_IDS=['paperCuts','extraClips'];
 
 
 
-function tryDropTicket() {
+function tryDropTicket(x, y) {
+  if (Number.isFinite(x) && Number.isFinite(y) && Math.random() < CFG.CHIP_DROP_CHANCE) {
+    gs.chipDrops.push({ x, y });
+  }
   if (gs.floor!==2) return;
   if (Math.random()<0.5&&gs.tickets<10){gs.tickets++;updateHUD();}
 }

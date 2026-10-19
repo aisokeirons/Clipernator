@@ -465,7 +465,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
           if (ECS.has(eid, 'pos')) {
             spawnParticles(x, y, '#ff2222', 14); ECS.destroyEntity(eid);
             gs.score += Math.round(10 * gs.wave); gs.waveKills++;
-            tryDropTicket(); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
+            tryDropTicket(x, y); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
             updateHUD(); setTimeout(() => checkWave(), 0);
           }
         }
@@ -1006,12 +1006,13 @@ function _giftBoxExplode(id, pos, gs) {
     ECS.destroyEntity(eid);
     gs.score += Math.round(10 * gs.wave);
     gs.waveKills++;
-    tryDropTicket();
+    tryDropTicket(x, y);
     gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
   }
 
   // Destroy the gift box itself
   if (ECS.has(id, 'pos')) {
+    tryDropTicket(pos.x, pos.y);
     ECS.destroyEntity(id);
     gs.waveKills++;
   }
