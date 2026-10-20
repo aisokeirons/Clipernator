@@ -53,10 +53,6 @@ MINI_CLOWN_SPEED: 3.8,
   CHIPPY_SPIN_COLS: 5,
   CHIPPY_SPIN_ROWS: 3,
   CHIPPY_SPIN_FRAME_COUNT: 12,
-  CHIPPY_CONFIRM_COLS: 5,
-  CHIPPY_CONFIRM_ROWS: 4,
-  CHIPPY_CONFIRM_FRAME_COUNT: 20,
-  CHIPPY_CONFIRM_FRAME_DURATION: 4,
   CHIPPY_PRODUCE_COLS: 5,
   CHIPPY_PRODUCE_ROWS: 5,
   CHIPPY_PRODUCE_FRAME_COUNT: 25,
@@ -66,7 +62,6 @@ MINI_CLOWN_SPEED: 3.8,
   CHIPPY_SPIN_FRAMES: 300,
   CHIPPY_LANDING_FRAMES: 120,
   CHIPPY_TRANSITION_FRAMES: 24,
-  CHIPPY_CONFIRM_WAIT_FRAMES: 120,
   CHIPPY_INTERACT_RANGE: 110,
   CHIP_DROP_CHANCE: 0.1,
   CHIP_MAGNET_RANGE: 130,
@@ -167,9 +162,6 @@ clownWaveImg.src = '/Clipernator/sprites/items/clownish/clownWave.png'; // adjus
 
 const chippySpinSheet = new Image();
 chippySpinSheet.src = '/Clipernator/sprites/objects/Chippy/ChippySpin.png';
-
-const chippyConfirmSheet = new Image();
-chippyConfirmSheet.src = '/Clipernator/sprites/objects/Chippy/ChippyConfirm.png';
 
 const chippyProduceSheet = new Image();
 chippyProduceSheet.src = '/Clipernator/sprites/objects/Chippy/ChippyProduce.png';

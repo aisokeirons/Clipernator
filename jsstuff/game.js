@@ -887,11 +887,8 @@ function handleChippyClick(worldX, worldY) {
     }
 
     if (machine.phase === 'idle') {
-      machine.phase = 'confirm';
-      machine.elapsed = 0;
-      machine.frame = 0;
-      machine.sheet = 'confirm';
-      showMsg('CHIPPY CONFIRMED — GOLDEN CHIP INCOMING!');
+      beginChippyTransition(machine, 'produce', 'produce', 0);
+      showMsg('CHIPPY IS MAKING A GOLDEN CHIP!');
     } else if (machine.phase === 'produceReady') {
       if (gs.maxHealth <= 20) {
         showMsg('CHIPPY NEEDS MORE THAN 20 MAX HP!');

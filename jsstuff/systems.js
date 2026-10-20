@@ -1798,22 +1798,6 @@ function sysChippyMachine() {
           machine.restFrame = target.frame;
         }
       }
-    } else if (machine.phase === 'confirm') {
-      machine.elapsed++;
-      machine.frame = Math.min(
-        CFG.CHIPPY_CONFIRM_FRAME_COUNT - 1,
-        Math.floor(machine.elapsed / CFG.CHIPPY_CONFIRM_FRAME_DURATION)
-      );
-      if (machine.elapsed >= CFG.CHIPPY_CONFIRM_FRAME_COUNT * CFG.CHIPPY_CONFIRM_FRAME_DURATION) {
-        machine.phase = 'confirmWait';
-        machine.elapsed = 0;
-        machine.frame = CFG.CHIPPY_CONFIRM_FRAME_COUNT - 1;
-      }
-    } else if (machine.phase === 'confirmWait') {
-      machine.elapsed++;
-      if (machine.elapsed >= CFG.CHIPPY_CONFIRM_WAIT_FRAMES) {
-        beginChippyTransition(machine, 'produce', 'produce', 0);
-      }
     } else if (machine.phase === 'produce') {
       const frameIndex = Math.floor(machine.elapsed / CFG.CHIPPY_PRODUCE_FRAME_DURATION);
       if (frameIndex < CFG.CHIPPY_PRODUCE_FRAME_COUNT) {

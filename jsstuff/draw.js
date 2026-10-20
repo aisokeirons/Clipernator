@@ -20,7 +20,6 @@ function resetShadow() {
 function drawChippyMachine(pos, machine) {
   const sheets = {
     spin: { image: chippySpinSheet, cols: CFG.CHIPPY_SPIN_COLS },
-    confirm: { image: chippyConfirmSheet, cols: CFG.CHIPPY_CONFIRM_COLS },
     produce: { image: chippyProduceSheet, cols: CFG.CHIPPY_PRODUCE_COLS },
   };
   const currentSheet = sheets[machine.sheet || 'spin'];
