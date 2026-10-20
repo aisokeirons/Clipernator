@@ -893,6 +893,12 @@ function handleChippyClick(worldX, worldY) {
       machine.sheet = 'confirm';
       showMsg('CHIPPY CONFIRMED — GOLDEN CHIP INCOMING!');
     } else if (machine.phase === 'produceReady') {
+      if (gs.maxHealth <= 20) {
+        showMsg('CHIPPY NEEDS MORE THAN 20 MAX HP!');
+        return true;
+      }
+      gs.maxHealth -= 20;
+      gs.health = Math.min(gs.health, gs.maxHealth);
       gs.goldenChips++;
       updateHUD();
       spawnPartyParticles(pos.x, pos.y);

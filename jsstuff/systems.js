@@ -1815,14 +1815,12 @@ function sysChippyMachine() {
         beginChippyTransition(machine, 'produce', 'produce', 0);
       }
     } else if (machine.phase === 'produce') {
-      machine.elapsed++;
-      machine.frame = Math.min(
-        CFG.CHIPPY_PRODUCE_FRAME_COUNT - 1,
-        Math.floor(machine.elapsed / CFG.CHIPPY_PRODUCE_FRAME_DURATION)
-      );
-      if (machine.elapsed >= CFG.CHIPPY_PRODUCE_FRAME_COUNT * CFG.CHIPPY_PRODUCE_FRAME_DURATION) {
+      const frameIndex = Math.floor(machine.elapsed / CFG.CHIPPY_PRODUCE_FRAME_DURATION);
+      if (frameIndex < CFG.CHIPPY_PRODUCE_FRAME_COUNT) {
+        machine.frame = frameIndex;
+        machine.elapsed++;
+      } else {
         machine.phase = 'produceReady';
-        machine.elapsed = 0;
         machine.frame = CFG.CHIPPY_PRODUCE_FRAME_COUNT - 1;
       }
     }
