@@ -19,13 +19,14 @@ function resetShadow() {
 
 function drawChippyMachine(pos, machine) {
   const sheets = {
-    spin: { image: chippySpinSheet, cols: CFG.CHIPPY_SPIN_COLS },
-    produce: { image: chippyProduceSheet, cols: CFG.CHIPPY_PRODUCE_COLS },
+    spin: { image: chippySpinSheet, cols: CFG.CHIPPY_SPIN_COLS, rows: CFG.CHIPPY_SPIN_ROWS },
+    produce: { image: chippyProduceSheet, cols: CFG.CHIPPY_PRODUCE_COLS, rows: CFG.CHIPPY_PRODUCE_ROWS },
   };
   const currentSheet = sheets[machine.sheet || 'spin'];
   const image = currentSheet.image;
   if (!image.complete || image.naturalWidth === 0) return;
-  const frameSize = CFG.CHIPPY_FRAME_SIZE;
+  const frameWidth = image.naturalWidth / currentSheet.cols;
+  const frameHeight = image.naturalHeight / currentSheet.rows;
   const frame = machine.frame || 0;
   const col = frame % currentSheet.cols;
   const row = Math.floor(frame / currentSheet.cols);
@@ -41,7 +42,8 @@ function drawChippyMachine(pos, machine) {
   const scaleX = 1 - squash * 0.12;
   const scaleY = 1 + squash * 0.18;
   const whiteAlpha = machine.phase === 'transition' ? (1 - transitionProgress) * 0.9 : 0;
-  const size = 128;
+  const drawHeight = 128;
+  const drawWidth = drawHeight * frameWidth / frameHeight;
   const groundY = pos.y;
 
   ctx.save();
@@ -57,16 +59,16 @@ function drawChippyMachine(pos, machine) {
   ctx.scale(scaleX, scaleY);
   ctx.drawImage(
     image,
-    col * frameSize, row * frameSize, frameSize, frameSize,
-    -size / 2, -size, size, size
+    col * frameWidth, row * frameHeight, frameWidth, frameHeight,
+    -drawWidth / 2, -drawHeight, drawWidth, drawHeight
   );
   if (whiteAlpha > 0) {
     ctx.globalAlpha = whiteAlpha;
     ctx.filter = 'brightness(0) invert(1)';
     ctx.drawImage(
       image,
-      col * frameSize, row * frameSize, frameSize, frameSize,
-      -size / 2, -size, size, size
+      col * frameWidth, row * frameHeight, frameWidth, frameHeight,
+      -drawWidth / 2, -drawHeight, drawWidth, drawHeight
     );
     ctx.filter = 'none';
   }
