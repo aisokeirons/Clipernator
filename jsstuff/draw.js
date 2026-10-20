@@ -42,7 +42,7 @@ function drawChippyMachine(pos, machine) {
   const scaleX = 1 - squash * 0.12;
   const scaleY = 1 + squash * 0.18;
   const whiteAlpha = machine.phase === 'transition' ? (1 - transitionProgress) * 0.9 : 0;
-  const drawHeight = 128;
+  const drawHeight = CFG.CHIPPY_DRAW_HEIGHT;
   const drawWidth = drawHeight * frameWidth / frameHeight;
   const groundY = pos.y;
 

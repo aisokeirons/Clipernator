@@ -876,8 +876,16 @@ function handleChippyClick(worldX, worldY) {
       ? Math.min(1, machine.elapsed / CFG.CHIPPY_RISE_FRAMES)
       : 1;
     const spriteY = pos.y - riseProgress * 18;
-    const isOnMachine = Math.abs(worldX - pos.x) <= 64
-      && worldY >= spriteY - 128 && worldY <= spriteY;
+    const sheet = machine.sheet === 'produce' ? chippyProduceSheet : chippySpinSheet;
+    const columns = machine.sheet === 'produce' ? CFG.CHIPPY_PRODUCE_COLS : CFG.CHIPPY_SPIN_COLS;
+    const rows = machine.sheet === 'produce' ? CFG.CHIPPY_PRODUCE_ROWS : CFG.CHIPPY_SPIN_ROWS;
+    const frameAspect = sheet.naturalWidth > 0 && sheet.naturalHeight > 0
+      ? (sheet.naturalWidth / columns) / (sheet.naturalHeight / rows)
+      : 1;
+    const spriteHeight = CFG.CHIPPY_DRAW_HEIGHT;
+    const spriteWidth = spriteHeight * frameAspect;
+    const isOnMachine = Math.abs(worldX - pos.x) <= spriteWidth / 2
+      && worldY >= spriteY - spriteHeight && worldY <= spriteY;
     if (!isOnMachine) continue;
 
     const playerPos = ECS.get(gs.playerId, 'pos');
@@ -887,15 +895,26 @@ function handleChippyClick(worldX, worldY) {
     }
 
     if (machine.phase === 'idle') {
-      beginChippyTransition(machine, 'produce', 'produce', 0);
-      showMsg('CHIPPY IS MAKING A GOLDEN CHIP!');
-    } else if (machine.phase === 'produceReady') {
       if (gs.maxHealth <= 20) {
         showMsg('CHIPPY NEEDS MORE THAN 20 MAX HP!');
         return true;
       }
       gs.maxHealth -= 20;
       gs.health = Math.min(gs.health, gs.maxHealth);
+      beginChippyTransition(machine, 'produce', 'produce', 0);
+      updateHUD();
+      showMsg('CHIPPY IS MAKING A GOLDEN CHIP!');
+      if (Math.random() < 0.65) {
+        const reactions = [
+          'Ow! Twenty max HP? I hope that chip is worth it.',
+          'That was 20 max health. I am choosing not to think about it.',
+          'I felt that. Well, technically, I felt the health bar go down.',
+          'A golden chip for a piece of your maximum health. Seems fair. Probably.',
+        ];
+        gs.clippyPickupMsg = reactions[Math.floor(Math.random() * reactions.length)];
+        gs.clippyPickupTimer = 240;
+      }
+    } else if (machine.phase === 'produceReady') {
       gs.goldenChips++;
       updateHUD();
       spawnPartyParticles(pos.x, pos.y);
