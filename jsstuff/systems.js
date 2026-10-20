@@ -1748,26 +1748,82 @@ function sysSpawner() {
   if (gs.spawnTimer>=gs.spawnInterval){gs.spawnTimer=0;spawnEnemy();}
 }
 
+function beginChippyTransition(machine, nextPhase, nextSheet, nextFrame) {
+  machine.transitionTarget = { phase: nextPhase, sheet: nextSheet, frame: nextFrame };
+  machine.phase = 'transition';
+  machine.elapsed = 0;
+}
+
+function startChippySpin(machine, startFrame) {
+  machine.phase = 'spinning';
+  machine.sheet = 'spin';
+  machine.elapsed = 0;
+  machine.spinStartFrame = startFrame;
+  machine.targetFrame = Math.floor(Math.random() * CFG.CHIPPY_SPIN_FRAME_COUNT);
+  machine.frame = startFrame;
+}
+
 function sysChippyMachine() {
   for (const id of ECS.query('chippyMachine')) {
     const machine = ECS.get(id, 'chippyMachine');
     if (machine.phase === 'spinning') {
       machine.elapsed++;
       const progress = Math.min(1, machine.elapsed / CFG.CHIPPY_SPIN_FRAMES);
-      const spinSteps = CFG.CHIPPY_SPIN_FRAME_COUNT * 12;
-      machine.spinFrame = Math.floor(
-        spinSteps * (2 * progress - progress * progress)
+      const spinSteps = CFG.CHIPPY_SPIN_FRAME_COUNT * 12
+        + machine.targetFrame - machine.spinStartFrame;
+      machine.frame = (
+        machine.spinStartFrame
+        + Math.floor(spinSteps * (2 * progress - progress * progress))
       ) % CFG.CHIPPY_SPIN_FRAME_COUNT;
       if (machine.elapsed >= CFG.CHIPPY_SPIN_FRAMES) {
-        machine.phase = 'landing';
-        machine.elapsed = 0;
-        machine.spinFrame = 0;
+        machine.restFrame = machine.targetFrame;
+        machine.isInitialSpawn = false;
+        beginChippyTransition(machine, 'idle', 'spin', machine.restFrame);
       }
-    } else if (machine.phase === 'landing') {
+    } else if (machine.phase === 'transition') {
       machine.elapsed++;
-      if (machine.elapsed >= CFG.CHIPPY_LANDING_FRAMES) {
-        machine.phase = 'idle';
-        machine.elapsed = CFG.CHIPPY_LANDING_FRAMES;
+      if (machine.elapsed >= CFG.CHIPPY_TRANSITION_FRAMES) {
+        const target = machine.transitionTarget;
+        machine.phase = target.phase;
+        machine.sheet = target.sheet;
+        machine.frame = target.frame;
+        machine.elapsed = 0;
+        machine.transitionTarget = null;
+        if (target.phase === 'spinning') {
+          startChippySpin(machine, target.frame);
+        } else if (target.phase === 'produce') {
+          machine.sheet = 'produce';
+          machine.frame = 0;
+        } else if (target.phase === 'idle') {
+          machine.restFrame = target.frame;
+        }
+      }
+    } else if (machine.phase === 'confirm') {
+      machine.elapsed++;
+      machine.frame = Math.min(
+        CFG.CHIPPY_CONFIRM_FRAME_COUNT - 1,
+        Math.floor(machine.elapsed / CFG.CHIPPY_CONFIRM_FRAME_DURATION)
+      );
+      if (machine.elapsed >= CFG.CHIPPY_CONFIRM_FRAME_COUNT * CFG.CHIPPY_CONFIRM_FRAME_DURATION) {
+        machine.phase = 'confirmWait';
+        machine.elapsed = 0;
+        machine.frame = CFG.CHIPPY_CONFIRM_FRAME_COUNT - 1;
+      }
+    } else if (machine.phase === 'confirmWait') {
+      machine.elapsed++;
+      if (machine.elapsed >= CFG.CHIPPY_CONFIRM_WAIT_FRAMES) {
+        beginChippyTransition(machine, 'produce', 'produce', 0);
+      }
+    } else if (machine.phase === 'produce') {
+      machine.elapsed++;
+      machine.frame = Math.min(
+        CFG.CHIPPY_PRODUCE_FRAME_COUNT - 1,
+        Math.floor(machine.elapsed / CFG.CHIPPY_PRODUCE_FRAME_DURATION)
+      );
+      if (machine.elapsed >= CFG.CHIPPY_PRODUCE_FRAME_COUNT * CFG.CHIPPY_PRODUCE_FRAME_DURATION) {
+        machine.phase = 'produceReady';
+        machine.elapsed = 0;
+        machine.frame = CFG.CHIPPY_PRODUCE_FRAME_COUNT - 1;
       }
     }
   }

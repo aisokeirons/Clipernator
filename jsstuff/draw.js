@@ -18,24 +18,30 @@ function resetShadow() {
 }
 
 function drawChippyMachine(pos, machine) {
-  if (!chippySpinSheet.complete || chippySpinSheet.naturalWidth === 0) return;
-
+  const sheets = {
+    spin: { image: chippySpinSheet, cols: CFG.CHIPPY_SPIN_COLS },
+    confirm: { image: chippyConfirmSheet, cols: CFG.CHIPPY_CONFIRM_COLS },
+    produce: { image: chippyProduceSheet, cols: CFG.CHIPPY_PRODUCE_COLS },
+  };
+  const currentSheet = sheets[machine.sheet || 'spin'];
+  const image = currentSheet.image;
+  if (!image.complete || image.naturalWidth === 0) return;
   const frameSize = CFG.CHIPPY_FRAME_SIZE;
-  const frame = machine.phase === 'spinning' ? machine.spinFrame : 0;
-  const col = frame % CFG.CHIPPY_SPIN_COLS;
-  const row = Math.floor(frame / CFG.CHIPPY_SPIN_COLS);
-  const riseProgress = machine.phase === 'spinning'
+  const frame = machine.frame || 0;
+  const col = frame % currentSheet.cols;
+  const row = Math.floor(frame / currentSheet.cols);
+  const riseProgress = machine.phase === 'spinning' && machine.isInitialSpawn
     ? Math.min(1, machine.elapsed / CFG.CHIPPY_RISE_FRAMES)
     : 1;
-  const landingProgress = machine.phase === 'landing'
-    ? Math.min(1, machine.elapsed / CFG.CHIPPY_LANDING_FRAMES)
-    : 1;
-  const settle = Math.sin(landingProgress * Math.PI * 3 + Math.PI / 2)
-    * Math.exp(-5 * landingProgress);
-  const scaleX = machine.phase === 'landing' ? 1 + settle * 0.1 : 1;
-  const scaleY = (machine.phase === 'spinning' ? Math.max(0.08, riseProgress) : 1)
-    * (machine.phase === 'landing' ? 1 - settle * 0.1 : 1);
-  const whiteAlpha = machine.phase === 'landing' ? 1 - landingProgress : 0;
+  const transitionProgress = machine.phase === 'transition'
+    ? Math.min(1, machine.elapsed / CFG.CHIPPY_TRANSITION_FRAMES)
+    : 0;
+  const squash = machine.phase === 'transition'
+    ? Math.sin(transitionProgress * Math.PI * 2) * Math.exp(-2.5 * transitionProgress)
+    : 0;
+  const scaleX = 1 - squash * 0.12;
+  const scaleY = 1 + squash * 0.18;
+  const whiteAlpha = machine.phase === 'transition' ? (1 - transitionProgress) * 0.9 : 0;
   const size = 128;
   const groundY = pos.y;
 
@@ -51,7 +57,7 @@ function drawChippyMachine(pos, machine) {
   ctx.translate(pos.x, groundY - riseProgress * 18);
   ctx.scale(scaleX, scaleY);
   ctx.drawImage(
-    chippySpinSheet,
+    image,
     col * frameSize, row * frameSize, frameSize, frameSize,
     -size / 2, -size, size, size
   );
@@ -59,7 +65,7 @@ function drawChippyMachine(pos, machine) {
     ctx.globalAlpha = whiteAlpha;
     ctx.filter = 'brightness(0) invert(1)';
     ctx.drawImage(
-      chippySpinSheet,
+      image,
       col * frameSize, row * frameSize, frameSize, frameSize,
       -size / 2, -size, size, size
     );

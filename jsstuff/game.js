@@ -220,7 +220,15 @@ clippyPickupTimer: 0,
   gs.playerId = pId;
 
   const chippyId = ECS.createEntity();
-  ECS.add(chippyId, 'chippyMachine', { phase: 'spinning', elapsed: 0, spinFrame: 0 });
+  ECS.add(chippyId, 'chippyMachine', {
+    phase: 'spinning',
+    sheet: 'spin',
+    elapsed: 0,
+    frame: 0,
+    spinStartFrame: 0,
+    targetFrame: Math.floor(Math.random() * CFG.CHIPPY_SPIN_FRAME_COUNT),
+    isInitialSpawn: true,
+  });
   ECS.add(chippyId, 'pos', { x: worldW / 2 - 115, y: worldH / 2 + 20 });
 
  //Apply difficulty chosen in intro
@@ -860,12 +868,53 @@ function throwGiftBox() {
   showMsg('GIFT BOX THROWN!');
 }
 
+function handleChippyClick(worldX, worldY) {
+  for (const id of ECS.query('chippyMachine', 'pos')) {
+    const pos = ECS.get(id, 'pos');
+    const machine = ECS.get(id, 'chippyMachine');
+    const riseProgress = machine.phase === 'spinning'
+      ? Math.min(1, machine.elapsed / CFG.CHIPPY_RISE_FRAMES)
+      : 1;
+    const spriteY = pos.y - riseProgress * 18;
+    const isOnMachine = Math.abs(worldX - pos.x) <= 64
+      && worldY >= spriteY - 128 && worldY <= spriteY;
+    if (!isOnMachine) continue;
+
+    const playerPos = ECS.get(gs.playerId, 'pos');
+    if (Math.hypot(playerPos.x - pos.x, playerPos.y - pos.y) > CFG.CHIPPY_INTERACT_RANGE) {
+      showMsg('MOVE CLOSER TO CHIPPY!');
+      return true;
+    }
+
+    if (machine.phase === 'idle') {
+      machine.phase = 'confirm';
+      machine.elapsed = 0;
+      machine.frame = 0;
+      machine.sheet = 'confirm';
+      showMsg('CHIPPY CONFIRMED — GOLDEN CHIP INCOMING!');
+    } else if (machine.phase === 'produceReady') {
+      gs.goldenChips++;
+      updateHUD();
+      spawnPartyParticles(pos.x, pos.y);
+      beginChippyTransition(machine, 'spinning', 'spin', machine.restFrame);
+      showMsg('+1 GOLDEN CHIP');
+    }
+    return true;
+  }
+  return false;
+}
+
 // ================================================================
 // INPUT
 // ================================================================
 canvas.addEventListener('contextmenu', e => {
   e.preventDefault();
   if (!gameRunning) return;
+  const rect = canvas.getBoundingClientRect();
+  const shake = getScreenShakeOffset();
+  const worldX = ((e.clientX - rect.left) / rect.width) * worldW - shake.x;
+  const worldY = ((e.clientY - rect.top) / rect.height) * worldH - shake.y;
+  if (handleChippyClick(worldX, worldY)) return;
   if (gs.hasGlowsticks) { swingGlowsticks(); return; }
   tryPickUpGiftBox();
 });
@@ -901,7 +950,16 @@ document.addEventListener('keydown', e => {
 
 document.addEventListener('keyup', e => { keys[e.key] = false; });
 
-canvas.addEventListener('click', () => { if (gameRunning) shoot(); });
+canvas.addEventListener('click', e => {
+  if (!gameRunning) return;
+  const rect = canvas.getBoundingClientRect();
+  const shake = getScreenShakeOffset();
+  const worldX = ((e.clientX - rect.left) / rect.width) * worldW - shake.x;
+  const worldY = ((e.clientY - rect.top) / rect.height) * worldH - shake.y;
+  mouse.screenX = worldX + shake.x;
+  mouse.screenY = worldY + shake.y;
+  shoot();
+});
 
 // Track mouse globally for pause Clippy eye direction
 document.addEventListener('mousemove', e => {
