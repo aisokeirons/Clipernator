@@ -72,11 +72,30 @@ SFX.load('reloadStart3',     'sounds/soundeffects/player/ReloadStart3.mp3');
 SFX.load('reloadFinish',     'sounds/soundeffects/player/ReloadFinish.mp3');
 SFX.load('playerDamage',     'sounds/soundeffects/player/PlayerDamage.mp3');
 SFX.load('clippySpeak',      'sounds/soundeffects/player/ClippySpeak.mp3');
+SFX.load('clippyDamage',     'sounds/soundeffects/player/ClippyDamage.mp3');
+SFX.load('clippyDeath',      'sounds/soundeffects/player/ClippyDeath.mp3');
 
-SFX.load('forkGrab',    'sounds/soundeffects/enemies/Utensil/Fork/ForkGrab.mp3');
-SFX.load('spoonDamage',    'sounds/soundeffects/enemies/Utensil/Spoon/SpoonDamage.mp3'); // spoon hits something
+SFX.load('utensilSpawn',     'sounds/soundeffects/enemies/Utensil/UtensilSpawn.mp3');
+SFX.load('forkGrab',         'sounds/soundeffects/enemies/Utensil/Fork/ForkGrab.mp3');
+SFX.load('forkGrab2',        'sounds/soundeffects/enemies/Utensil/Fork/ForkGrab2.mp3');
+SFX.load('forkHit',          'sounds/soundeffects/enemies/Utensil/Fork/ForkHit.mp3');
+SFX.load('spoonDamage',      'sounds/soundeffects/enemies/Utensil/Spoon/SpoonDamage.mp3');
 
-SFX.load('frostingLaunch',    'sounds/soundeffects/enemies/CakeBoss/FrostingLaunch.mp3');
-SFX.load('frostingHit',    'sounds/soundeffects/enemies/CakeBoss/FrostingHit.mp3');
+SFX.load('frostingLaunch',   'sounds/soundeffects/enemies/CakeBoss/FrostingLaunch.mp3');
+SFX.load('frostingHit',      'sounds/soundeffects/enemies/CakeBoss/FrostingHit.mp3');
+SFX.load('partyHatAttack',   'sounds/soundeffects/enemies/PartyHat/PartyHatAttack.mp3');
+SFX.load('partyHatDie',      'sounds/soundeffects/enemies/PartyHat/PartyHatDie.mp3');
+SFX.load('partyHatDrop',     'sounds/soundeffects/enemies/PartyHat/PartyHatDrop.mp3');
+SFX.load('partyHatRide',     'sounds/soundeffects/enemies/PartyHat/PartyHatRide.mp3');
+SFX.load('partyHatRide2',    'sounds/soundeffects/enemies/PartyHat/PartyHatRide2.mp3');
+SFX.load('partyHatSpawn',    'sounds/soundeffects/enemies/PartyHat/PartyHatSpawn.mp3');
 
+SFX.load('pause',            'sounds/soundeffects/misc/PauseSound.mp3');
+SFX.load('waveComplete',     'sounds/soundeffects/misc/WaveComplete.mp3');
+
+SFX.load('chippyClick',      'sounds/soundeffects/objects/Chippy/ChippyClick.mp3');
+SFX.load('chippyFinish',     'sounds/soundeffects/objects/Chippy/ChippyFinish.mp3');
+SFX.load('chippyUse',        'sounds/soundeffects/objects/Chippy/ChippyUse.mp3');
+SFX.load('chipPickup',       'sounds/soundeffects/objects/Chips/ChipPickup.mp3');
+SFX.load('goldenChipPickup', 'sounds/soundeffects/objects/Chips/GoldenChipPickup.mp3');
 

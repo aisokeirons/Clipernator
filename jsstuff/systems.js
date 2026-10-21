@@ -613,6 +613,7 @@ function _clownCarExplode(id, pos, gs, playerDriving) {
     const ppos = ECS.get(gs.playerId, 'pos');
     if (ppos && Math.hypot(pos.x - ppos.x, pos.y - ppos.y) < 120 && gs.invincible <= 0) {
       gs.health -= 25; gs.invincible = CFG.INVINCIBLE_FRAMES;
+      SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.6);
       gs.flawlessThisWave = false;
       triggerSFPHit(); updateHUD();
       if (gs.health <= 0) { gameOver(); return; }
@@ -1214,6 +1215,7 @@ function sysEnemyPlayerCollision() {
 if (eaiCheck2 && eaiCheck2.thrownByFork) {
   eaiCheck2.thrownByFork = false;
   gs.health -= 30; // harder hit than normal contact
+  SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.65);
   gs.invincible = CFG.INVINCIBLE_FRAMES;
   gs.shakeX = 20; gs.shakeY = 20;
   gs.flawlessThisWave = false;
@@ -1230,6 +1232,7 @@ if (eaiCheck && eaiCheck.criticalMass && gs.invincible <= 0) {
     eaiCheck.explodeCooldown = 120;
     detonateExplosiveBullet({damageMult: eaiCheck.rmDmgMult || 3, life:1, isExplosive:true}, epos.x, epos.y);
     gs.health -= 20;
+    SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.6);
     gs.invincible = CFG.INVINCIBLE_FRAMES;
     gs.flawlessThisWave = false;
     updateHUD();
@@ -1245,6 +1248,7 @@ if (eaiCheck && eaiCheck.criticalMass && gs.invincible <= 0) {
       // and the bowl itself damages the enemy it rams into
       if (gs.knockingPinsActive) {
         gs.health-=2; gs.invincible=CFG.INVINCIBLE_FRAMES;
+       SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.45);
         gs.shakeX=16;gs.shakeY=16; gs.flawlessThisWave=false;
         // Deal damage to the enemy being bowled into
         const ehp=ECS.get(id,'hp');
@@ -1281,7 +1285,9 @@ for (const cid of ECS.query('enemy','pos')) {
   }
 }
 const diffMult = (gs._enemyDmgMult || 1.0);
-gs.health -= Math.round(20 * contactMult * diffMult);      SFX.play('playerDamage', 0.65);
+gs.health -= Math.round(20 * contactMult * diffMult);
+SFX.play('playerDamage', 0.5);
+SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.55);
 
       gs.invincible=CFG.INVINCIBLE_FRAMES;
       gs.shakeX=16;gs.shakeY=16; gs.flawlessThisWave=false;
@@ -1322,6 +1328,7 @@ if (eb.isArcBall) {
     spawnParticles(eb.x, eb.y, '#ffdd00', 20);
     spawnParticles(eb.x, eb.y, '#ff8800', 12);
     gs.shakeX = 10; gs.shakeY = 10;
+    if (eb.isFrosting) SFX.playAt('frostingHit', eb.x, eb.y, 0.5);
    const scale = eb.sizeScale || 1.0;
         const impactR = Math.round(55 * scale);
         const impactShake = Math.round(10 * scale);
@@ -1367,6 +1374,7 @@ if (eb.isFrosting && eb.spawnGiftBox) {
         gs.shakeX = impactShake; gs.shakeY = impactShake;
         if (gs.invincible <= 0 && Math.hypot(eb.x - ppos.x, eb.y - ppos.y) < impactR) {
 gs.health -= Math.round(18 * (eb.rmDmgMult || 1) * scale * (gs._enemyDmgMult || 1.0));
+         SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.6);
           gs.invincible = CFG.INVINCIBLE_FRAMES;
           gs.shakeX = Math.round(16 * scale); gs.shakeY = Math.round(16 * scale);
           gs.flawlessThisWave = false;
@@ -1426,11 +1434,12 @@ gs.health -= Math.round(18 * (eb.rmDmgMult || 1) * scale * (gs._enemyDmgMult || 
     }
 
     if (!eb.friendlyFire&&gs.invincible<=0&&Math.hypot(eb.x-ppos.x,eb.y-ppos.y)<20) {
-        SFX.play('playerDamage', 0.65);
-
       const bulletDmg = Math.round(15 * (eb.rmDmgMult || 1));
 const diffMult = (gs._enemyDmgMult || 1.0);
-gs.health -= Math.round(bulletDmg * diffMult);      gs.invincible=CFG.INVINCIBLE_FRAMES; gs.shakeX=10;gs.shakeY=10;
+gs.health -= Math.round(bulletDmg * diffMult);
+      SFX.play('playerDamage', 0.5);
+      SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.55);
+      gs.invincible=CFG.INVINCIBLE_FRAMES; gs.shakeX=10;gs.shakeY=10;
       gs.flawlessThisWave=false; triggerSFPHit();
       spawnParticles(ppos.x,ppos.y,'#ff69b4',10); updateHUD();
       if (gs.health<=0){gameOver();return false;} return false;
@@ -1487,10 +1496,12 @@ function sysChipPickup() {
         gs.goldenChips++;
         spawnParticles(chip.x, chip.y, '#ffe45c', 12);
         showMsg('+1 GOLDEN CHIP');
+        SFX.playAt('goldenChipPickup', chip.x, chip.y, 0.65);
       } else {
         gs.chips++;
         spawnParticles(chip.x, chip.y, '#ffcc44', 8);
         showMsg('+1 CHIP');
+        SFX.playAt('chipPickup', chip.x, chip.y, 0.55);
       }
       updateHUD();
     }
@@ -1765,8 +1776,10 @@ function startChippySpin(machine, startFrame) {
 }
 
 function sysChippyMachine() {
-  for (const id of ECS.query('chippyMachine')) {
+  const clickSoundFrames = [0, 4, 10, 18, 30, 46, 66, 90];
+  for (const id of ECS.query('chippyMachine', 'pos')) {
     const machine = ECS.get(id, 'chippyMachine');
+    const pos = ECS.get(id, 'pos');
     if (machine.phase === 'spinning') {
       machine.elapsed++;
       const progress = Math.min(1, machine.elapsed / CFG.CHIPPY_SPIN_FRAMES);
@@ -1795,11 +1808,17 @@ function sysChippyMachine() {
         } else if (target.phase === 'produce') {
           machine.sheet = 'produce';
           machine.frame = 0;
+          machine.produceSoundCueIndex = 0;
         } else if (target.phase === 'idle') {
           machine.restFrame = target.frame;
         }
       }
     } else if (machine.phase === 'produce') {
+      if (machine.produceSoundCueIndex < clickSoundFrames.length
+        && machine.elapsed >= clickSoundFrames[machine.produceSoundCueIndex]) {
+        SFX.playAt('chippyClick', pos.x, pos.y, 0.35);
+        machine.produceSoundCueIndex++;
+      }
       const frameIndex = Math.floor(machine.elapsed / CFG.CHIPPY_PRODUCE_FRAME_DURATION);
       if (frameIndex < CFG.CHIPPY_PRODUCE_FRAME_COUNT) {
         machine.frame = frameIndex;
@@ -1807,6 +1826,7 @@ function sysChippyMachine() {
       } else {
         machine.phase = 'produceReady';
         machine.frame = CFG.CHIPPY_PRODUCE_FRAME_COUNT - 1;
+        SFX.playAt('chippyFinish', pos.x, pos.y, 0.5);
       }
     }
   }
@@ -1882,6 +1902,8 @@ const total = [...ECS.query('enemy')].length;
  
   ECS.add(id,'physics',{speed:(1.2+Math.random()*0.6+gs.wave*0.12)*def.speedMult});
 ECS.add(id,'ai',{shootCooldown:120,ambushTimer:0,diveTimer:0,dashHit:false,balloonOrient:type==='waterballoon'?Math.floor(Math.random()*4):0});  spawnParticles(x, y, '#ff4400', 10);
+if (type === 'utensil') SFX.playAt('utensilSpawn', x, y, 0.45);
+if (type === 'partyHat') SFX.playAt('partyHatSpawn', x, y, 0.5);
 }
 
 function spawnBoss() {
@@ -1981,12 +2003,14 @@ function checkWave() {
   const total = ECS.query('enemy').size;
   if (gs.waveKills + total < gs.waveEnemiesLeft || total > 0) return;
   const completed = gs.wave;
+  SFX.play('waveComplete', 0.55);
   if (gs.flawlessThisWave) {
     gs.flawlessWaveStreak++;
     if (gs.flawlessWaveStreak >= CFG.GOLDEN_CHIP_WAVE_STREAK) {
       gs.goldenChips++;
       gs.flawlessWaveStreak = 0;
       const ppos = ECS.get(gs.playerId, 'pos');
+      SFX.play('goldenChipPickup', 0.65);
       spawnPartyParticles(ppos.x, ppos.y);
       setTimeout(() => showMsg('GOLDEN CHIP EARNED — 5 FLAWLESS WAVES!'), 0);
       updateHUD();

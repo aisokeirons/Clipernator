@@ -64,6 +64,11 @@ const ECS = {
   },
 
 destroyEntity(id) {
+  const enemy = this.get(id, 'enemy');
+  const pos = this.get(id, 'pos');
+  if (enemy?.type === 'partyHat' && pos) {
+    SFX.playAt('partyHatDie', pos.x, pos.y, 0.5);
+  }
   this.entities.delete(id);
   for (const k in this._comps) this._comps[k].delete(id);
   this._queryCache.clear();  // replace the per-set loop
@@ -516,6 +521,7 @@ function _startPauseClippyLoop() {
 // GAME OVER / PAUSE
 // ================================================================
 function gameOver() {
+  SFX.play('clippyDeath', 0.7);
   gameRunning = false;
   cancelAnimationFrame(animId);
   draw();
@@ -533,6 +539,7 @@ function togglePause() {
   if (gs.pendingChoice) return;
   isPaused = !isPaused;
   if (isPaused) {
+    SFX.play('pause', 0.45);
     gameRunning = false;
     cancelAnimationFrame(animId);
     document.getElementById('pause-menu').style.display = 'flex';
@@ -902,6 +909,7 @@ function handleChippyClick(worldX, worldY) {
       gs.maxHealth -= 20;
       gs.health = Math.min(gs.health, gs.maxHealth);
       beginChippyTransition(machine, 'produce', 'produce', 0);
+      SFX.playAt('chippyUse', pos.x, pos.y, 0.55);
       updateHUD();
       showMsg('CHIPPY IS MAKING A GOLDEN CHIP!');
       if (Math.random() < 0.65) {
@@ -913,9 +921,11 @@ function handleChippyClick(worldX, worldY) {
         ];
         gs.clippyPickupMsg = reactions[Math.floor(Math.random() * reactions.length)];
         gs.clippyPickupTimer = 240;
+        SFX.play('clippySpeak', 0.5);
       }
     } else if (machine.phase === 'produceReady') {
       gs.goldenChips++;
+      SFX.playAt('goldenChipPickup', pos.x, pos.y, 0.65);
       updateHUD();
       spawnPartyParticles(pos.x, pos.y);
       beginChippyTransition(machine, 'spinning', 'spin', machine.restFrame);

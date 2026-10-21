@@ -177,6 +177,8 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
           const ppos2 = ECS.get(gs.playerId, 'pos');
           if (ppos2 && Math.hypot(ai.uTipX - ppos2.x, ai.uTipY - ppos2.y) < 22 && gs.invincible <= 0) {
             ai.uForkGrabTimer = 75; gs.forkGrabbed = true;
+            SFX.playAt('forkHit', ai.uTipX, ai.uTipY, 0.5);
+            SFX.playRandom(['forkGrab', 'forkGrab2'], 0.55);
             showMsg('FORK GRABBED YOU! WIGGLE FREE!');
             spawnParticles(ai.uTipX, ai.uTipY, '#ffcc88', 14);
             ai.uState = 'RETURN'; return BT.RUNNING;
@@ -192,6 +194,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
             ai.uForkTargetId = null;
             ai.uPullTimer  = 35;
             ai.uState      = 'FORK_PULLING';
+            SFX.playAt('forkHit', tpos.x, tpos.y, 0.45);
             // Freeze the grabbed entity's velocity
             const gvel = ECS.get(ai.uGrabbedId, 'vel');
             if (gvel) { gvel.vx = 0; gvel.vy = 0; }
@@ -349,6 +352,8 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
         const ppos2 = ECS.get(gs.playerId, 'pos');
         if (ppos2 && Math.hypot(ai.uTipX - ppos2.x, ai.uTipY - ppos2.y) < 22 && gs.invincible <= 0) {
           ai.uForkGrabTimer = 75; gs.forkGrabbed = true;
+          SFX.playAt('forkHit', ai.uTipX, ai.uTipY, 0.5);
+          SFX.playRandom(['forkGrab', 'forkGrab2'], 0.55);
           showMsg('FORK GRABBED YOU! WIGGLE FREE!');
           spawnParticles(ai.uTipX, ai.uTipY, '#ffcc88', 14);
           ai.uState = 'RETURN'; return BT.RUNNING;
@@ -410,6 +415,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
       if (playerHit && gs.invincible <= 0) {
         if (subtype === 'knife') {
           gs.health -= 25; gs.invincible = CFG.INVINCIBLE_FRAMES;
+          SFX.playAt('clippyDamage', ppos2.x, ppos2.y, 0.55);
           gs.shakeX = 16; gs.shakeY = 16; gs.flawlessThisWave = false;
           gs.knifeBleedTimer = 180; triggerSFPHit(); updateHUD();
           showMsg('KNIFE SLASH! YOU\'RE BLEEDING!');
@@ -417,6 +423,8 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
           if (gs.health <= 0) { gameOver(); return BT.FAILURE; }
         } else if (subtype === 'spoon') {
           gs.health -= 14; gs.invincible = CFG.INVINCIBLE_FRAMES;
+          SFX.playAt('spoonDamage', ppos2.x, ppos2.y, 0.55);
+          SFX.playAt('clippyDamage', ppos2.x, ppos2.y, 0.45);
           gs.shakeX = 22; gs.shakeY = 22; gs.flawlessThisWave = false;
           triggerSFPHit(); updateHUD();
           const pvel = ECS.get(gs.playerId, 'vel');
@@ -980,6 +988,7 @@ function _giftBoxExplode(id, pos, gs) {
   const ppos = ECS.get(gs.playerId, 'pos');
   if (ppos && Math.hypot(pos.x - ppos.x, pos.y - ppos.y) < CFG.GIFT_BOX_EXPLOSION_RADIUS && gs.invincible <= 0) {
     gs.health -= 30; gs.invincible = CFG.INVINCIBLE_FRAMES;
+    SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.6);
     gs.flawlessThisWave = false;
     triggerSFP = true;
     updateHUD();
@@ -1052,6 +1061,7 @@ ai.hatAnimTimer++;
 if (ai.hatState === 'RIDING') {
   // Validate host still alive
   if (!ECS.has(ai.ridingId, 'pos')) {
+    SFX.playAt('partyHatDrop', pos.x, pos.y, 0.45);
     ai.ridingId = null;
     ai.hatState = 'IDLE';
     ai.hatTimer = 40;
@@ -1092,6 +1102,7 @@ if (ai.hatState === 'IDLE' || ai.hatState === 'RECOVER') {
       eai2.hatrider = id;
       ai.ridingId = eid;
       ai.hatState = 'RIDING';
+      SFX.playRandom(['partyHatRide', 'partyHatRide2'], 0.45);
       vel.vx = 0; vel.vy = 0;
       spawnParticles(pos.x, pos.y, '#ffdd00', 10);
       showMsg('HAT RIDES THE BALLOON!');
@@ -1145,6 +1156,7 @@ if (ai.hatState === 'IDLE') {
   if (ai.hatTimer <= 0) {
     ai.hatDiveTarget = { x: pp.x, y: pp.y };
     ai.hatState = 'DIVE';
+    SFX.playAt('partyHatAttack', pos.x, pos.y, 0.45);
     ai.hatTimer = 42; ai.hatAnimFrame = 0; ai.hatAnimTimer = 0;
     const tdx = ai.hatDiveTarget.x - pos.x, tdy = ai.hatDiveTarget.y - pos.y;
     const td = Math.hypot(tdx, tdy) || 1;
@@ -1163,6 +1175,7 @@ if (ai.hatState === 'IDLE') {
   if (hitPlayer || hitWall || reachedTarget || ai.hatTimer <= 0) {
     if (hitPlayer && gs.invincible <= 0) {
       gs.health -= 18; gs.invincible = CFG.INVINCIBLE_FRAMES;
+      SFX.playAt('clippyDamage', pos.x, pos.y, 0.55);
       gs.shakeX = 14; gs.shakeY = 14; gs.flawlessThisWave = false;
       triggerSFPHit(); updateHUD();
       spawnParticles(pos.x, pos.y, '#ffdd00', 16);
@@ -1330,6 +1343,7 @@ const BT_CAKEBOSS = new BTSelector(
       // Player contact damage during spin
       if (gs.invincible <= 0 && Math.hypot(pos.x - pp.x, pos.y - pp.y) < 44) {
         gs.health -= 28;
+        SFX.playAt('clippyDamage', pos.x, pos.y, 0.6);
         gs.invincible = CFG.INVINCIBLE_FRAMES;
         gs.shakeX = 20; gs.shakeY = 20;
         gs.flawlessThisWave = false;
@@ -1425,6 +1439,7 @@ function _cakeBossFireCandles(id, pos, pp, ai, gs) {
 }
 
 function _cakeBossFrostingLaunch(id, pos, pp, ai, gs) {
+  SFX.playAt('frostingLaunch', pos.x, pos.y, 0.55);
   const count = 3;
   for (let i = 0; i < count; i++) {
     const offsetX = (i - 1) * 40;
@@ -1593,6 +1608,7 @@ const BT_CANNONBALL = new BTSelector(
         const ppos2 = ECS.get(gs.playerId, 'pos');
         if (Math.hypot(pos.x - ppos2.x, pos.y - ppos2.y) < 80 && gs.invincible <= 0) {
           gs.health -= 15; gs.invincible = CFG.INVINCIBLE_FRAMES;
+          SFX.playAt('clippyDamage', pos.x, pos.y, 0.55);
           gs.shakeX = 14; gs.shakeY = 14;
           gs.flawlessThisWave = false;
           updateHUD(); if (gs.health <= 0) { gameOver(); return BT.FAILURE; }
