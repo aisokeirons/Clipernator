@@ -92,10 +92,12 @@ SFX.load('partyHatSpawn',    'sounds/soundeffects/enemies/PartyHat/PartyHatSpawn
 
 SFX.load('pause',            'sounds/soundeffects/misc/PauseSound.mp3');
 SFX.load('waveComplete',     'sounds/soundeffects/misc/WaveComplete.mp3');
+SFX.load('itemConfirm',      'sounds/soundeffects/items/ItemConfirm.mp3');
 
 SFX.load('chippyClick',      'sounds/soundeffects/objects/Chippy/ChippyClick.mp3');
 SFX.load('chippyFinish',     'sounds/soundeffects/objects/Chippy/ChippyFinish.mp3');
 SFX.load('chippyUse',        'sounds/soundeffects/objects/Chippy/ChippyUse.mp3');
 SFX.load('chipPickup',       'sounds/soundeffects/objects/Chips/ChipPickup.mp3');
 SFX.load('goldenChipPickup', 'sounds/soundeffects/objects/Chips/GoldenChipPickup.mp3');
-
+SFX.load('goldenChipTarget', 'sounds/soundeffects/objects/Chips/GoldenChipTarget.mp3');
+SFX.load('relicAcquire',     'sounds/soundeffects/player/RelicAquire.mp3');

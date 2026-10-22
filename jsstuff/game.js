@@ -537,9 +537,9 @@ function gameOver() {
 
 function togglePause() {
   if (gs.pendingChoice) return;
+  if (!isPaused) SFX.play('pause', 0.75);
   isPaused = !isPaused;
   if (isPaused) {
-    SFX.play('pause', 0.45);
     gameRunning = false;
     cancelAnimationFrame(animId);
     document.getElementById('pause-menu').style.display = 'flex';
@@ -1071,6 +1071,7 @@ function offerItemChoice() {
 
  if (!isOwned) {
   card.addEventListener('click', () => {
+    SFX.play('itemConfirm', 0.65);
     gs.unlockedItems.push(id);
     def.effect(gs);
     choiceEl.style.display = 'none';

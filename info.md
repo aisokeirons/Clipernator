@@ -96,3 +96,79 @@
 
 ---
 
+## Sound Effects
+
+Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound is currently triggered by the listed game event; “unused” means the file is present but has no gameplay hook yet.
+
+### Player
+
+| File | Intended event / status |
+|---|---|
+| `PlayerDamage.mp3` | Wired: player takes damage from enemy contact or a hostile projectile. |
+| `ClippyDamage.mp3` | Wired: Clippy takes damage; used alongside `PlayerDamage` on relevant hits. |
+| `ClippyDeath.mp3` | Wired: game over. |
+| `ClippySpeak.mp3` | Wired: occasional spoken reaction when paying Chippy’s health cost. |
+| `Shoot1.mp3`–`Shoot4.mp3` | Wired: randomized player shot sounds. |
+| `ReloadStart1.mp3`–`ReloadStart3.mp3` | Wired: randomized reload-start cue. |
+| `ReloadFinish.mp3` | Wired: reload completes. |
+| `RelicAquire.mp3` | Wired: Glowsticks, the current permanent relic/upgrade, are unlocked. Filename spelling matches the asset. |
+| `SpeedUp.mp3` | Unused for now; reserved for a future speed-up event. |
+
+### Bullets
+
+| File | Intended event / status |
+|---|---|
+| `NormalHit1.mp3`, `NormalHit2.mp3` | Wired: ordinary player bullet hits an enemy; randomized between the two. |
+| `2xHit.mp3`, `3xHit.mp3`, `4xHit.mp3` | Wired: player bullets hit with the corresponding damage multiplier. |
+| `BowlingBallBounce.mp3` | Wired: bowling ball bounces. |
+| `BowlingBallHit.mp3` | Wired: bowling ball hits an enemy. |
+| `DudHit.mp3` | Unused: intended for a dud bullet impact. |
+| `TearHit.mp3` | Unused: intended for a tear projectile impact. |
+| `BouncyHit.mp3` | Unused: intended for a bouncy projectile impact. |
+| `bullets/Shoot1.mp3` | Unused: player firing already uses the four files under `player/`; this duplicate is not layered over them. |
+
+### Enemies
+
+| File | Intended event / status |
+|---|---|
+| `Utensil/UtensilSpawn.mp3` | Wired: a Utensil spawns. |
+| `Utensil/Fork/ForkHit.mp3` | Wired: a fork makes contact with its target. |
+| `Utensil/Fork/ForkGrab.mp3`, `ForkGrab2.mp3` | Wired: randomized cue when the fork grabs the player. |
+| `Utensil/Spoon/SpoonDamage.mp3` | Wired: a spoon damages the player. |
+| `PartyHat/PartyHatSpawn.mp3` | Wired: a Party Hat spawns. |
+| `PartyHat/PartyHatAttack.mp3` | Wired: a Party Hat begins its dive attack. |
+| `PartyHat/PartyHatRide.mp3`, `PartyHatRide2.mp3` | Wired: randomized cue when a Party Hat rides an enemy. |
+| `PartyHat/PartyHatDrop.mp3` | Wired: a Party Hat loses its ride target. |
+| `PartyHat/PartyHatDie.mp3` | Wired: a Party Hat entity is destroyed. |
+| `CakeBoss/FrostingLaunch.mp3` | Wired: the Cake Boss launches frosting projectiles. |
+| `CakeBoss/FrostingHit.mp3` | Wired: a frosting projectile lands. |
+
+### Chippy, Chips, and Items
+
+| File | Intended event / status |
+|---|---|
+| `Chippy/ChippyUse.mp3` | Wired: first Chippy interaction, when the health payment starts production. |
+| `Chippy/ChippyClick.mp3` | Wired: repeated spin cue during Chippy’s long spin; cues become progressively farther apart as it slows. No sound is used during Produce until a separate sound is available. |
+| `Chippy/ChippyFinish.mp3` | Wired: the long spin reaches its final frame and stops. |
+| `Chips/ChipPickup.mp3` | Wired: a normal chip is collected. |
+| `Chips/GoldenChipTarget.mp3` | Wired: a golden chip first enters magnet range and homes toward the player. |
+| `Chips/GoldenChipPickup.mp3` | Wired: a golden chip is collected, including from Chippy. |
+| `items/ItemConfirm.mp3` | Wired: an item is selected in the opening item draft or the in-game item-choice cards. |
+
+### Interface and Opening Sequence
+
+| File | Intended event / status |
+|---|---|
+| `misc/PauseSound.mp3` | Wired: entering the pause menu. Starts directly from the pause key event; pausing the game loop does not prevent audio playback. |
+| `misc/WaveComplete.mp3` | Wired: a wave is completed. |
+| `misc/CreepySound.mp3`, `misc/OMINI.mp3` | Unused, as requested; reserved for later. |
+| `opening/bluescreen.mp3` | Wired: opening sequence blue-screen effect. |
+| `opening/click.mp3` | Wired: opening/interface click. |
+| `opening/confirm.mp3` | Wired: opening-sequence confirmation outside item selection. |
+| `opening/fixing.mp3` | Wired: opening sequence repair effect. |
+| `opening/startup1.mp3`, `startup2.ogg`, `startup3.mp3` | Wired: opening computer startup sequence. |
+| `opening/startup2.mp3` | Unused duplicate; the opening sequence uses `startup2.ogg`. |
+| `opening/switch.mp3` | Wired: opening-sequence selection navigation. |
+| `opening/typing1.mp3`–`typing3.mp3` | Wired: randomized opening-sequence typing sounds. |
+
+---

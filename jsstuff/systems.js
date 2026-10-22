@@ -141,6 +141,7 @@ function unlockGlowsticks() {
   if (gs.hasGlowsticks) return;
   gs.hasGlowsticks = true;
   gs.unlockedItems.push('glowsticks');
+  SFX.play('relicAcquire', 0.65);
   showMsg('GLOWSTICKS UNLOCKED! [F] OR RIGHT-CLICK TO SWING & REFLECT — REFLECTED SHOTS EXPLODE!');
   updateHUD();
 }
@@ -1472,7 +1473,10 @@ function sysChipPickup() {
     const chip = gs.chipDrops[i];
     const dx = ppos.x - chip.x, dy = ppos.y - chip.y;
     const distance = Math.hypot(dx, dy);
-    if (distance <= CFG.CHIP_MAGNET_RANGE) chip.magnetized = true;
+    if (distance <= CFG.CHIP_MAGNET_RANGE && !chip.magnetized) {
+      chip.magnetized = true;
+      if (chip.golden) SFX.playAt('goldenChipTarget', chip.x, chip.y, 0.5);
+    }
 
     if (chip.magnetized && distance > 0) {
       const acceleration = CFG.CHIP_MAGNET_ACCEL * (1 + (1 - Math.min(distance, CFG.CHIP_MAGNET_RANGE) / CFG.CHIP_MAGNET_RANGE));
@@ -1773,14 +1777,20 @@ function startChippySpin(machine, startFrame) {
   machine.spinStartFrame = startFrame;
   machine.targetFrame = Math.floor(Math.random() * CFG.CHIPPY_SPIN_FRAME_COUNT);
   machine.frame = startFrame;
+  machine.spinSoundCueIndex = 0;
 }
 
 function sysChippyMachine() {
-  const clickSoundFrames = [0, 4, 10, 18, 30, 46, 66, 90];
+  const spinSoundProgress = [0, 0.015, 0.035, 0.065, 0.105, 0.16, 0.23, 0.32, 0.43, 0.56, 0.70, 0.83, 0.94];
   for (const id of ECS.query('chippyMachine', 'pos')) {
     const machine = ECS.get(id, 'chippyMachine');
     const pos = ECS.get(id, 'pos');
     if (machine.phase === 'spinning') {
+      if (machine.spinSoundCueIndex < spinSoundProgress.length
+        && machine.elapsed >= spinSoundProgress[machine.spinSoundCueIndex] * CFG.CHIPPY_SPIN_FRAMES) {
+        SFX.playAt('chippyClick', pos.x, pos.y, 0.35);
+        machine.spinSoundCueIndex++;
+      }
       machine.elapsed++;
       const progress = Math.min(1, machine.elapsed / CFG.CHIPPY_SPIN_FRAMES);
       const spinSteps = CFG.CHIPPY_SPIN_FRAME_COUNT * 12
@@ -1792,6 +1802,7 @@ function sysChippyMachine() {
       if (machine.elapsed >= CFG.CHIPPY_SPIN_FRAMES) {
         machine.restFrame = machine.targetFrame;
         machine.isInitialSpawn = false;
+        SFX.playAt('chippyFinish', pos.x, pos.y, 0.5);
         beginChippyTransition(machine, 'idle', 'spin', machine.restFrame);
       }
     } else if (machine.phase === 'transition') {
@@ -1808,17 +1819,11 @@ function sysChippyMachine() {
         } else if (target.phase === 'produce') {
           machine.sheet = 'produce';
           machine.frame = 0;
-          machine.produceSoundCueIndex = 0;
         } else if (target.phase === 'idle') {
           machine.restFrame = target.frame;
         }
       }
     } else if (machine.phase === 'produce') {
-      if (machine.produceSoundCueIndex < clickSoundFrames.length
-        && machine.elapsed >= clickSoundFrames[machine.produceSoundCueIndex]) {
-        SFX.playAt('chippyClick', pos.x, pos.y, 0.35);
-        machine.produceSoundCueIndex++;
-      }
       const frameIndex = Math.floor(machine.elapsed / CFG.CHIPPY_PRODUCE_FRAME_DURATION);
       if (frameIndex < CFG.CHIPPY_PRODUCE_FRAME_COUNT) {
         machine.frame = frameIndex;
@@ -1826,7 +1831,6 @@ function sysChippyMachine() {
       } else {
         machine.phase = 'produceReady';
         machine.frame = CFG.CHIPPY_PRODUCE_FRAME_COUNT - 1;
-        SFX.playAt('chippyFinish', pos.x, pos.y, 0.5);
       }
     }
   }
@@ -2007,13 +2011,12 @@ function checkWave() {
   if (gs.flawlessThisWave) {
     gs.flawlessWaveStreak++;
     if (gs.flawlessWaveStreak >= CFG.GOLDEN_CHIP_WAVE_STREAK) {
-      gs.goldenChips++;
       gs.flawlessWaveStreak = 0;
-      const ppos = ECS.get(gs.playerId, 'pos');
-      SFX.play('goldenChipPickup', 0.65);
-      spawnPartyParticles(ppos.x, ppos.y);
-      setTimeout(() => showMsg('GOLDEN CHIP EARNED — 5 FLAWLESS WAVES!'), 0);
-      updateHUD();
+      const x = 80 + Math.random() * (worldW - 160);
+      const y = 80 + Math.random() * (worldH - 160);
+      gs.chipDrops.push({ x, y, golden: true });
+      spawnParticles(x, y, '#ffe45c', 18);
+      setTimeout(() => showMsg('GOLDEN CHIP DROPPED — FIND IT!'), 0);
     }
   } else {
     gs.flawlessWaveStreak = 0;

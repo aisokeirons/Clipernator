@@ -762,7 +762,7 @@ setTimeout(() => {
             draftSelected = (draftSelected + 1) % itemCount;
           } else if (e.key === 'Enter') {
             picking = true;          // set immediately, before any async
-            playSound('confirm');
+            SFX.play('itemConfirm', 0.65);
             detachKeys();            // remove listener right away
 
             const chosen = draftItems[draftSelected];
