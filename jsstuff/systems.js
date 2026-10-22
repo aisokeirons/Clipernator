@@ -1475,7 +1475,6 @@ function sysChipPickup() {
     const distance = Math.hypot(dx, dy);
     if (distance <= CFG.CHIP_MAGNET_RANGE && !chip.magnetized) {
       chip.magnetized = true;
-      if (chip.golden) SFX.playAt('goldenChipTarget', chip.x, chip.y, 0.5);
     }
 
     if (chip.magnetized && distance > 0) {
@@ -1510,6 +1509,7 @@ function sysChipPickup() {
       updateHUD();
     }
   }
+  SFX.setLoop('goldenChipTarget', gs.chipDrops.some(chip => chip.golden && chip.magnetized), 0.5);
 }
 
 function sysPopcorn() {

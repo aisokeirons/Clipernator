@@ -107,7 +107,7 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 | `PlayerDamage.mp3` | Wired: player takes damage from enemy contact or a hostile projectile. |
 | `ClippyDamage.mp3` | Wired: Clippy takes damage; used alongside `PlayerDamage` on relevant hits. |
 | `ClippyDeath.mp3` | Wired: game over. |
-| `ClippySpeak.mp3` | Wired: occasional spoken reaction when paying Chippy’s health cost. |
+| `ClippySpeak.mp3` | Wired: plays with Clippy’s randomized reaction whenever paying Chippy’s health cost. |
 | `Shoot1.mp3`–`Shoot4.mp3` | Wired: randomized player shot sounds. |
 | `ReloadStart1.mp3`–`ReloadStart3.mp3` | Wired: randomized reload-start cue. |
 | `ReloadFinish.mp3` | Wired: reload completes. |
@@ -151,9 +151,9 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 | `Chippy/ChippyClick.mp3` | Wired: repeated spin cue during Chippy’s long spin; cues become progressively farther apart as it slows. No sound is used during Produce until a separate sound is available. |
 | `Chippy/ChippyFinish.mp3` | Wired: the long spin reaches its final frame and stops. |
 | `Chips/ChipPickup.mp3` | Wired: a normal chip is collected. |
-| `Chips/GoldenChipTarget.mp3` | Wired: a golden chip first enters magnet range and homes toward the player. |
+| `Chips/GoldenChipTarget.mp3` | Wired as a loop: plays while at least one golden chip is magnetized and homing toward the player. |
 | `Chips/GoldenChipPickup.mp3` | Wired: a golden chip is collected, including from Chippy. |
-| `items/ItemConfirm.mp3` | Wired: an item is selected in the opening item draft or the in-game item-choice cards. |
+| `items/ItemConfirm.mp3` | Unusable placeholder (1 byte). Item choices temporarily use the valid `opening/confirm.mp3` sound in the opening item draft and in-game item-choice cards instead. |
 
 ### Interface and Opening Sequence
 

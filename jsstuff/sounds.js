@@ -4,6 +4,7 @@
 
 const SFX = {
   _cache: {},
+  _loops: {},
   _muted: false,
 
   load(key, src) {
@@ -26,6 +27,30 @@ const SFX = {
   playRandom(keys, volumeOverride) {
     const key = keys[Math.floor(Math.random() * keys.length)];
     this.play(key, volumeOverride);
+  },
+
+  setLoop(key, enabled, volumeOverride) {
+    const audio = this._cache[key];
+    if (!audio) return;
+    if (!enabled) {
+      if (this._loops[key]) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.loop = false;
+        delete this._loops[key];
+      }
+      return;
+    }
+    if (this._muted) return;
+    audio.volume = volumeOverride !== undefined ? volumeOverride : 0.6;
+    if (this._loops[key]) return;
+    audio.loop = true;
+    audio.currentTime = 0;
+    this._loops[key] = true;
+    audio.play().catch(() => {
+      audio.loop = false;
+      delete this._loops[key];
+    });
   },
 
   // THIS was outside the object before — now it's inside
@@ -92,7 +117,7 @@ SFX.load('partyHatSpawn',    'sounds/soundeffects/enemies/PartyHat/PartyHatSpawn
 
 SFX.load('pause',            'sounds/soundeffects/misc/PauseSound.mp3');
 SFX.load('waveComplete',     'sounds/soundeffects/misc/WaveComplete.mp3');
-SFX.load('itemConfirm',      'sounds/soundeffects/items/ItemConfirm.mp3');
+SFX.load('itemConfirm',      'sounds/soundeffects/opening/confirm.mp3');
 
 SFX.load('chippyClick',      'sounds/soundeffects/objects/Chippy/ChippyClick.mp3');
 SFX.load('chippyFinish',     'sounds/soundeffects/objects/Chippy/ChippyFinish.mp3');

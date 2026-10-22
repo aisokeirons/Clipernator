@@ -912,17 +912,15 @@ function handleChippyClick(worldX, worldY) {
       SFX.playAt('chippyUse', pos.x, pos.y, 0.55);
       updateHUD();
       showMsg('CHIPPY IS MAKING A GOLDEN CHIP!');
-      if (Math.random() < 0.65) {
-        const reactions = [
-          'Ow! Twenty max HP? I hope that chip is worth it.',
-          'That was 20 max health. I am choosing not to think about it.',
-          'I felt that. Well, technically, I felt the health bar go down.',
-          'A golden chip for a piece of your maximum health. Seems fair. Probably.',
-        ];
-        gs.clippyPickupMsg = reactions[Math.floor(Math.random() * reactions.length)];
-        gs.clippyPickupTimer = 240;
-        SFX.play('clippySpeak', 0.5);
-      }
+      const reactions = [
+        'Ow! Twenty max HP? I hope that chip is worth it.',
+        'That was 20 max health. I am choosing not to think about it.',
+        'I felt that. Well, technically, I felt the health bar go down.',
+        'A golden chip for a piece of your maximum health. Seems fair. Probably.',
+      ];
+      gs.clippyPickupMsg = reactions[Math.floor(Math.random() * reactions.length)];
+      gs.clippyPickupTimer = 240;
+      SFX.play('clippySpeak', 0.8);
     } else if (machine.phase === 'produceReady') {
       gs.goldenChips++;
       SFX.playAt('goldenChipPickup', pos.x, pos.y, 0.65);
