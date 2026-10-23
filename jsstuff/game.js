@@ -832,11 +832,28 @@ function renderUtensilWindows() {
     return;
   }
 
-  const outsideUtensils = [...ECS.query('enemy', 'pos', 'ai')].filter(id => {
-    const enemy = ECS.get(id, 'enemy');
+  const utensilIds = [...ECS.query('enemy', 'pos', 'ai')].filter(id =>
+    ECS.get(id, 'enemy').type === 'utensil'
+  );
+  for (const id of utensilIds) {
     const pos = ECS.get(id, 'pos');
     const ai = ECS.get(id, 'ai');
-    return enemy.type === 'utensil' && ai.windowActive
+    const outside = pos.x < 0 || pos.x > worldW || pos.y < 0 || pos.y > worldH;
+    if (outside && !ai.windowActive) {
+      ai.windowActive = true;
+      ai.windowGroup = ++utensilWindowGroupSequence;
+    } else if (!outside && ai.windowActive) {
+      ai.windowActive = false;
+      ai.windowMergeTimer = 12;
+    } else if (ai.windowMergeTimer > 0) {
+      ai.windowMergeTimer--;
+    }
+  }
+
+  const outsideUtensils = utensilIds.filter(id => {
+    const pos = ECS.get(id, 'pos');
+    const ai = ECS.get(id, 'ai');
+    return ai.windowActive
       && (pos.x < 0 || pos.x > worldW || pos.y < 0 || pos.y > worldH);
   });
   for (let i = 0; i < outsideUtensils.length; i++) {
@@ -858,19 +875,11 @@ function renderUtensilWindows() {
   }
 
   const groups = new Map();
-  for (const id of ECS.query('enemy', 'pos', 'ai')) {
+  for (const id of utensilIds) {
     const enemy = ECS.get(id, 'enemy');
     const pos = ECS.get(id, 'pos');
     const ai = ECS.get(id, 'ai');
-    if (enemy.type !== 'utensil' || !ai.windowGroup) continue;
-
-    const outside = pos.x < 0 || pos.x > worldW || pos.y < 0 || pos.y > worldH;
-    if (ai.windowActive && !outside) {
-      ai.windowActive = false;
-      ai.windowMergeTimer = 12;
-    } else if (ai.windowMergeTimer > 0) {
-      ai.windowMergeTimer--;
-    }
+    if (!ai.windowGroup) continue;
     if (!ai.windowActive && ai.windowMergeTimer <= 0) continue;
 
     if (!groups.has(ai.windowGroup)) groups.set(ai.windowGroup, []);
@@ -916,7 +925,7 @@ function renderUtensilWindows() {
       previewCtx.save();
       previewCtx.translate(x, y);
       previewCtx.scale(iconScale, iconScale);
-      drawUtensil({ x: 0, y: 0 }, hp, localAi, gs.frozen, previewCtx, true);
+      drawUtensil({ x: 0, y: 0 }, hp, localAi, gs.frozen, previewCtx);
       previewCtx.restore();
       previewCtx.fillStyle = '#fff';
       previewCtx.font = '9px "MS Sans Serif", Arial, sans-serif';
