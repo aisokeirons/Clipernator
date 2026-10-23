@@ -80,6 +80,65 @@ body::before { display: none; }
 
 #bottom-bar { flex: 0 0 4px; }
 
+#hud { cursor: move; user-select: none; }
+
+#utensil-window-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.utensil-window {
+  position: fixed;
+  height: 74px;
+  padding: 2px;
+  overflow: hidden;
+  background: #d4d0c8;
+  border-top: 2px solid #fff;
+  border-left: 2px solid #fff;
+  border-right: 2px solid #404040;
+  border-bottom: 2px solid #404040;
+  box-shadow: 1px 1px 0 #000, 0 4px 12px rgba(0, 0, 0, 0.45);
+  font-family: 'MS Sans Serif', Arial, sans-serif;
+  transition: left 90ms linear, top 90ms linear, width 120ms ease, opacity 180ms ease, transform 180ms ease;
+  transform-origin: center;
+}
+
+.utensil-window-title {
+  height: 18px;
+  padding: 2px 4px;
+  overflow: hidden;
+  background: linear-gradient(to right, #0a246a, #3a6ea8);
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.utensil-window-body {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 48px;
+  padding: 4px;
+  overflow: hidden;
+  border: 1px inset #fff;
+}
+
+.utensil-window-chip {
+  flex: 0 0 auto;
+  padding: 3px 4px;
+  border: 1px solid #808080;
+  background: #ece9d8;
+  color: #222;
+  font-size: 8px;
+  font-weight: bold;
+}
+
 #hud {
   background: linear-gradient(to right, #0a246a 0%, #3a6ea8 100%);
   padding: 2px 2px 2px 4px;
@@ -634,6 +693,7 @@ canvas {
  <div id="bottom-bar" style="height:4px; background:#d4d0c8; border-top:1px solid #808080;"></div>
 
 </div> <!-- wrapper end -->
+<div id="utensil-window-layer" aria-hidden="true"></div>
 
 <script>
 (function() {
@@ -685,6 +745,31 @@ canvas {
 
   window.addEventListener('resize', function() {
     if (isMaximized) applyMaximize();
+  });
+
+  let dragState = null;
+  document.getElementById('hud').addEventListener('pointerdown', function(e) {
+    if (isMaximized || minimized || e.target.closest('button')) return;
+    const rect = wrapper.getBoundingClientRect();
+    dragState = { x: e.clientX, y: e.clientY, left: rect.left, top: rect.top };
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = `${rect.left}px`;
+    wrapper.style.top = `${rect.top}px`;
+    wrapper.style.bottom = '';
+    wrapper.style.transform = '';
+    wrapper.style.margin = '0';
+    wrapper.style.zIndex = '9999';
+    this.setPointerCapture(e.pointerId);
+  });
+
+  document.getElementById('hud').addEventListener('pointermove', function(e) {
+    if (!dragState) return;
+    wrapper.style.left = `${dragState.left + e.clientX - dragState.x}px`;
+    wrapper.style.top = `${dragState.top + e.clientY - dragState.y}px`;
+  });
+
+  document.getElementById('hud').addEventListener('pointerup', function() {
+    dragState = null;
   });
 
   // ── Fixed mouse handler that accounts for CSS transform ──

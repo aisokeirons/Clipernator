@@ -817,7 +817,105 @@ function loop(timestamp = 0) {
   lastTime = timestamp;
   update();
   draw();
+  renderUtensilWindows();
   animId = requestAnimationFrame(loop);
+}
+
+const utensilWindowElements = new Map();
+
+function renderUtensilWindows() {
+  const layer = document.getElementById('utensil-window-layer');
+  const canvasRect = canvas.getBoundingClientRect();
+  if (!canvasRect.width || !canvasRect.height || !gameRunning) {
+    layer.replaceChildren();
+    utensilWindowElements.clear();
+    return;
+  }
+
+  const groups = new Map();
+  for (const id of ECS.query('enemy', 'pos', 'ai')) {
+    const enemy = ECS.get(id, 'enemy');
+    const pos = ECS.get(id, 'pos');
+    const ai = ECS.get(id, 'ai');
+    if (enemy.type !== 'utensil' || !ai.windowGroup) continue;
+
+    const outside = pos.x < 0 || pos.x > worldW || pos.y < 0 || pos.y > worldH;
+    if (ai.windowActive && !outside) {
+      ai.windowActive = false;
+      ai.windowMergeTimer = 12;
+    } else if (ai.windowMergeTimer > 0) {
+      ai.windowMergeTimer--;
+    }
+    if (!ai.windowActive && ai.windowMergeTimer <= 0) continue;
+
+    if (!groups.has(ai.windowGroup)) groups.set(ai.windowGroup, []);
+    groups.get(ai.windowGroup).push({ id, enemy, pos, ai });
+  }
+
+  for (const [groupId, members] of groups) {
+    let card = utensilWindowElements.get(groupId);
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'utensil-window';
+      card.innerHTML = '<div class="utensil-window-title"></div><div class="utensil-window-body"></div>';
+      layer.appendChild(card);
+      utensilWindowElements.set(groupId, card);
+    }
+
+    const title = members.map(() => 'Utensil').join(', ');
+    const titleElement = card.firstElementChild;
+    titleElement.textContent = title;
+    titleElement.title = title;
+
+    const body = card.lastElementChild;
+    body.replaceChildren();
+    for (const member of members.slice(0, 5)) {
+      const chip = document.createElement('span');
+      chip.className = 'utensil-window-chip';
+      chip.textContent = member.enemy.subtype.toUpperCase();
+      body.appendChild(chip);
+    }
+    if (members.length > 5) {
+      const extra = document.createElement('span');
+      extra.className = 'utensil-window-chip';
+      extra.textContent = `+${members.length - 5}`;
+      body.appendChild(extra);
+    }
+
+    const width = Math.min(248, 132 + Math.max(0, members.length - 1) * 22);
+    const height = members.length > 1 ? 82 : 74;
+    const outsideMembers = members.filter(member =>
+      member.pos.x < 0 || member.pos.x > worldW || member.pos.y < 0 || member.pos.y > worldH
+    );
+    const anchorMembers = outsideMembers.length ? outsideMembers : members;
+    const anchorX = anchorMembers.reduce((sum, member) => sum + member.pos.x, 0) / anchorMembers.length;
+    const anchorY = anchorMembers.reduce((sum, member) => sum + member.pos.y, 0) / anchorMembers.length;
+    let centerX = canvasRect.left + anchorX * canvasRect.width / worldW;
+    let centerY = canvasRect.top + anchorY * canvasRect.height / worldH;
+    if (outsideMembers.length) {
+      if (anchorX < 0) centerX -= width / 2 + 8;
+      else if (anchorX > worldW) centerX += width / 2 + 8;
+      else if (anchorY < 0) centerY -= height / 2 + 8;
+      else centerY += height / 2 + 8;
+    }
+    const left = Math.max(6, Math.min(window.innerWidth - width - 6, centerX - width / 2));
+    const top = Math.max(6, Math.min(window.innerHeight - height - 6, centerY - height / 2));
+    const mergeProgress = Math.max(...members.map(member =>
+      member.ai.windowActive ? 0 : member.ai.windowMergeTimer / 12
+    ));
+    card.style.width = `${width}px`;
+    card.style.height = `${height}px`;
+    card.style.left = `${left}px`;
+    card.style.top = `${top}px`;
+    card.style.opacity = `${1 - mergeProgress}`;
+    card.style.transform = mergeProgress ? `scale(${1 - mergeProgress * 0.35})` : 'scale(1)';
+  }
+
+  for (const [groupId, card] of utensilWindowElements) {
+    if (groups.has(groupId)) continue;
+    card.remove();
+    utensilWindowElements.delete(groupId);
+  }
 }
 
 function startGame() {

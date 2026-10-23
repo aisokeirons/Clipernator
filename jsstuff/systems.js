@@ -2,6 +2,8 @@
 // CLIPBLAST: PARTY HUNTER — Systems    
 // ============================================================ 
 
+let utensilWindowGroupSequence = 0;
+
 const CLIPPY_PICKUP_TIPS = {
   birthday:        "It looks like everyone stopped moving! Enjoy the party while it lasts.",
   cookie:          "7 times the speed AND reload? I calculated that. It took me 0.3 seconds.",
@@ -1853,14 +1855,6 @@ function spawnEnemy() {
   if (gs.bossActive) return;
 const total = [...ECS.query('enemy')].length;
   if (gs.waveKills+total>=gs.waveEnemiesLeft) return;
-  let x,y,attempts=0;
-  const ppos=ECS.get(gs.playerId,'pos');
-  do {
-  x = CFG.WALL_PAD + Math.random() * (worldW - CFG.WALL_PAD * 2);
-  y = CFG.WALL_PAD + Math.random() * (worldH - CFG.WALL_PAD * 2);
-  attempts++;
-} while (Math.hypot(x - ppos.x, y - ppos.y) < CFG.SAFE_SPAWN_DIST && attempts < 12);
-
   let type='utensil';
   const roll=Math.random();
   if (gs.floor === 2) {
@@ -1894,6 +1888,59 @@ const total = [...ECS.query('enemy')].length;
     if(roll<0.32)type='waterballoon';else if(roll<0.58)type='partyHat';
   } else if (gs.wave>=4){ if(roll<0.35)type='waterballoon'; }
 
+  const ppos=ECS.get(gs.playerId,'pos');
+  let x,y;
+  if (type === 'utensil') {
+    const sideCenters = [
+      { side: 'left', x: -40, y: worldH / 2 },
+      { side: 'right', x: worldW + 40, y: worldH / 2 },
+      { side: 'top', x: worldW / 2, y: -40 },
+      { side: 'bottom', x: worldW / 2, y: worldH + 40 },
+    ];
+    const side = sideCenters.reduce((farthest, candidate) =>
+      Math.hypot(candidate.x - ppos.x, candidate.y - ppos.y)
+        > Math.hypot(farthest.x - ppos.x, farthest.y - ppos.y) ? candidate : farthest
+    );
+    x = side.x;
+    y = side.y;
+    if (side.side === 'left' || side.side === 'right') {
+      y = 55 + Math.random() * Math.max(1, worldH - 110);
+    } else {
+      x = 55 + Math.random() * Math.max(1, worldW - 110);
+    }
+
+    const nearbyWindows = [...ECS.query('enemy', 'pos', 'ai')].filter(id => {
+      const enemy = ECS.get(id, 'enemy');
+      const ai = ECS.get(id, 'ai');
+      const pos = ECS.get(id, 'pos');
+      return enemy.type === 'utensil' && ai.windowActive
+        && Math.hypot(pos.x - x, pos.y - y) < 155;
+    });
+    if (nearbyWindows.length && Math.random() < 0.55) {
+      const nearbyId = nearbyWindows[Math.floor(Math.random() * nearbyWindows.length)];
+      const nearbyPos = ECS.get(nearbyId, 'pos');
+      const nearbyAi = ECS.get(nearbyId, 'ai');
+      const joinSide = nearbyPos.x < 0 ? 'left'
+        : nearbyPos.x > worldW ? 'right'
+          : nearbyPos.y < 0 ? 'top' : 'bottom';
+      if (joinSide === 'left' || joinSide === 'right') {
+        x = joinSide === 'left' ? -40 : worldW + 40;
+        y = Math.max(55, Math.min(worldH - 55, nearbyPos.y + (Math.random() - 0.5) * 70));
+      } else {
+        y = joinSide === 'top' ? -40 : worldH + 40;
+        x = Math.max(55, Math.min(worldW - 55, nearbyPos.x + (Math.random() - 0.5) * 70));
+      }
+      var windowGroup = nearbyAi.windowGroup;
+    }
+  } else {
+    let attempts = 0;
+    do {
+      x = CFG.WALL_PAD + Math.random() * (worldW - CFG.WALL_PAD * 2);
+      y = CFG.WALL_PAD + Math.random() * (worldH - CFG.WALL_PAD * 2);
+      attempts++;
+    } while (Math.hypot(x - ppos.x, y - ppos.y) < CFG.SAFE_SPAWN_DIST && attempts < 12);
+  }
+
   const def=ENEMY_DEFS[type],baseHp=1+Math.floor(gs.wave/2),id=ECS.createEntity();
   const subtypes=['fork','knife','spoon'];
   ECS.add(id,'enemy',{type,subtype:type==='utensil'?subtypes[Math.floor(Math.random()*3)]:undefined});
@@ -1905,7 +1952,12 @@ const total = [...ECS.query('enemy')].length;
 
  
   ECS.add(id,'physics',{speed:(1.2+Math.random()*0.6+gs.wave*0.12)*def.speedMult});
-ECS.add(id,'ai',{shootCooldown:120,ambushTimer:0,diveTimer:0,dashHit:false,balloonOrient:type==='waterballoon'?Math.floor(Math.random()*4):0});  spawnParticles(x, y, '#ff4400', 10);
+  const ai = ECS.add(id,'ai',{shootCooldown:120,ambushTimer:0,diveTimer:0,dashHit:false,balloonOrient:type==='waterballoon'?Math.floor(Math.random()*4):0});
+  if (type === 'utensil') {
+    ai.windowActive = true;
+    ai.windowGroup = windowGroup || ++utensilWindowGroupSequence;
+  }
+  spawnParticles(x, y, '#ff4400', 10);
 if (type === 'utensil') SFX.playAt('utensilSpawn', x, y, 0.45);
 if (type === 'partyHat') SFX.playAt('partyHatSpawn', x, y, 0.5);
 }
