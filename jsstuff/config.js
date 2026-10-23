@@ -78,7 +78,7 @@ let worldH = CFG.H;
 let renderScale = 1.0;
 
 const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
+let ctx = canvas.getContext('2d');
 
 const playerImg = new Image();
 let playerCanvas = null;

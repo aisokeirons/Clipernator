@@ -473,8 +473,10 @@ function drawGiftBox(epos, ehp, ai, frozen) {
     const frameW = giftBoxIdleSheet.naturalWidth  / COLS;
     const frameH = giftBoxIdleSheet.naturalHeight / ROWS;
     if (ai._gbAnimTick === undefined) { ai._gbAnimTick = 0; ai._gbAnimFrame = 0; }
-    ai._gbAnimTick++;
-    if (ai._gbAnimTick >= 8) { ai._gbAnimTick = 0; ai._gbAnimFrame = (ai._gbAnimFrame + 1) % TOTAL_FRAMES; }
+    if (advanceVisualState) {
+      ai._gbAnimTick++;
+      if (ai._gbAnimTick >= 8) { ai._gbAnimTick = 0; ai._gbAnimFrame = (ai._gbAnimFrame + 1) % TOTAL_FRAMES; }
+    }
     const col = ai._gbAnimFrame % COLS;
     const row = Math.floor(ai._gbAnimFrame / COLS);
     ctx.drawImage(giftBoxIdleSheet,
@@ -1015,7 +1017,7 @@ ctx.restore();
     ctx.restore();
   }
 
-  if (gunRecoil > 0) gunRecoil = Math.max(0, gunRecoil - 0.08);
+  if (advanceVisualState && gunRecoil > 0) gunRecoil = Math.max(0, gunRecoil - 0.08);
 
   // ── Bowling ball preview ──
   if (gs.bowlingBallReady) {
@@ -1180,14 +1182,31 @@ function getScreenShakeOffset() {
   return { x: Math.round(shakeX * 0.4), y: Math.round(shakeY * 0.4) };
 }
 
-function draw() {
+function draw(targetCtx = ctx, targetCanvas = canvas, camera = null, advanceVisualState = true) {
+  const previousCtx = ctx;
+  ctx = targetCtx;
+  try {
+    drawCurrentView(targetCanvas, camera, advanceVisualState);
+  } finally {
+    ctx = previousCtx;
+  }
+}
+
+function drawCurrentView(targetCanvas, camera, advanceVisualState) {
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
   const dpr = window.devicePixelRatio || 1;
-  ctx.scale(dpr * renderScale, dpr * renderScale);  // combine dpr + renderScale
+  const viewScale = camera ? camera.scale : renderScale;
+  ctx.scale(dpr * viewScale, dpr * viewScale);
+  if (camera) {
+    ctx.translate(
+      targetCanvas.width / (dpr * viewScale * 2) - camera.x,
+      targetCanvas.height / (dpr * viewScale * 2) - camera.y
+    );
+  }
   const shake = getScreenShakeOffset();
   ctx.translate(shake.x, shake.y);
   // Background + grid
@@ -1625,7 +1644,7 @@ if (isCritMass) {
 
  // Clippy item pickup speech bubble
 if (gs.clippyPickupTimer > 0) {
-  gs.clippyPickupTimer--;
+if (advanceVisualState) gs.clippyPickupTimer--;
   const ppos2 = ECS.get(gs.playerId, 'pos');
   const alpha = Math.min(1, gs.clippyPickupTimer / 30); // fade out last 30 frames
   const bx = ppos2.x + 18;
@@ -1798,7 +1817,7 @@ if (meleeSwingTimer > 0) {
     ctx.strokeRect(22, -CFG.MELEE_RANGE * 0.5, CFG.MELEE_RANGE - 24, CFG.MELEE_RANGE);
   }
   ctx.restore();
-  meleeSwingTimer--;
+  if (advanceVisualState) meleeSwingTimer--;
 }
 
   // Boss slam overlays

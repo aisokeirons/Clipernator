@@ -820,27 +820,25 @@ function loop(timestamp = 0) {
   lastTime = timestamp;
   update();
   draw();
-  renderUtensilWindows();
+  renderOffscreenWindows();
   animId = requestAnimationFrame(loop);
 }
 
-const utensilWindowElements = new Map();
+const offscreenWindowElements = new Map();
 let clippyWindowElement = null;
 
-function renderUtensilWindows() {
+function renderOffscreenWindows() {
   const layer = document.getElementById('utensil-window-layer');
   const canvasRect = canvas.getBoundingClientRect();
   if (!canvasRect.width || !canvasRect.height || !gameRunning) {
     layer.replaceChildren();
-    utensilWindowElements.clear();
+    offscreenWindowElements.clear();
     clippyWindowElement = null;
     return;
   }
 
-  const utensilIds = [...ECS.query('enemy', 'pos', 'ai')].filter(id =>
-    ECS.get(id, 'enemy').type === 'utensil'
-  );
-  for (const id of utensilIds) {
+  const enemyIds = [...ECS.query('enemy', 'pos', 'ai')];
+  for (const id of enemyIds) {
     const pos = ECS.get(id, 'pos');
     const ai = ECS.get(id, 'ai');
     const outside = pos.x < 0 || pos.x > worldW || pos.y < 0 || pos.y > worldH;
@@ -855,24 +853,24 @@ function renderUtensilWindows() {
     }
   }
 
-  const outsideUtensils = utensilIds.filter(id => {
+  const outsideEnemies = enemyIds.filter(id => {
     const pos = ECS.get(id, 'pos');
     const ai = ECS.get(id, 'ai');
     return ai.windowActive
       && (pos.x < 0 || pos.x > worldW || pos.y < 0 || pos.y > worldH);
   });
-  for (let i = 0; i < outsideUtensils.length; i++) {
-    const firstId = outsideUtensils[i];
+  for (let i = 0; i < outsideEnemies.length; i++) {
+    const firstId = outsideEnemies[i];
     const firstPos = ECS.get(firstId, 'pos');
     const firstAi = ECS.get(firstId, 'ai');
-    for (let j = i + 1; j < outsideUtensils.length; j++) {
-      const secondId = outsideUtensils[j];
+    for (let j = i + 1; j < outsideEnemies.length; j++) {
+      const secondId = outsideEnemies[j];
       const secondPos = ECS.get(secondId, 'pos');
       const secondAi = ECS.get(secondId, 'ai');
       if (firstAi.windowGroup === secondAi.windowGroup
         || Math.hypot(firstPos.x - secondPos.x, firstPos.y - secondPos.y) >= 110) continue;
       const oldGroup = secondAi.windowGroup;
-      for (const id of outsideUtensils) {
+      for (const id of outsideEnemies) {
         const ai = ECS.get(id, 'ai');
         if (ai.windowGroup === oldGroup) ai.windowGroup = firstAi.windowGroup;
       }
@@ -880,7 +878,7 @@ function renderUtensilWindows() {
   }
 
   const groups = new Map();
-  for (const id of utensilIds) {
+  for (const id of enemyIds) {
     const enemy = ECS.get(id, 'enemy');
     const pos = ECS.get(id, 'pos');
     const ai = ECS.get(id, 'ai');
@@ -892,47 +890,52 @@ function renderUtensilWindows() {
   }
 
   for (const [groupId, members] of groups) {
-    let card = utensilWindowElements.get(groupId);
+    let card = offscreenWindowElements.get(groupId);
     if (!card) {
       card = document.createElement('div');
       card.className = 'utensil-window';
       card.innerHTML = '<div class="utensil-window-title"></div><div class="utensil-window-body"><canvas></canvas></div>';
       layer.appendChild(card);
-      utensilWindowElements.set(groupId, card);
+      offscreenWindowElements.set(groupId, card);
     }
 
-    const title = members.map(() => 'Utensil').join(', ');
+    const title = members.map(member => {
+      const type = member.enemy.type;
+      if (type === 'utensil') return 'Utensil';
+      if (type === 'miniClown') return 'Mini Clown';
+      return type.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, char => char.toUpperCase());
+    }).join(', ');
     const titleElement = card.firstElementChild;
     titleElement.textContent = title;
     titleElement.title = title;
 
     const preview = card.lastElementChild.firstElementChild;
-    const width = Math.min(480, Math.max(140, members.length * 82 + 32));
-    const height = 154;
+    const width = Math.min(560, Math.max(220, members.length * 112 + 108));
+    const height = 190;
     const dpr = window.devicePixelRatio || 1;
     const bodyHeight = height - 26;
+    const bodyWidth = width - 8;
+    card.style.width = `${width}px`;
+    card.style.height = `${height}px`;
     preview.width = Math.round((width - 8) * dpr);
     preview.height = Math.round(bodyHeight * dpr);
     const previewCtx = preview.getContext('2d');
-    previewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    previewCtx.clearRect(0, 0, width - 8, bodyHeight);
-    previewCtx.fillStyle = '#000';
-    previewCtx.fillRect(0, 0, width - 8, bodyHeight);
-    const iconScale = Math.min(1.1, ((width - 8) / (members.length + 1)) / 60);
-    for (let i = 0; i < members.length; i++) {
-      const member = members[i];
-      const hp = ECS.get(member.id, 'hp');
-      const x = ((i + 1) / (members.length + 1)) * (width - 8);
-      const y = bodyHeight / 2 + 4;
-      const localAi = { ...member.ai };
-      if (localAi.uTipX !== undefined) localAi.uTipX -= member.pos.x;
-      if (localAi.uTipY !== undefined) localAi.uTipY -= member.pos.y;
-      previewCtx.save();
-      previewCtx.translate(x, y);
-      previewCtx.scale(iconScale, iconScale);
-      drawUtensil({ x: 0, y: 0 }, hp, localAi, gs.frozen, previewCtx);
-      previewCtx.restore();
-    }
+    const minX = Math.min(...members.map(member => member.pos.x));
+    const maxX = Math.max(...members.map(member => member.pos.x));
+    const minY = Math.min(...members.map(member => member.pos.y));
+    const maxY = Math.max(...members.map(member => member.pos.y));
+    const cameraX = (minX + maxX) / 2;
+    const cameraY = (minY + maxY) / 2;
+    const cameraWidth = Math.max(
+      260,
+      maxX - minX + 180,
+      (maxY - minY + 180) * bodyWidth / bodyHeight
+    );
+    draw(previewCtx, preview, {
+      x: cameraX,
+      y: cameraY,
+      scale: Math.min(bodyWidth / cameraWidth, bodyHeight / (cameraWidth * bodyHeight / bodyWidth)),
+    }, false);
     const outsideMembers = members.filter(member =>
       member.pos.x < 0 || member.pos.x > worldW || member.pos.y < 0 || member.pos.y > worldH
     );
@@ -946,18 +949,16 @@ function renderUtensilWindows() {
     const mergeProgress = Math.max(...members.map(member =>
       member.ai.windowActive ? 0 : member.ai.windowMergeTimer / 12
     ));
-    card.style.width = `${width}px`;
-    card.style.height = `${height}px`;
     card.style.left = `${left}px`;
     card.style.top = `${top}px`;
     card.style.opacity = `${1 - mergeProgress}`;
     card.style.transform = mergeProgress ? `scale(${1 - mergeProgress * 0.35})` : 'scale(1)';
   }
 
-  for (const [groupId, card] of utensilWindowElements) {
+  for (const [groupId, card] of offscreenWindowElements) {
     if (groups.has(groupId)) continue;
     card.remove();
-    utensilWindowElements.delete(groupId);
+    offscreenWindowElements.delete(groupId);
   }
 
   const playerPos = ECS.get(gs.playerId, 'pos');
@@ -981,47 +982,29 @@ function renderUtensilWindows() {
       layer.appendChild(clippyWindowElement);
     }
 
-    const width = 160;
-    const height = 154;
+    const width = 240;
+    const height = 190;
     const bodyWidth = width - 8;
     const bodyHeight = height - 26;
     const preview = clippyWindowElement.lastElementChild.firstElementChild;
     const dpr = window.devicePixelRatio || 1;
+    clippyWindowElement.style.width = `${width}px`;
+    clippyWindowElement.style.height = `${height}px`;
     preview.width = Math.round(bodyWidth * dpr);
     preview.height = Math.round(bodyHeight * dpr);
     const previewCtx = preview.getContext('2d');
-    previewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    previewCtx.fillStyle = '#000';
-    previewCtx.fillRect(0, 0, bodyWidth, bodyHeight);
-
-    if (playerCanvas) {
-      previewCtx.save();
-      previewCtx.translate(bodyWidth / 2, bodyHeight / 2 + 12);
-      previewCtx.scale(Math.cos(playerMoveAngle) < 0 ? -1 : 1, 1);
-      previewCtx.drawImage(playerCanvas, 0, 0, playerCanvas.width, playerCanvas.height, -36, -54, 72, 72);
-      previewCtx.restore();
-    } else if (playerImg.complete && playerImg.naturalWidth > 0) {
-      previewCtx.save();
-      previewCtx.translate(bodyWidth / 2, bodyHeight / 2 + 12);
-      previewCtx.scale(Math.cos(playerMoveAngle) < 0 ? -1 : 1, 1);
-      previewCtx.drawImage(playerImg, 0, 0, playerImg.naturalWidth, playerImg.naturalHeight, -36, -54, 72, 72);
-      previewCtx.restore();
-    }
-    if (shotgunImg.complete && shotgunImg.naturalWidth > 0) {
-      previewCtx.save();
-      previewCtx.translate(bodyWidth / 2 + Math.cos(gunAngle) * 19, bodyHeight / 2 + 15 + Math.sin(gunAngle) * 19);
-      previewCtx.rotate(gunAngle);
-      previewCtx.drawImage(shotgunImg, 0, 0, 1536, 1024, -30, -18, 58, 36);
-      previewCtx.restore();
-    }
+    const cameraWidth = Math.max(280, 180 * bodyWidth / bodyHeight);
+    draw(previewCtx, preview, {
+      x: playerPos.x,
+      y: playerPos.y,
+      scale: Math.min(bodyWidth / cameraWidth, bodyHeight / (cameraWidth * bodyHeight / bodyWidth)),
+    }, false);
 
     const centerX = canvasRect.left + playerPos.x * canvasRect.width / worldW;
     const centerY = canvasRect.top + playerPos.y * canvasRect.height / worldH;
     const left = Math.max(6, Math.min(window.innerWidth - width - 6, centerX - width / 2));
     const top = Math.max(6, Math.min(window.innerHeight - height - 6, centerY - height / 2));
     const mergeProgress = gs.clippyWindowActive ? 0 : gs.clippyWindowMergeTimer / 12;
-    clippyWindowElement.style.width = `${width}px`;
-    clippyWindowElement.style.height = `${height}px`;
     clippyWindowElement.style.left = `${left}px`;
     clippyWindowElement.style.top = `${top}px`;
     clippyWindowElement.style.opacity = `${1 - mergeProgress}`;
