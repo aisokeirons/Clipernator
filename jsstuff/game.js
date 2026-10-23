@@ -148,6 +148,9 @@ function initGameState() {
     waveEnemiesLeft: CFG.WAVE_ENEMIES_BASE + CFG.WAVE_ENEMIES_GROWTH, waveKills: 0,
     unlockedItems: [], itemCooldowns: {},
     pendingChoice: false,
+    clippyOutsideTimer: 0,
+    clippyWindowActive: false,
+    clippyWindowMergeTimer: 0,
     heldGiftBox: null,
     forkGrabbed: false,
 
@@ -822,6 +825,7 @@ function loop(timestamp = 0) {
 }
 
 const utensilWindowElements = new Map();
+let clippyWindowElement = null;
 
 function renderUtensilWindows() {
   const layer = document.getElementById('utensil-window-layer');
@@ -829,6 +833,7 @@ function renderUtensilWindows() {
   if (!canvasRect.width || !canvasRect.height || !gameRunning) {
     layer.replaceChildren();
     utensilWindowElements.clear();
+    clippyWindowElement = null;
     return;
   }
 
@@ -903,7 +908,7 @@ function renderUtensilWindows() {
 
     const preview = card.lastElementChild.firstElementChild;
     const width = Math.min(480, Math.max(140, members.length * 82 + 32));
-    const height = 112;
+    const height = 154;
     const dpr = window.devicePixelRatio || 1;
     const bodyHeight = height - 26;
     preview.width = Math.round((width - 8) * dpr);
@@ -913,7 +918,7 @@ function renderUtensilWindows() {
     previewCtx.clearRect(0, 0, width - 8, bodyHeight);
     previewCtx.fillStyle = '#000';
     previewCtx.fillRect(0, 0, width - 8, bodyHeight);
-    const iconScale = Math.min(0.62, ((width - 8) / (members.length + 1)) / 96);
+    const iconScale = Math.min(1.1, ((width - 8) / (members.length + 1)) / 60);
     for (let i = 0; i < members.length; i++) {
       const member = members[i];
       const hp = ECS.get(member.id, 'hp');
@@ -927,10 +932,6 @@ function renderUtensilWindows() {
       previewCtx.scale(iconScale, iconScale);
       drawUtensil({ x: 0, y: 0 }, hp, localAi, gs.frozen, previewCtx);
       previewCtx.restore();
-      previewCtx.fillStyle = '#fff';
-      previewCtx.font = '9px "MS Sans Serif", Arial, sans-serif';
-      previewCtx.textAlign = 'center';
-      previewCtx.fillText(member.enemy.subtype.toUpperCase(), x, bodyHeight - 3);
     }
     const outsideMembers = members.filter(member =>
       member.pos.x < 0 || member.pos.x > worldW || member.pos.y < 0 || member.pos.y > worldH
@@ -957,6 +958,77 @@ function renderUtensilWindows() {
     if (groups.has(groupId)) continue;
     card.remove();
     utensilWindowElements.delete(groupId);
+  }
+
+  const playerPos = ECS.get(gs.playerId, 'pos');
+  const playerOutside = playerPos.x < 0 || playerPos.x > worldW
+    || playerPos.y < 0 || playerPos.y > worldH;
+  if (playerOutside) {
+    gs.clippyWindowActive = true;
+    gs.clippyWindowMergeTimer = 12;
+  } else if (gs.clippyWindowActive) {
+    gs.clippyWindowActive = false;
+    gs.clippyWindowMergeTimer = 12;
+  } else if (gs.clippyWindowMergeTimer > 0) {
+    gs.clippyWindowMergeTimer--;
+  }
+
+  if (gs.clippyWindowActive || gs.clippyWindowMergeTimer > 0) {
+    if (!clippyWindowElement) {
+      clippyWindowElement = document.createElement('div');
+      clippyWindowElement.className = 'utensil-window';
+      clippyWindowElement.innerHTML = '<div class="utensil-window-title">Clippy</div><div class="utensil-window-body"><canvas></canvas></div>';
+      layer.appendChild(clippyWindowElement);
+    }
+
+    const width = 160;
+    const height = 154;
+    const bodyWidth = width - 8;
+    const bodyHeight = height - 26;
+    const preview = clippyWindowElement.lastElementChild.firstElementChild;
+    const dpr = window.devicePixelRatio || 1;
+    preview.width = Math.round(bodyWidth * dpr);
+    preview.height = Math.round(bodyHeight * dpr);
+    const previewCtx = preview.getContext('2d');
+    previewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    previewCtx.fillStyle = '#000';
+    previewCtx.fillRect(0, 0, bodyWidth, bodyHeight);
+
+    if (playerCanvas) {
+      previewCtx.save();
+      previewCtx.translate(bodyWidth / 2, bodyHeight / 2 + 12);
+      previewCtx.scale(Math.cos(playerMoveAngle) < 0 ? -1 : 1, 1);
+      previewCtx.drawImage(playerCanvas, 0, 0, playerCanvas.width, playerCanvas.height, -36, -54, 72, 72);
+      previewCtx.restore();
+    } else if (playerImg.complete && playerImg.naturalWidth > 0) {
+      previewCtx.save();
+      previewCtx.translate(bodyWidth / 2, bodyHeight / 2 + 12);
+      previewCtx.scale(Math.cos(playerMoveAngle) < 0 ? -1 : 1, 1);
+      previewCtx.drawImage(playerImg, 0, 0, playerImg.naturalWidth, playerImg.naturalHeight, -36, -54, 72, 72);
+      previewCtx.restore();
+    }
+    if (shotgunImg.complete && shotgunImg.naturalWidth > 0) {
+      previewCtx.save();
+      previewCtx.translate(bodyWidth / 2 + Math.cos(gunAngle) * 19, bodyHeight / 2 + 15 + Math.sin(gunAngle) * 19);
+      previewCtx.rotate(gunAngle);
+      previewCtx.drawImage(shotgunImg, 0, 0, 1536, 1024, -30, -18, 58, 36);
+      previewCtx.restore();
+    }
+
+    const centerX = canvasRect.left + playerPos.x * canvasRect.width / worldW;
+    const centerY = canvasRect.top + playerPos.y * canvasRect.height / worldH;
+    const left = Math.max(6, Math.min(window.innerWidth - width - 6, centerX - width / 2));
+    const top = Math.max(6, Math.min(window.innerHeight - height - 6, centerY - height / 2));
+    const mergeProgress = gs.clippyWindowActive ? 0 : gs.clippyWindowMergeTimer / 12;
+    clippyWindowElement.style.width = `${width}px`;
+    clippyWindowElement.style.height = `${height}px`;
+    clippyWindowElement.style.left = `${left}px`;
+    clippyWindowElement.style.top = `${top}px`;
+    clippyWindowElement.style.opacity = `${1 - mergeProgress}`;
+    clippyWindowElement.style.transform = mergeProgress ? `scale(${1 - mergeProgress * 0.35})` : 'scale(1)';
+  } else if (clippyWindowElement) {
+    clippyWindowElement.remove();
+    clippyWindowElement = null;
   }
 }
 

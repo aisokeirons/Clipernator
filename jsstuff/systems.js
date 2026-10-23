@@ -684,21 +684,25 @@ const topSpd = slowed ? CFG.PLAYER_SPEED * 0.45 : CFG.PLAYER_SPEED * speedMult;
 if (gs.knockingPinsActive) {
   // Skip all friction/cap logic — velocity is set directly by sysTimers each frame
   pos.x += vel.vx; pos.y += vel.vy;
-  const bouncy = gs.bouncyHouse;
-  if (pos.x < CFG.WALL_PAD) { pos.x = CFG.WALL_PAD; vel.vx = bouncy ? Math.abs(vel.vx) : 0; }
-  if (pos.x > worldW - CFG.WALL_PAD) { pos.x = worldW - CFG.WALL_PAD; vel.vx = bouncy ? -Math.abs(vel.vx) : 0; }
-  if (pos.y < CFG.WALL_PAD) { pos.y = CFG.WALL_PAD; vel.vy = bouncy ? Math.abs(vel.vy) : 0; }
-  if (pos.y > worldH - CFG.WALL_PAD) { pos.y = worldH - CFG.WALL_PAD; vel.vy = bouncy ? -Math.abs(vel.vy) : 0; }
+  if (gs.bouncyHouse) {
+    if (pos.x < CFG.WALL_PAD) vel.vx = Math.abs(vel.vx);
+    if (pos.x > worldW - CFG.WALL_PAD) vel.vx = -Math.abs(vel.vx);
+    if (pos.y < CFG.WALL_PAD) vel.vy = Math.abs(vel.vy);
+    if (pos.y > worldH - CFG.WALL_PAD) vel.vy = -Math.abs(vel.vy);
+  }
   gunX = pos.x; gunY = pos.y; // keep gun synced during pin charge
   gunAngle = Math.atan2(vel.vy, vel.vx);
+  tickClippyOutsideDamage(pos);
   return;
 }
   pos.x+=vel.vx; pos.y+=vel.vy;
-  const bouncy=gs.bouncyHouse;
-  if (pos.x<CFG.WALL_PAD){pos.x=CFG.WALL_PAD;vel.vx=bouncy?Math.abs(vel.vx):0;}
-  if (pos.x>worldW-CFG.WALL_PAD){pos.x=worldW-CFG.WALL_PAD;vel.vx=bouncy?-Math.abs(vel.vx):0;}
-  if (pos.y<CFG.WALL_PAD){pos.y=CFG.WALL_PAD;vel.vy=bouncy?Math.abs(vel.vy):0;}
-  if (pos.y>worldH-CFG.WALL_PAD){pos.y=worldH-CFG.WALL_PAD;vel.vy=bouncy?-Math.abs(vel.vy):0;}
+  if (gs.bouncyHouse) {
+    if (pos.x < CFG.WALL_PAD) vel.vx = Math.abs(vel.vx);
+    if (pos.x > worldW - CFG.WALL_PAD) vel.vx = -Math.abs(vel.vx);
+    if (pos.y < CFG.WALL_PAD) vel.vy = Math.abs(vel.vy);
+    if (pos.y > worldH - CFG.WALL_PAD) vel.vy = -Math.abs(vel.vy);
+  }
+  tickClippyOutsideDamage(pos);
   const moveSpd=Math.hypot(vel.vx,vel.vy);
   if (moveSpd>0.5){playerMoveAngle=Math.atan2(vel.vy,vel.vx);}
   else{let da=gunAngle-playerMoveAngle;while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;playerMoveAngle+=da*0.04;}
@@ -716,6 +720,22 @@ if (gs.knockingPinsActive) {
     if (!ECS.has(gs.heldGiftBox,'pos')){gs.heldGiftBox=null;}
     else{const hbpos=ECS.get(gs.heldGiftBox,'pos'),ppos=ECS.get(gs.playerId,'pos');hbpos.x=ppos.x+Math.cos(gunAngle)*36;hbpos.y=ppos.y+Math.sin(gunAngle)*36;}
   }
+}
+
+function tickClippyOutsideDamage(pos) {
+  const outside = pos.x < 0 || pos.x > worldW || pos.y < 0 || pos.y > worldH;
+  if (!outside) {
+    gs.clippyOutsideTimer = 0;
+    return;
+  }
+
+  gs.clippyOutsideTimer++;
+  if (gs.clippyOutsideTimer < 60) return;
+  gs.clippyOutsideTimer = 0;
+  gs.health = Math.max(0, gs.health - 1);
+  gs.flawlessThisWave = false;
+  updateHUD();
+  if (gs.health <= 0) gameOver();
 }
 
 function sysConfusedEnemyCollision() {
