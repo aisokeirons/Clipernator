@@ -902,6 +902,8 @@ function renderUtensilWindows() {
     const previewCtx = preview.getContext('2d');
     previewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     previewCtx.clearRect(0, 0, width - 8, bodyHeight);
+    previewCtx.fillStyle = '#000';
+    previewCtx.fillRect(0, 0, width - 8, bodyHeight);
     const iconScale = Math.min(0.62, ((width - 8) / (members.length + 1)) / 96);
     for (let i = 0; i < members.length; i++) {
       const member = members[i];
@@ -914,9 +916,9 @@ function renderUtensilWindows() {
       previewCtx.save();
       previewCtx.translate(x, y);
       previewCtx.scale(iconScale, iconScale);
-      drawUtensil({ x: 0, y: 0 }, hp, localAi, gs.frozen, previewCtx);
+      drawUtensil({ x: 0, y: 0 }, hp, localAi, gs.frozen, previewCtx, true);
       previewCtx.restore();
-      previewCtx.fillStyle = '#222';
+      previewCtx.fillStyle = '#fff';
       previewCtx.font = '9px "MS Sans Serif", Arial, sans-serif';
       previewCtx.textAlign = 'center';
       previewCtx.fillText(member.enemy.subtype.toUpperCase(), x, bodyHeight - 3);

@@ -82,9 +82,18 @@ function _drawUtensilShape(ctx, type, color, scale = 1) {
   ctx.lineCap     = 'round';
 
   if (type === 'fork') {
-    // Map orbit angle to frame 0-7
-    return; // sprite handled separately
-  
+    ctx.beginPath();
+    ctx.moveTo(-4 * scale, -9 * scale);
+    ctx.lineTo(-4 * scale, 2 * scale);
+    ctx.moveTo(0, -11 * scale);
+    ctx.lineTo(0, 2 * scale);
+    ctx.moveTo(4 * scale, -9 * scale);
+    ctx.lineTo(4 * scale, 2 * scale);
+    ctx.moveTo(-4 * scale, 2 * scale);
+    ctx.lineTo(0, 6 * scale);
+    ctx.lineTo(4 * scale, 2 * scale);
+    ctx.lineTo(0, 14 * scale);
+    ctx.stroke();
   } else if (type === 'knife') {
     ctx.beginPath(); ctx.moveTo(0, 14 * scale); ctx.lineTo(0, 2 * scale); ctx.stroke();
     ctx.beginPath();
@@ -102,7 +111,7 @@ function _drawUtensilShape(ctx, type, color, scale = 1) {
   
 }
 
-function drawUtensil(epos, ehp, ai, frozen, targetCtx = ctx) {
+function drawUtensil(epos, ehp, ai, frozen, targetCtx = ctx, forceVector = false) {
   const { x, y } = epos;
   const utensils   = ['fork', 'knife', 'spoon'];
   const colors     = { fork: '#ffcc88', knife: '#ccccee', spoon: '#ffddaa' };
@@ -123,11 +132,11 @@ function drawUtensil(epos, ehp, ai, frozen, targetCtx = ctx) {
     const frame = Math.floor(((orbitAngle % (Math.PI * 2)) / (Math.PI * 2)) * 8) % 8;
 
     if (u === 'fork') {
-      drawForkFrame(frame, ox, oy, 0, targetCtx);
+      drawForkFrame(frame, ox, oy, 0, targetCtx, forceVector);
     } else if (u === 'knife') {
-      drawKnifeFrame(frame, ox, oy, 0, targetCtx);
+      drawKnifeFrame(frame, ox, oy, 0, targetCtx, forceVector);
     } else if (u === 'spoon') {
-      drawSpoonFrame(frame, ox, oy, 0, targetCtx);
+      drawSpoonFrame(frame, ox, oy, 0, targetCtx, forceVector);
     }
   }
 
@@ -190,8 +199,15 @@ function drawUtensil(epos, ehp, ai, frozen, targetCtx = ctx) {
   targetCtx.fillRect(x - bw / 2, y - 36, bw * (ehp.hp / ehp.maxHp), 5);
 }
 
-function drawForkFrame(frameIndex, x, y, angle, targetCtx = ctx) {
-  if (!forkSheetImg.complete || forkSheetImg.naturalWidth === 0) return;
+function drawForkFrame(frameIndex, x, y, angle, targetCtx = ctx, forceVector = false) {
+  if (forceVector || !forkSheetImg.complete || forkSheetImg.naturalWidth === 0) {
+    targetCtx.save();
+    targetCtx.translate(x, y);
+    targetCtx.rotate(angle);
+    _drawUtensilShape(targetCtx, 'fork', '#ffcc88', 2.5);
+    targetCtx.restore();
+    return;
+  }
   
   const FORK_FRAME_W = 180;
   const FORK_FRAME_H = 752;
@@ -219,8 +235,15 @@ function drawForkFrame(frameIndex, x, y, angle, targetCtx = ctx) {
   targetCtx.restore();
 }
 
-function drawKnifeFrame(frameIndex, x, y, angle, targetCtx = ctx) {
-  if (!knifeSheetImg.complete || knifeSheetImg.naturalWidth === 0) return;
+function drawKnifeFrame(frameIndex, x, y, angle, targetCtx = ctx, forceVector = false) {
+  if (forceVector || !knifeSheetImg.complete || knifeSheetImg.naturalWidth === 0) {
+    targetCtx.save();
+    targetCtx.translate(x, y);
+    targetCtx.rotate(angle);
+    _drawUtensilShape(targetCtx, 'knife', '#ccccee', 2.5);
+    targetCtx.restore();
+    return;
+  }
   const KNIFE_FRAME_W = 180;
   const KNIFE_FRAME_H = 752;
   const KNIFE_COLS = 3;
@@ -239,8 +262,15 @@ function drawKnifeFrame(frameIndex, x, y, angle, targetCtx = ctx) {
   targetCtx.restore();
 }
 
-function drawSpoonFrame(frameIndex, x, y, angle, targetCtx = ctx) {
-  if (!spoonSheetImg.complete || spoonSheetImg.naturalWidth === 0) return;
+function drawSpoonFrame(frameIndex, x, y, angle, targetCtx = ctx, forceVector = false) {
+  if (forceVector || !spoonSheetImg.complete || spoonSheetImg.naturalWidth === 0) {
+    targetCtx.save();
+    targetCtx.translate(x, y);
+    targetCtx.rotate(angle);
+    _drawUtensilShape(targetCtx, 'spoon', '#ffddaa', 2.5);
+    targetCtx.restore();
+    return;
+  }
   const SPOON_FRAME_W = 180;
   const SPOON_FRAME_H = 752;
   const SPOON_COLS = 3;
