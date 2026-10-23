@@ -102,7 +102,7 @@ function _drawUtensilShape(ctx, type, color, scale = 1) {
   
 }
 
-function drawUtensil(epos, ehp, ai, frozen) {
+function drawUtensil(epos, ehp, ai, frozen, targetCtx = ctx) {
   const { x, y } = epos;
   const utensils   = ['fork', 'knife', 'spoon'];
   const colors     = { fork: '#ffcc88', knife: '#ccccee', spoon: '#ffddaa' };
@@ -110,8 +110,8 @@ function drawUtensil(epos, ehp, ai, frozen) {
   const activeIdx  = ai.uActiveIdx !== undefined ? ai.uActiveIdx : -1;
   const state      = ai.uState || 'IDLE';
 
-  ctx.save();
-  if (frozen) { ctx.globalAlpha = 0.7; ctx.shadowColor = '#aaccff'; ctx.shadowBlur = 16; }
+  targetCtx.save();
+  if (frozen) { targetCtx.globalAlpha = 0.7; targetCtx.shadowColor = '#aaccff'; targetCtx.shadowBlur = 16; }
 
 // Draw orbiting utensils (skip the active one while launched)
   for (let i = 0; i < 3; i++) {
@@ -123,11 +123,11 @@ function drawUtensil(epos, ehp, ai, frozen) {
     const frame = Math.floor(((orbitAngle % (Math.PI * 2)) / (Math.PI * 2)) * 8) % 8;
 
     if (u === 'fork') {
-      drawForkFrame(frame, ox, oy, 0);
+      drawForkFrame(frame, ox, oy, 0, targetCtx);
     } else if (u === 'knife') {
-      drawKnifeFrame(frame, ox, oy, 0);
+      drawKnifeFrame(frame, ox, oy, 0, targetCtx);
     } else if (u === 'spoon') {
-      drawSpoonFrame(frame, ox, oy, 0);
+      drawSpoonFrame(frame, ox, oy, 0, targetCtx);
     }
   }
 
@@ -140,57 +140,57 @@ function drawUtensil(epos, ehp, ai, frozen) {
     const subtype = utensils[Math.max(0, activeIdx)] || 'fork';
 
     if (subtype === 'fork' || state.startsWith('FORK_')) {
-      ctx.save();
-      ctx.translate(ai.uTipX, ai.uTipY);
-      ctx.rotate(tipAngle + Math.PI / 2);
+      targetCtx.save();
+      targetCtx.translate(ai.uTipX, ai.uTipY);
+      targetCtx.rotate(tipAngle + Math.PI / 2);
       if (forkTipImg.complete && forkTipImg.naturalWidth > 0) {
-        ctx.drawImage(forkTipImg, -10, -42, 20, 84);
+        targetCtx.drawImage(forkTipImg, -10, -42, 20, 84);
       } else {
-        ctx.shadowColor = frozen ? '#aaccff' : '#ffcc88';
-        ctx.shadowBlur  = frozen ? 10 : 20;
-        _drawUtensilShape(ctx, 'fork', frozen ? '#aaddff' : '#ffcc88', 1.4);
+        targetCtx.shadowColor = frozen ? '#aaccff' : '#ffcc88';
+        targetCtx.shadowBlur  = frozen ? 10 : 20;
+        _drawUtensilShape(targetCtx, 'fork', frozen ? '#aaddff' : '#ffcc88', 1.4);
       }
-      ctx.restore();
+      targetCtx.restore();
     } else if (subtype === 'knife') {
-      ctx.save();
-      ctx.translate(ai.uTipX, ai.uTipY);
-      ctx.rotate(tipAngle + Math.PI / 2);
+      targetCtx.save();
+      targetCtx.translate(ai.uTipX, ai.uTipY);
+      targetCtx.rotate(tipAngle + Math.PI / 2);
       if (knifeTipImg.complete && knifeTipImg.naturalWidth > 0) {
-        ctx.drawImage(knifeTipImg, -10, -42, 20, 84);
+        targetCtx.drawImage(knifeTipImg, -10, -42, 20, 84);
       } else {
-        ctx.shadowColor = frozen ? '#aaccff' : '#ccccee';
-        ctx.shadowBlur  = frozen ? 10 : 20;
-        _drawUtensilShape(ctx, 'knife', frozen ? '#aaddff' : '#ccccee', 1.4);
+        targetCtx.shadowColor = frozen ? '#aaccff' : '#ccccee';
+        targetCtx.shadowBlur  = frozen ? 10 : 20;
+        _drawUtensilShape(targetCtx, 'knife', frozen ? '#aaddff' : '#ccccee', 1.4);
       }
-      ctx.restore();
+      targetCtx.restore();
     } else if (subtype === 'spoon') {
-      ctx.save();
-      ctx.translate(ai.uTipX, ai.uTipY);
-      ctx.rotate(tipAngle + Math.PI / 2);
+      targetCtx.save();
+      targetCtx.translate(ai.uTipX, ai.uTipY);
+      targetCtx.rotate(tipAngle + Math.PI / 2);
       if (spoonTipImg.complete && spoonTipImg.naturalWidth > 0) {
-        ctx.drawImage(spoonTipImg, -10, -42, 20, 84);
+        targetCtx.drawImage(spoonTipImg, -10, -42, 20, 84);
       } else {
-        ctx.shadowColor = frozen ? '#aaccff' : '#ffddaa';
-        ctx.shadowBlur  = frozen ? 10 : 20;
-        _drawUtensilShape(ctx, 'spoon', frozen ? '#aaddff' : '#ffddaa', 1.4);
+        targetCtx.shadowColor = frozen ? '#aaccff' : '#ffddaa';
+        targetCtx.shadowBlur  = frozen ? 10 : 20;
+        _drawUtensilShape(targetCtx, 'spoon', frozen ? '#aaddff' : '#ffddaa', 1.4);
       }
-      ctx.restore();
+      targetCtx.restore();
     }
   }
 
 
 
-  ctx.restore();
+  targetCtx.restore();
 
   // HP bar
   const bw = 36;
-  ctx.fillStyle = '#330000';
-  ctx.fillRect(x - bw / 2, y - 36, bw, 5);
-  ctx.fillStyle = ehp.hp < ehp.maxHp / 2 ? '#ff6666' : '#cccccc';
-  ctx.fillRect(x - bw / 2, y - 36, bw * (ehp.hp / ehp.maxHp), 5);
+  targetCtx.fillStyle = '#330000';
+  targetCtx.fillRect(x - bw / 2, y - 36, bw, 5);
+  targetCtx.fillStyle = ehp.hp < ehp.maxHp / 2 ? '#ff6666' : '#cccccc';
+  targetCtx.fillRect(x - bw / 2, y - 36, bw * (ehp.hp / ehp.maxHp), 5);
 }
 
-function drawForkFrame(frameIndex, x, y, angle) {
+function drawForkFrame(frameIndex, x, y, angle, targetCtx = ctx) {
   if (!forkSheetImg.complete || forkSheetImg.naturalWidth === 0) return;
   
   const FORK_FRAME_W = 180;
@@ -202,10 +202,10 @@ function drawForkFrame(frameIndex, x, y, angle) {
   const col = frameIndex % FORK_COLS;
   const row = Math.floor(frameIndex / FORK_COLS);
   
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.drawImage(
+  targetCtx.save();
+  targetCtx.translate(x, y);
+  targetCtx.rotate(angle);
+  targetCtx.drawImage(
     forkSheetImg,
     col * FORK_FRAME_W,
     row * FORK_FRAME_H,
@@ -216,10 +216,10 @@ function drawForkFrame(frameIndex, x, y, angle) {
     DRAW_W,
     DRAW_H
   );
-  ctx.restore();
+  targetCtx.restore();
 }
 
-function drawKnifeFrame(frameIndex, x, y, angle) {
+function drawKnifeFrame(frameIndex, x, y, angle, targetCtx = ctx) {
   if (!knifeSheetImg.complete || knifeSheetImg.naturalWidth === 0) return;
   const KNIFE_FRAME_W = 180;
   const KNIFE_FRAME_H = 752;
@@ -228,18 +228,18 @@ function drawKnifeFrame(frameIndex, x, y, angle) {
   const DRAW_H = 84;
   const col = frameIndex % KNIFE_COLS;
   const row = Math.floor(frameIndex / KNIFE_COLS);
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.drawImage(
+  targetCtx.save();
+  targetCtx.translate(x, y);
+  targetCtx.rotate(angle);
+  targetCtx.drawImage(
     knifeSheetImg,
     col * KNIFE_FRAME_W, row * KNIFE_FRAME_H, KNIFE_FRAME_W, KNIFE_FRAME_H,
     -DRAW_W / 2, -DRAW_H / 2, DRAW_W, DRAW_H
   );
-  ctx.restore();
+  targetCtx.restore();
 }
 
-function drawSpoonFrame(frameIndex, x, y, angle) {
+function drawSpoonFrame(frameIndex, x, y, angle, targetCtx = ctx) {
   if (!spoonSheetImg.complete || spoonSheetImg.naturalWidth === 0) return;
   const SPOON_FRAME_W = 180;
   const SPOON_FRAME_H = 752;
@@ -248,15 +248,15 @@ function drawSpoonFrame(frameIndex, x, y, angle) {
   const DRAW_H = 84;
   const col = frameIndex % SPOON_COLS;
   const row = Math.floor(frameIndex / SPOON_COLS);
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.drawImage(
+  targetCtx.save();
+  targetCtx.translate(x, y);
+  targetCtx.rotate(angle);
+  targetCtx.drawImage(
     spoonSheetImg,
     col * SPOON_FRAME_W, row * SPOON_FRAME_H, SPOON_FRAME_W, SPOON_FRAME_H,
     -DRAW_W / 2, -DRAW_H / 2, DRAW_W, DRAW_H
   );
-  ctx.restore();
+  targetCtx.restore();
 }
 
 function drawWaterBalloon(epos, ehp, ai, frozen) {

@@ -832,6 +832,31 @@ function renderUtensilWindows() {
     return;
   }
 
+  const outsideUtensils = [...ECS.query('enemy', 'pos', 'ai')].filter(id => {
+    const enemy = ECS.get(id, 'enemy');
+    const pos = ECS.get(id, 'pos');
+    const ai = ECS.get(id, 'ai');
+    return enemy.type === 'utensil' && ai.windowActive
+      && (pos.x < 0 || pos.x > worldW || pos.y < 0 || pos.y > worldH);
+  });
+  for (let i = 0; i < outsideUtensils.length; i++) {
+    const firstId = outsideUtensils[i];
+    const firstPos = ECS.get(firstId, 'pos');
+    const firstAi = ECS.get(firstId, 'ai');
+    for (let j = i + 1; j < outsideUtensils.length; j++) {
+      const secondId = outsideUtensils[j];
+      const secondPos = ECS.get(secondId, 'pos');
+      const secondAi = ECS.get(secondId, 'ai');
+      if (firstAi.windowGroup === secondAi.windowGroup
+        || Math.hypot(firstPos.x - secondPos.x, firstPos.y - secondPos.y) >= 110) continue;
+      const oldGroup = secondAi.windowGroup;
+      for (const id of outsideUtensils) {
+        const ai = ECS.get(id, 'ai');
+        if (ai.windowGroup === oldGroup) ai.windowGroup = firstAi.windowGroup;
+      }
+    }
+  }
+
   const groups = new Map();
   for (const id of ECS.query('enemy', 'pos', 'ai')) {
     const enemy = ECS.get(id, 'enemy');
@@ -857,7 +882,7 @@ function renderUtensilWindows() {
     if (!card) {
       card = document.createElement('div');
       card.className = 'utensil-window';
-      card.innerHTML = '<div class="utensil-window-title"></div><div class="utensil-window-body"></div>';
+      card.innerHTML = '<div class="utensil-window-title"></div><div class="utensil-window-body"><canvas></canvas></div>';
       layer.appendChild(card);
       utensilWindowElements.set(groupId, card);
     }
@@ -867,23 +892,35 @@ function renderUtensilWindows() {
     titleElement.textContent = title;
     titleElement.title = title;
 
-    const body = card.lastElementChild;
-    body.replaceChildren();
-    for (const member of members.slice(0, 5)) {
-      const chip = document.createElement('span');
-      chip.className = 'utensil-window-chip';
-      chip.textContent = member.enemy.subtype.toUpperCase();
-      body.appendChild(chip);
+    const preview = card.lastElementChild.firstElementChild;
+    const width = Math.min(480, Math.max(140, members.length * 82 + 32));
+    const height = 112;
+    const dpr = window.devicePixelRatio || 1;
+    const bodyHeight = height - 26;
+    preview.width = Math.round((width - 8) * dpr);
+    preview.height = Math.round(bodyHeight * dpr);
+    const previewCtx = preview.getContext('2d');
+    previewCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    previewCtx.clearRect(0, 0, width - 8, bodyHeight);
+    const iconScale = Math.min(0.62, ((width - 8) / (members.length + 1)) / 96);
+    for (let i = 0; i < members.length; i++) {
+      const member = members[i];
+      const hp = ECS.get(member.id, 'hp');
+      const x = ((i + 1) / (members.length + 1)) * (width - 8);
+      const y = bodyHeight / 2 + 4;
+      const localAi = { ...member.ai };
+      if (localAi.uTipX !== undefined) localAi.uTipX -= member.pos.x;
+      if (localAi.uTipY !== undefined) localAi.uTipY -= member.pos.y;
+      previewCtx.save();
+      previewCtx.translate(x, y);
+      previewCtx.scale(iconScale, iconScale);
+      drawUtensil({ x: 0, y: 0 }, hp, localAi, gs.frozen, previewCtx);
+      previewCtx.restore();
+      previewCtx.fillStyle = '#222';
+      previewCtx.font = '9px "MS Sans Serif", Arial, sans-serif';
+      previewCtx.textAlign = 'center';
+      previewCtx.fillText(member.enemy.subtype.toUpperCase(), x, bodyHeight - 3);
     }
-    if (members.length > 5) {
-      const extra = document.createElement('span');
-      extra.className = 'utensil-window-chip';
-      extra.textContent = `+${members.length - 5}`;
-      body.appendChild(extra);
-    }
-
-    const width = Math.min(248, 132 + Math.max(0, members.length - 1) * 22);
-    const height = members.length > 1 ? 82 : 74;
     const outsideMembers = members.filter(member =>
       member.pos.x < 0 || member.pos.x > worldW || member.pos.y < 0 || member.pos.y > worldH
     );
@@ -892,12 +929,6 @@ function renderUtensilWindows() {
     const anchorY = anchorMembers.reduce((sum, member) => sum + member.pos.y, 0) / anchorMembers.length;
     let centerX = canvasRect.left + anchorX * canvasRect.width / worldW;
     let centerY = canvasRect.top + anchorY * canvasRect.height / worldH;
-    if (outsideMembers.length) {
-      if (anchorX < 0) centerX -= width / 2 + 8;
-      else if (anchorX > worldW) centerX += width / 2 + 8;
-      else if (anchorY < 0) centerY -= height / 2 + 8;
-      else centerY += height / 2 + 8;
-    }
     const left = Math.max(6, Math.min(window.innerWidth - width - 6, centerX - width / 2));
     const top = Math.max(6, Math.min(window.innerHeight - height - 6, centerY - height / 2));
     const mergeProgress = Math.max(...members.map(member =>

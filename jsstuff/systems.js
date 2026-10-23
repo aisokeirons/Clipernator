@@ -1744,8 +1744,13 @@ const nearbyEnemy = [...ECS.query('enemy', 'pos')].some(eid => {
 
 function sysOobCleanup() {
   for (const id of ECS.query('enemy', 'pos', 'ai')) {
+    const enemy = ECS.get(id, 'enemy');
     const pos = ECS.get(id, 'pos');
     const ai  = ECS.get(id, 'ai');
+    if (enemy.type === 'utensil' && ai.windowActive) {
+      ai._oobTimer = 0;
+      continue;
+    }
     const oob = pos.x < -60 || pos.x > worldW + 60 || pos.y < -60 || pos.y > worldH + 60;
     if (oob) {
       ai._oobTimer = (ai._oobTimer || 0) + 1;
@@ -1891,47 +1896,11 @@ const total = [...ECS.query('enemy')].length;
   const ppos=ECS.get(gs.playerId,'pos');
   let x,y;
   if (type === 'utensil') {
-    const sideCenters = [
-      { side: 'left', x: -40, y: worldH / 2 },
-      { side: 'right', x: worldW + 40, y: worldH / 2 },
-      { side: 'top', x: worldW / 2, y: -40 },
-      { side: 'bottom', x: worldW / 2, y: worldH + 40 },
-    ];
-    const side = sideCenters.reduce((farthest, candidate) =>
-      Math.hypot(candidate.x - ppos.x, candidate.y - ppos.y)
-        > Math.hypot(farthest.x - ppos.x, farthest.y - ppos.y) ? candidate : farthest
-    );
-    x = side.x;
-    y = side.y;
-    if (side.side === 'left' || side.side === 'right') {
-      y = 55 + Math.random() * Math.max(1, worldH - 110);
-    } else {
-      x = 55 + Math.random() * Math.max(1, worldW - 110);
-    }
-
-    const nearbyWindows = [...ECS.query('enemy', 'pos', 'ai')].filter(id => {
-      const enemy = ECS.get(id, 'enemy');
-      const ai = ECS.get(id, 'ai');
-      const pos = ECS.get(id, 'pos');
-      return enemy.type === 'utensil' && ai.windowActive
-        && Math.hypot(pos.x - x, pos.y - y) < 155;
-    });
-    if (nearbyWindows.length && Math.random() < 0.55) {
-      const nearbyId = nearbyWindows[Math.floor(Math.random() * nearbyWindows.length)];
-      const nearbyPos = ECS.get(nearbyId, 'pos');
-      const nearbyAi = ECS.get(nearbyId, 'ai');
-      const joinSide = nearbyPos.x < 0 ? 'left'
-        : nearbyPos.x > worldW ? 'right'
-          : nearbyPos.y < 0 ? 'top' : 'bottom';
-      if (joinSide === 'left' || joinSide === 'right') {
-        x = joinSide === 'left' ? -40 : worldW + 40;
-        y = Math.max(55, Math.min(worldH - 55, nearbyPos.y + (Math.random() - 0.5) * 70));
-      } else {
-        y = joinSide === 'top' ? -40 : worldH + 40;
-        x = Math.max(55, Math.min(worldW - 55, nearbyPos.x + (Math.random() - 0.5) * 70));
-      }
-      var windowGroup = nearbyAi.windowGroup;
-    }
+    const rect = canvas.getBoundingClientRect();
+    const screenX = Math.random() * window.innerWidth;
+    const screenY = Math.random() * window.innerHeight;
+    x = ((screenX - rect.left) / rect.width) * worldW;
+    y = ((screenY - rect.top) / rect.height) * worldH;
   } else {
     let attempts = 0;
     do {
@@ -1954,8 +1923,8 @@ const total = [...ECS.query('enemy')].length;
   ECS.add(id,'physics',{speed:(1.2+Math.random()*0.6+gs.wave*0.12)*def.speedMult});
   const ai = ECS.add(id,'ai',{shootCooldown:120,ambushTimer:0,diveTimer:0,dashHit:false,balloonOrient:type==='waterballoon'?Math.floor(Math.random()*4):0});
   if (type === 'utensil') {
-    ai.windowActive = true;
-    ai.windowGroup = windowGroup || ++utensilWindowGroupSequence;
+    ai.windowActive = x < 0 || x > worldW || y < 0 || y > worldH;
+    if (ai.windowActive) ai.windowGroup = ++utensilWindowGroupSequence;
   }
   spawnParticles(x, y, '#ff4400', 10);
 if (type === 'utensil') SFX.playAt('utensilSpawn', x, y, 0.45);
