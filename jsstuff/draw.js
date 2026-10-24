@@ -432,7 +432,7 @@ ctx.rotate(angle);
 
 }
 
-function drawGiftBox(epos, ehp, ai, frozen) {
+function drawGiftBox(epos, ehp, ai, frozen, advanceVisualState = true) {
   const { x, y } = epos;
   const DRAW_SIZE = 64;
 
@@ -892,7 +892,7 @@ function drawMiniClown(epos, ehp, ai, frozen) {
 // ============================================================
 // PLAYER DRAW
 // ============================================================
-function drawPlayer() {
+function drawPlayer(advanceVisualState = true) {
   const ppos = ECS.get(gs.playerId, 'pos');
   let {x, y} = ppos;
 
@@ -1526,7 +1526,7 @@ for(const id of ECS.query('enemy','pos','hp')) {
 
   if (type==='utensil')     drawUtensil(epos, ehp, ai, frozen);
   else if (type==='waterballoon')        drawWaterBalloon(epos, ehp, ai, frozen);
-  else if (type==='giftBox')     drawGiftBox(epos, ehp, ai, frozen);
+  else if (type==='giftBox')     drawGiftBox(epos, ehp, ai, frozen, advanceVisualState);
 else if (type==='partyHat')    drawPartyHat(epos, ehp, ai, frozen);
      else if (type === 'cakeBoss') drawCakeBoss(epos, ehp, ai, frozen);
   else if (type==='cannonball')  drawCannonball(epos, ehp, ai, frozen);
@@ -1640,7 +1640,7 @@ if (isCritMass) {
     ctx.restore();
   }
 
-  drawPlayer();
+  drawPlayer(advanceVisualState);
 
  // Clippy item pickup speech bubble
 if (gs.clippyPickupTimer > 0) {
