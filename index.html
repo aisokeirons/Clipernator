@@ -104,6 +104,7 @@ body::before { display: none; }
   font-family: 'MS Sans Serif', Arial, sans-serif;
   transition: width 120ms ease, height 120ms ease, opacity 180ms ease, transform 180ms ease;
   transform-origin: center;
+  pointer-events: auto;
 }
 
 .utensil-window-title {
@@ -117,6 +118,8 @@ body::before { display: none; }
   line-height: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: move;
+  user-select: none;
 }
 
 .utensil-window-body {
