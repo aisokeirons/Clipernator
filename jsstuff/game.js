@@ -1013,6 +1013,10 @@ function renderOffscreenWindows() {
       y: cameraY,
       scale: Math.min(bodyWidth / cameraWidth, bodyHeight / (cameraWidth * bodyHeight / bodyWidth)),
     }, false);
+    const previewScale = Math.min(bodyWidth / cameraWidth, bodyHeight / (cameraWidth * bodyHeight / bodyWidth));
+    preview.dataset.cameraX = String(cameraX);
+    preview.dataset.cameraY = String(cameraY);
+    preview.dataset.cameraScale = String(previewScale);
     const outsideMembers = members.filter(member =>
       member.pos.x < 0 || member.pos.x > worldW || member.pos.y < 0 || member.pos.y > worldH
     );
@@ -1091,6 +1095,10 @@ function renderOffscreenWindows() {
       y: playerPos.y,
       scale: Math.min(bodyWidth / cameraWidth, bodyHeight / (cameraWidth * bodyHeight / bodyWidth)),
     }, false);
+    const previewScale = Math.min(bodyWidth / cameraWidth, bodyHeight / (cameraWidth * bodyHeight / bodyWidth));
+    preview.dataset.cameraX = String(playerPos.x);
+    preview.dataset.cameraY = String(playerPos.y);
+    preview.dataset.cameraScale = String(previewScale);
 
     positionWindowWithEntity(clippyWindowElement, playerPos.x, playerPos.y, canvasRect, width, height);
     const mergeProgress = gs.clippyWindowActive ? 0 : gs.clippyWindowMergeTimer / 12;
@@ -1277,14 +1285,34 @@ document.addEventListener('keydown', e => {
 
 document.addEventListener('keyup', e => { keys[e.key] = false; });
 
-canvas.addEventListener('click', e => {
-  if (!gameRunning) return;
+document.addEventListener('click', e => {
+  if (!gameRunning || isPaused || !gs.playerId) return;
+  const isCanvasClick = e.target === canvas;
+  const isMiniViewClick = e.target instanceof HTMLCanvasElement
+    && e.target.closest('.utensil-window-body');
+  if (!isCanvasClick && !gs.clippyWindowActive) return;
+  if (e.target.closest('button, input, select, textarea, a, [role="button"], .utensil-window-title, #pause-menu, #overlay, #item-choice, #floor-transition, #keybind-screen')) return;
+
   const rect = canvas.getBoundingClientRect();
+  let worldX;
+  let worldY;
+  if (isMiniViewClick) {
+    const miniRect = e.target.getBoundingClientRect();
+    const scale = Number(e.target.dataset.cameraScale);
+    if (!scale) return;
+    worldX = Number(e.target.dataset.cameraX) + (e.clientX - miniRect.left - miniRect.width / 2) / scale;
+    worldY = Number(e.target.dataset.cameraY) + (e.clientY - miniRect.top - miniRect.height / 2) / scale;
+  } else {
+    if (!rect.width || !rect.height) return;
+    worldX = ((e.clientX - rect.left) / rect.width) * worldW;
+    worldY = ((e.clientY - rect.top) / rect.height) * worldH;
+  }
   const shake = getScreenShakeOffset();
-  const worldX = ((e.clientX - rect.left) / rect.width) * worldW - shake.x;
-  const worldY = ((e.clientY - rect.top) / rect.height) * worldH - shake.y;
   mouse.screenX = worldX + shake.x;
   mouse.screenY = worldY + shake.y;
+  mouse.x = worldX;
+  mouse.y = worldY;
+  gunAngle = Math.atan2(worldY - gunY, worldX - gunX);
   shoot();
 });
 

@@ -1092,8 +1092,11 @@ if (b.isBowlingBall) {
       return b.life>0&&(b.bounces||0)<=8;
     }
     const oob=b.x<-10||b.x>worldW+10||b.y<-10||b.y>worldH+10;
-    if (oob&&b.isExplosive){detonateExplosiveBullet(b,Math.max(0,Math.min(worldW,b.x)),Math.max(0,Math.min(worldH,b.y)));return false;}
-    return b.life>0&&!oob;
+    if (oob && b.isExplosive) {
+      detonateExplosiveBullet(b, b.x, b.y);
+      return false;
+    }
+    return b.life > 0 && (b.travelsOffscreen || !oob);
   });
 }
 
@@ -1994,6 +1997,7 @@ function shoot() {
       life: 220, maxLife: 220,
       damageMult: dmg,
       isDud: false,
+      travelsOffscreen: !!gs.clippyWindowActive,
       isBowlingBall: true,
       bounces: 0,
       hitEnemies: new Set(), // pierce tracking
@@ -2019,7 +2023,8 @@ function shoot() {
       vx: Math.cos(a) * CFG.BULLET_SPEED,
       vy: Math.sin(a) * CFG.BULLET_SPEED,
       angle: a, life: CFG.BULLET_LIFE,
-      damageMult: finalMult, isDud
+      damageMult: finalMult, isDud,
+      travelsOffscreen: !!gs.clippyWindowActive
     });
   }
   spawnParticles(muzzle.x,muzzle.y,doubleCount>0?'#ff44ff':'#ff8800',doubleCount>0?8:6);
