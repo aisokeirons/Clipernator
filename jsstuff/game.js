@@ -834,6 +834,7 @@ function makeFloatingWindowDraggable(card) {
     if (event.button !== 0) return;
     const rect = card.getBoundingClientRect();
     drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
+    card.dataset.dragging = 'true';
     titleBar.setPointerCapture(event.pointerId);
     event.preventDefault();
   });
@@ -843,10 +844,49 @@ function makeFloatingWindowDraggable(card) {
     card.style.top = `${drag.top + event.clientY - drag.y}px`;
   });
   const finishDrag = event => {
-    if (drag && event.pointerId === drag.pointerId) drag = null;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const rect = card.getBoundingClientRect();
+    card.dataset.dragOffsetX = String((Number(card.dataset.dragOffsetX) || 0)
+      + rect.left - Number(card.dataset.trackedLeft));
+    card.dataset.dragOffsetY = String((Number(card.dataset.dragOffsetY) || 0)
+      + rect.top - Number(card.dataset.trackedTop));
+    card.dataset.dragging = 'false';
+    drag = null;
   };
   titleBar.addEventListener('pointerup', finishDrag);
   titleBar.addEventListener('pointercancel', finishDrag);
+}
+
+function positionWindowWithEntity(card, worldX, worldY, rect, width, height) {
+  if (!card.dataset.positioned) {
+    let screenX = rect.left + worldX * rect.width / worldW;
+    let screenY = rect.top + worldY * rect.height / worldH;
+    if (worldX < 0) screenX = rect.left - width / 2 - 8;
+    else if (worldX > worldW) screenX = rect.right + width / 2 + 8;
+    else if (worldY < 0) screenY = rect.top - height / 2 - 8;
+    else if (worldY > worldH) screenY = rect.bottom + height / 2 + 8;
+    card.dataset.positioned = 'true';
+    card.dataset.trackWorldX = String(worldX);
+    card.dataset.trackWorldY = String(worldY);
+    card.dataset.trackScreenX = String(screenX);
+    card.dataset.trackScreenY = String(screenY);
+    card.dataset.trackScaleX = String(rect.width / worldW);
+    card.dataset.trackScaleY = String(rect.height / worldH);
+    card.dataset.dragOffsetX = '0';
+    card.dataset.dragOffsetY = '0';
+  }
+  if (card.dataset.dragging === 'true') return;
+
+  const centerX = Number(card.dataset.trackScreenX)
+    + (worldX - Number(card.dataset.trackWorldX)) * Number(card.dataset.trackScaleX);
+  const centerY = Number(card.dataset.trackScreenY)
+    + (worldY - Number(card.dataset.trackWorldY)) * Number(card.dataset.trackScaleY);
+  const left = centerX - width / 2 + (Number(card.dataset.dragOffsetX) || 0);
+  const top = centerY - height / 2 + (Number(card.dataset.dragOffsetY) || 0);
+  card.dataset.trackedLeft = String(left);
+  card.dataset.trackedTop = String(top);
+  card.style.left = `${left}px`;
+  card.style.top = `${top}px`;
 }
 
 function windowOverlapsMainWindow(card) {
@@ -979,19 +1019,7 @@ function renderOffscreenWindows() {
     const anchorMembers = outsideMembers.length ? outsideMembers : members;
     const anchorX = anchorMembers.reduce((sum, member) => sum + member.pos.x, 0) / anchorMembers.length;
     const anchorY = anchorMembers.reduce((sum, member) => sum + member.pos.y, 0) / anchorMembers.length;
-    if (!card.dataset.positioned) {
-      const centerX = canvasRect.left + anchorX * canvasRect.width / worldW;
-      const centerY = canvasRect.top + anchorY * canvasRect.height / worldH;
-      let left = centerX - width / 2;
-      let top = centerY - height / 2;
-      if (anchorX < 0) left = canvasRect.left - width - 8;
-      else if (anchorX > worldW) left = canvasRect.right + 8;
-      else if (anchorY < 0) top = canvasRect.top - height - 8;
-      else if (anchorY > worldH) top = canvasRect.bottom + 8;
-      card.style.left = `${Math.max(6, Math.min(window.innerWidth - width - 6, left))}px`;
-      card.style.top = `${Math.max(6, Math.min(window.innerHeight - height - 6, top))}px`;
-      card.dataset.positioned = 'true';
-    }
+    positionWindowWithEntity(card, anchorX, anchorY, canvasRect, width, height);
     const mergeProgress = Math.max(...members.map(member =>
       member.ai.windowActive ? 0 : member.ai.windowMergeTimer / 12
     ));
@@ -1064,21 +1092,7 @@ function renderOffscreenWindows() {
       scale: Math.min(bodyWidth / cameraWidth, bodyHeight / (cameraWidth * bodyHeight / bodyWidth)),
     }, false);
 
-    if (!clippyWindowElement.dataset.positioned) {
-      const centerX = canvasRect.left + playerPos.x * canvasRect.width / worldW;
-      const centerY = canvasRect.top + playerPos.y * canvasRect.height / worldH;
-      let left = centerX - width / 2;
-      let top = centerY - height / 2;
-      if (playerPos.x < 0) left = canvasRect.left - width - 8;
-      else if (playerPos.x > worldW) left = canvasRect.right + 8;
-      else if (playerPos.y < 0) top = canvasRect.top - height - 8;
-      else if (playerPos.y > worldH) top = canvasRect.bottom + 8;
-      left = Math.max(6, Math.min(window.innerWidth - width - 6, left));
-      top = Math.max(6, Math.min(window.innerHeight - height - 6, top));
-      clippyWindowElement.style.left = `${left}px`;
-      clippyWindowElement.style.top = `${top}px`;
-      clippyWindowElement.dataset.positioned = 'true';
-    }
+    positionWindowWithEntity(clippyWindowElement, playerPos.x, playerPos.y, canvasRect, width, height);
     const mergeProgress = gs.clippyWindowActive ? 0 : gs.clippyWindowMergeTimer / 12;
     clippyWindowElement.style.opacity = `${1 - mergeProgress}`;
     clippyWindowElement.style.transform = mergeProgress ? `scale(${1 - mergeProgress * 0.35})` : 'scale(1)';
