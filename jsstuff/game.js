@@ -827,29 +827,26 @@ function loop(timestamp = 0) {
 const offscreenWindowElements = new Map();
 let clippyWindowElement = null;
 
-function makeFloatingWindowDraggable(card) {
+function makeFloatingWindowDraggable(card, moveEntities) {
   const titleBar = card.firstElementChild;
   let drag = null;
   titleBar.addEventListener('pointerdown', event => {
     if (event.button !== 0) return;
-    const rect = card.getBoundingClientRect();
-    drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
+    drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
     card.dataset.dragging = 'true';
     titleBar.setPointerCapture(event.pointerId);
     event.preventDefault();
   });
   titleBar.addEventListener('pointermove', event => {
     if (!drag || event.pointerId !== drag.pointerId) return;
-    card.style.left = `${drag.left + event.clientX - drag.x}px`;
-    card.style.top = `${drag.top + event.clientY - drag.y}px`;
+    const deltaX = event.clientX - drag.x;
+    const deltaY = event.clientY - drag.y;
+    drag.x = event.clientX;
+    drag.y = event.clientY;
+    moveEntities(deltaX, deltaY);
   });
   const finishDrag = event => {
     if (!drag || event.pointerId !== drag.pointerId) return;
-    const rect = card.getBoundingClientRect();
-    card.dataset.dragOffsetX = String((Number(card.dataset.dragOffsetX) || 0)
-      + rect.left - Number(card.dataset.trackedLeft));
-    card.dataset.dragOffsetY = String((Number(card.dataset.dragOffsetY) || 0)
-      + rect.top - Number(card.dataset.trackedTop));
     card.dataset.dragging = 'false';
     drag = null;
   };
@@ -872,17 +869,14 @@ function positionWindowWithEntity(card, worldX, worldY, rect, width, height) {
     card.dataset.trackScreenY = String(screenY);
     card.dataset.trackScaleX = String(rect.width / worldW);
     card.dataset.trackScaleY = String(rect.height / worldH);
-    card.dataset.dragOffsetX = '0';
-    card.dataset.dragOffsetY = '0';
   }
-  if (card.dataset.dragging === 'true') return;
 
   const centerX = Number(card.dataset.trackScreenX)
     + (worldX - Number(card.dataset.trackWorldX)) * Number(card.dataset.trackScaleX);
   const centerY = Number(card.dataset.trackScreenY)
     + (worldY - Number(card.dataset.trackWorldY)) * Number(card.dataset.trackScaleY);
-  const left = centerX - width / 2 + (Number(card.dataset.dragOffsetX) || 0);
-  const top = centerY - height / 2 + (Number(card.dataset.dragOffsetY) || 0);
+  const left = centerX - width / 2;
+  const top = centerY - height / 2;
   card.dataset.trackedLeft = String(left);
   card.dataset.trackedTop = String(top);
   card.style.left = `${left}px`;
@@ -972,7 +966,22 @@ function renderOffscreenWindows() {
       card.className = 'utensil-window';
       card.innerHTML = '<div class="utensil-window-title"></div><div class="utensil-window-body"><canvas></canvas></div>';
       layer.appendChild(card);
-      makeFloatingWindowDraggable(card);
+      makeFloatingWindowDraggable(card, (deltaX, deltaY) => {
+        const scaleX = Number(card.dataset.trackScaleX);
+        const scaleY = Number(card.dataset.trackScaleY);
+        if (!scaleX || !scaleY) return;
+        const worldDeltaX = deltaX / scaleX;
+        const worldDeltaY = deltaY / scaleY;
+        for (const id of ECS.query('enemy', 'pos', 'ai')) {
+          const ai = ECS.get(id, 'ai');
+          if (ai.windowGroup !== groupId) continue;
+          const pos = ECS.get(id, 'pos');
+          pos.x += worldDeltaX;
+          pos.y += worldDeltaY;
+          if (ai.uTipX !== undefined) ai.uTipX += worldDeltaX;
+          if (ai.uTipY !== undefined) ai.uTipY += worldDeltaY;
+        }
+      });
       offscreenWindowElements.set(groupId, card);
     }
 
@@ -1075,7 +1084,13 @@ function renderOffscreenWindows() {
       clippyWindowElement.className = 'utensil-window';
       clippyWindowElement.innerHTML = '<div class="utensil-window-title">Clippy</div><div class="utensil-window-body"><canvas></canvas></div>';
       layer.appendChild(clippyWindowElement);
-      makeFloatingWindowDraggable(clippyWindowElement);
+      makeFloatingWindowDraggable(clippyWindowElement, (deltaX, deltaY) => {
+        const scaleX = Number(clippyWindowElement.dataset.trackScaleX);
+        const scaleY = Number(clippyWindowElement.dataset.trackScaleY);
+        if (!scaleX || !scaleY) return;
+        playerPos.x += deltaX / scaleX;
+        playerPos.y += deltaY / scaleY;
+      });
     }
 
     const width = 240;
@@ -1286,7 +1301,8 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => { keys[e.key] = false; });
 
 document.addEventListener('click', e => {
-  if (!gameRunning || isPaused || !gs.playerId) return;
+  if (!gameRunning || isPaused || gs.playerId == null) return;
+  if (!(e.target instanceof Element)) return;
   const isCanvasClick = e.target === canvas;
   const isMiniViewClick = e.target instanceof HTMLCanvasElement
     && e.target.closest('.utensil-window-body');
