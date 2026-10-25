@@ -828,9 +828,12 @@ const offscreenWindowElements = new Map();
 let clippyWindowElement = null;
 
 function getAimWorldPosition(clientX, clientY, target) {
-  const miniCanvas = target instanceof HTMLCanvasElement
+  let miniCanvas = target instanceof HTMLCanvasElement
     ? target
     : target?.closest?.('.utensil-window-body')?.querySelector('canvas');
+  if (!miniCanvas && gs.clippyWindowActive && target !== canvas) {
+    miniCanvas = document.querySelector('.clippy-window .utensil-window-body canvas');
+  }
   if (miniCanvas && miniCanvas.dataset.cameraScale) {
     const rect = miniCanvas.getBoundingClientRect();
     const scale = Number(miniCanvas.dataset.cameraScale);

@@ -811,9 +811,6 @@ for (const id of [...ECS.query('enemy','pos','vel','ai','physics')]) {
         // Decay velocity slightly so it doesn't go forever, but keep most speed
         vel2.vx *= 0.97; vel2.vy *= 0.97;
         pos2.x += vel2.vx; pos2.y += vel2.vy;
-        // Wall clamp
-        pos2.x = Math.max(CFG.WALL_PAD, Math.min(worldW - CFG.WALL_PAD, pos2.x));
-        pos2.y = Math.max(CFG.WALL_PAD, Math.min(worldH - CFG.WALL_PAD, pos2.y));
       }
       ai2.forkThrowTimer--;
       if (ai2.forkThrowTimer <= 0) { ai2.thrownByFork = false; }

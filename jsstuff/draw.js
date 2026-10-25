@@ -1198,12 +1198,12 @@ function drawCurrentView(targetCanvas, camera, advanceVisualState) {
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
   ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+  if (camera) {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, targetCanvas.width, targetCanvas.height);
+  }
   const dpr = window.devicePixelRatio || 1;
   const viewScale = camera ? camera.scale : renderScale;
-  const viewWidth = targetCanvas.width / (dpr * viewScale);
-  const viewHeight = targetCanvas.height / (dpr * viewScale);
-  const viewLeft = camera ? camera.x - viewWidth / 2 : 0;
-  const viewTop = camera ? camera.y - viewHeight / 2 : 0;
   ctx.scale(dpr * viewScale, dpr * viewScale);
   if (camera) {
     ctx.translate(
@@ -1213,26 +1213,14 @@ function drawCurrentView(targetCanvas, camera, advanceVisualState) {
   }
   const shake = getScreenShakeOffset();
   ctx.translate(shake.x, shake.y);
-  if (camera) {
-    ctx.fillStyle = gs.floor === 2 ? 'rgba(25,8,0,1)' : '#008080';
-    ctx.fillRect(viewLeft, viewTop, viewWidth, viewHeight);
-  }
 
   if (gs.floor === 2) {
     ctx.strokeStyle = 'rgba(255,80,0,0.09)'; ctx.lineWidth = 1;
   } else {
     ctx.strokeStyle = 'rgba(0,255,100,0.09)'; ctx.lineWidth = 1;
   }
-  const gridLeft = camera ? Math.floor(viewLeft / 40) * 40 : 0;
-  const gridTop = camera ? Math.floor(viewTop / 40) * 40 : 0;
-  const gridRight = camera ? viewLeft + viewWidth : worldW;
-  const gridBottom = camera ? viewTop + viewHeight : worldH;
-  for (let x = gridLeft; x <= gridRight; x += 40) {
-    ctx.beginPath(); ctx.moveTo(x, gridTop); ctx.lineTo(x, gridBottom); ctx.stroke();
-  }
-  for (let y = gridTop; y <= gridBottom; y += 40) {
-    ctx.beginPath(); ctx.moveTo(gridLeft, y); ctx.lineTo(gridRight, y); ctx.stroke();
-  }
+  for(let x=0; x<worldW; x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,worldH); ctx.stroke(); }
+  for(let y=0; y<worldH; y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(worldW,y); ctx.stroke(); }
 
   // Keep the vignette sized to the current arena and behind gameplay sprites.
   ctx.save();

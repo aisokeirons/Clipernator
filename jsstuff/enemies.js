@@ -10,7 +10,7 @@ const BOSS_PHASE = {
   SPIRAL:         'SPIRAL',
   VOLLEY:         'VOLLEY',
 };
-  
+
 // ================================================================
 // BEHAVIOR TREES
 // ================================================================
@@ -169,7 +169,6 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
         ai.uTipY += ai.uTipVy;
         ai.uTravelTimer++;
 
-        const hitWall   = ai.uTipX < 20 || ai.uTipX > worldW - 20 || ai.uTipY < 20 || ai.uTipY > worldH - 20;
         const maxTravel = ai.uTravelTimer > 60;
 
         // ── Player stab (fallback if no target) ──
@@ -204,7 +203,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
           }
         }
 
-        if (hitWall || maxTravel) { ai.uState = 'RETURN'; ai.uForkTargetId = null; }
+        if (maxTravel) { ai.uState = 'RETURN'; ai.uForkTargetId = null; }
       }
 
       // ── FORK_PULLING: drag grabbed entity back toward body ──
@@ -347,7 +346,6 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
         ai.uTipX += ai.uTipVx;
         ai.uTipY += ai.uTipVy;
         ai.uTravelTimer++;
-        const hitWall   = ai.uTipX < 20 || ai.uTipX > worldW - 20 || ai.uTipY < 20 || ai.uTipY > worldH - 20;
         const maxTravel = ai.uTravelTimer > 65;
         const ppos2 = ECS.get(gs.playerId, 'pos');
         if (ppos2 && Math.hypot(ai.uTipX - ppos2.x, ai.uTipY - ppos2.y) < 22 && gs.invincible <= 0) {
@@ -358,7 +356,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
           spawnParticles(ai.uTipX, ai.uTipY, '#ffcc88', 14);
           ai.uState = 'RETURN'; return BT.RUNNING;
         }
-        if (hitWall || maxTravel) ai.uState = 'RETURN';
+        if (maxTravel) ai.uState = 'RETURN';
       }
 
       return BT.RUNNING;
@@ -406,7 +404,6 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
       ai.uTipX += ai.uTipVx;
       ai.uTipY += ai.uTipVy;
       ai.uTravelTimer++;
-      const hitWall   = ai.uTipX < 20 || ai.uTipX > worldW - 20 || ai.uTipY < 20 || ai.uTipY > worldH - 20;
       const maxTravel = ai.uTravelTimer > 65;
 
       const ppos2 = ECS.get(gs.playerId, 'pos');
@@ -480,7 +477,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
         if (killedEnemy) { ai.uState = 'RETURN'; return BT.RUNNING; }
       }
 
-      if (hitWall || maxTravel) ai.uState = 'RETURN';
+      if (maxTravel) ai.uState = 'RETURN';
     }
     else if (ai.uState === 'RETURN') {
       const rdx = pos.x - ai.uTipX, rdy = pos.y - ai.uTipY;
