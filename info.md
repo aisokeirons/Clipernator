@@ -9,6 +9,7 @@
 
 - want MS Sans Serif to be used for most of the UI, and for fixedsys to be used in a few specific areas, like how microsoft did it: MS Sans Serif was a bitmap, proportional UI font used for Windows interface text in early Windows versions, and Microsoft Sans Serif later replaced it as the TrueType successor distributed with Windows 2000 and later. In practice, this family was used for dialog boxes, labels, and general interface text rather than code-like text areas. Fixedsys was a bitmap, monospaced font originally used as the system font in Windows 1.0 and 2.0, and later it remained the default font in Notepad through the Windows 9x/ME era. It was mainly associated with old-style text display and legacy editor use rather than general GUI text.
 - When you press the minimize button the game just closes and becomes a tiny tab in the middle of the screen. this is funny and should be kept.
+- The MGW (main game window) and the simulated offscreen windows are part of the game world, not separate OS windows or separate game simulations.
 
 ---
 
@@ -93,6 +94,18 @@
 - Clown car - drives around and throws clowns
 - Clowns - chases enemies, gives them extra speed when on them
 - **Boss 2** (wave 26) — spiral, summon, and volley phases; phase 2 at 50% HP
+
+---
+
+## Offscreen Windows (Prototype)
+
+- Enemies that move beyond the MGW's world bounds get an in-page floating window that renders the shared game scene around them. Enemies still update and interact through the normal simulation; the window is another camera/view, not a separate arena.
+- Nearby offscreen enemies can share a window. Their title lists the enemy types, and the camera frames the group. Enemy windows can be dragged; dragging moves the contained enemies and their world positions together.
+- When an enemy window overlaps the MGW, its enemies merge back into the MGW. Moving the MGW does not directly move offscreen windows or their entities.
+- Clippy gets a non-draggable window while outside the MGW. Clippy remains controllable and can aim/shoot using the offscreen view. Remaining outside costs 3 HP per second.
+- The utensil's launched attacks can travel beyond the MGW boundary, and fork-thrown enemies are not immediately clamped back into it. These changes are scoped to utensil attacks and fork throws; they do not yet guarantee that every projectile or enemy mechanic works seamlessly across all window boundaries.
+- Mini-window canvases have a black background. The grid is still drawn only over the MGW's world bounds; it does not extend across the full mini-window view.
+- Treat cross-window behavior as experimental. Review mechanics that assume the MGW bounds are hard arena walls (projectile culling, collision, enemy cleanup, knockback, boss attacks, and merge positioning) before expanding this system to more enemy types or relying on it for balance.
 
 ---
 
