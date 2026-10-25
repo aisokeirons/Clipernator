@@ -732,7 +732,7 @@ function tickClippyOutsideDamage(pos) {
   gs.clippyOutsideTimer++;
   if (gs.clippyOutsideTimer < 60) return;
   gs.clippyOutsideTimer = 0;
-  gs.health = Math.max(0, gs.health - 1);
+  gs.health = Math.max(0, gs.health - 3);
   gs.flawlessThisWave = false;
   updateHUD();
   if (gs.health <= 0) gameOver();

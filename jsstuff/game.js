@@ -827,6 +827,47 @@ function loop(timestamp = 0) {
 const offscreenWindowElements = new Map();
 let clippyWindowElement = null;
 
+function getAimWorldPosition(clientX, clientY, target) {
+  const miniCanvas = target instanceof HTMLCanvasElement
+    ? target
+    : target?.closest?.('.utensil-window-body')?.querySelector('canvas');
+  if (miniCanvas && miniCanvas.dataset.cameraScale) {
+    const rect = miniCanvas.getBoundingClientRect();
+    const scale = Number(miniCanvas.dataset.cameraScale);
+    return {
+      x: Number(miniCanvas.dataset.cameraX) + (clientX - rect.left - rect.width / 2) / scale,
+      y: Number(miniCanvas.dataset.cameraY) + (clientY - rect.top - rect.height / 2) / scale,
+    };
+  }
+
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  return {
+    x: ((clientX - rect.left) / rect.width) * worldW,
+    y: ((clientY - rect.top) / rect.height) * worldH,
+  };
+}
+
+function updateAimFromPointer(clientX, clientY, target) {
+  if (!gameRunning || isPaused || gs.playerId == null) return null;
+  const playerOutside = gs.clippyWindowActive;
+  const canvasRect = canvas.getBoundingClientRect();
+  const pointerOnCanvas = clientX >= canvasRect.left && clientX <= canvasRect.right
+    && clientY >= canvasRect.top && clientY <= canvasRect.bottom;
+  const pointerOnMiniWindow = target?.closest?.('.utensil-window-body')
+    || document.elementFromPoint(clientX, clientY)?.closest?.('.utensil-window-body');
+  if (!playerOutside && !pointerOnCanvas && !pointerOnMiniWindow) return null;
+
+  const worldPoint = getAimWorldPosition(clientX, clientY, target);
+  if (!worldPoint) return null;
+  const shake = getScreenShakeOffset();
+  mouse.screenX = worldPoint.x + shake.x;
+  mouse.screenY = worldPoint.y + shake.y;
+  mouse.x = worldPoint.x;
+  mouse.y = worldPoint.y;
+  return worldPoint;
+}
+
 function makeFloatingWindowDraggable(card, moveEntities) {
   const titleBar = card.firstElementChild;
   let drag = null;
@@ -1081,16 +1122,9 @@ function renderOffscreenWindows() {
   if (gs.clippyWindowActive || gs.clippyWindowMergeTimer > 0) {
     if (!clippyWindowElement) {
       clippyWindowElement = document.createElement('div');
-      clippyWindowElement.className = 'utensil-window';
+      clippyWindowElement.className = 'utensil-window clippy-window';
       clippyWindowElement.innerHTML = '<div class="utensil-window-title">Clippy</div><div class="utensil-window-body"><canvas></canvas></div>';
       layer.appendChild(clippyWindowElement);
-      makeFloatingWindowDraggable(clippyWindowElement, (deltaX, deltaY) => {
-        const scaleX = Number(clippyWindowElement.dataset.trackScaleX);
-        const scaleY = Number(clippyWindowElement.dataset.trackScaleY);
-        if (!scaleX || !scaleY) return;
-        playerPos.x += deltaX / scaleX;
-        playerPos.y += deltaY / scaleY;
-      });
     }
 
     const width = 240;
@@ -1304,38 +1338,20 @@ document.addEventListener('click', e => {
   if (!gameRunning || isPaused || gs.playerId == null) return;
   if (!(e.target instanceof Element)) return;
   const isCanvasClick = e.target === canvas;
-  const isMiniViewClick = e.target instanceof HTMLCanvasElement
-    && e.target.closest('.utensil-window-body');
-  if (!isCanvasClick && !gs.clippyWindowActive) return;
+  const isMiniWindowClick = !!e.target.closest('.utensil-window-body');
+  if (!isCanvasClick && !isMiniWindowClick && !gs.clippyWindowActive) return;
   if (e.target.closest('button, input, select, textarea, a, [role="button"], .utensil-window-title, #pause-menu, #overlay, #item-choice, #floor-transition, #keybind-screen')) return;
 
-  const rect = canvas.getBoundingClientRect();
-  let worldX;
-  let worldY;
-  if (isMiniViewClick) {
-    const miniRect = e.target.getBoundingClientRect();
-    const scale = Number(e.target.dataset.cameraScale);
-    if (!scale) return;
-    worldX = Number(e.target.dataset.cameraX) + (e.clientX - miniRect.left - miniRect.width / 2) / scale;
-    worldY = Number(e.target.dataset.cameraY) + (e.clientY - miniRect.top - miniRect.height / 2) / scale;
-  } else {
-    if (!rect.width || !rect.height) return;
-    worldX = ((e.clientX - rect.left) / rect.width) * worldW;
-    worldY = ((e.clientY - rect.top) / rect.height) * worldH;
-  }
-  const shake = getScreenShakeOffset();
-  mouse.screenX = worldX + shake.x;
-  mouse.screenY = worldY + shake.y;
-  mouse.x = worldX;
-  mouse.y = worldY;
-  gunAngle = Math.atan2(worldY - gunY, worldX - gunX);
+  const worldPoint = updateAimFromPointer(e.clientX, e.clientY, e.target);
+  if (!worldPoint) return;
+  gunAngle = Math.atan2(worldPoint.y - gunY, worldPoint.x - gunX);
   shoot();
 });
 
-// Track mouse globally for pause Clippy eye direction
 document.addEventListener('mousemove', e => {
   _pauseMouseX = e.clientX;
   _pauseMouseY = e.clientY;
+  updateAimFromPointer(e.clientX, e.clientY, e.target);
 });
 
 // ================================================================
