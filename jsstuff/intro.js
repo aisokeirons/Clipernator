@@ -1589,7 +1589,7 @@ setTimeout(() => {
     desktopCanvas.id = 'persistent-desktop';
     desktopCanvas.width = 960;
     desktopCanvas.height = 600;
-    desktopCanvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:0;image-rendering:pixelated;image-rendering:crisp-edges;';
+    desktopCanvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:1;image-rendering:pixelated;image-rendering:crisp-edges;';
     document.body.insertBefore(desktopCanvas, document.body.firstChild);
     const desktopCtx = desktopCanvas.getContext('2d');
     if (!desktopCtx) throw new Error('Unable to create persistent desktop canvas context.');
