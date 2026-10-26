@@ -143,6 +143,7 @@ function unlockGlowsticks() {
   if (gs.hasGlowsticks) return;
   gs.hasGlowsticks = true;
   gs.unlockedItems.push('glowsticks');
+  SFX.play('itemConfirm', 0.65);
   SFX.play('relicAcquire', 0.65);
   showMsg('GLOWSTICKS UNLOCKED! [F] OR RIGHT-CLICK TO SWING & REFLECT — REFLECTED SHOTS EXPLODE!');
   updateHUD();
@@ -1079,7 +1080,9 @@ if (b.isBowlingBall) {
       if (b.y<=4){b.y=4;b.vy=Math.abs(b.vy);b.angle=Math.atan2(b.vy,b.vx);bounced=true;}
       if (b.y>=worldH-4){b.y=worldH-4;b.vy=-Math.abs(b.vy);b.angle=Math.atan2(b.vy,b.vx);bounced=true;}
       if (bounced) {
-        b.bounces=(b.bounces||0)+1; spawnParticles(b.x,b.y,'#88ffdd',3);
+        b.bounces=(b.bounces||0)+1;
+        SFX.playAt('bouncyHit', b.x, b.y, 0.45);
+        spawnParticles(b.x,b.y,'#88ffdd',3);
         if (b.isExplosive){detonateExplosiveBullet(b,b.x,b.y);return false;}
         if (gs.hasMirrorMaze&&b.bounces===1) {
           const perp=Math.atan2(b.vy,b.vx)+Math.PI/2;
@@ -1106,7 +1109,10 @@ function sysBulletEnemyCollision() {
       const epos=ECS.get(id,'pos'),ehp=ECS.get(id,'hp');
       if (Math.hypot(b.x-epos.x,b.y-epos.y)<30) {
         if (b.isExplosive){detonateExplosiveBullet(b,b.x,b.y);break;}
-        if (b.isDud){b.life=0;spawnParticles(b.x,b.y,'#666666',3);break;}
+        if (b.isDud) {
+          SFX.playAt('dudHit', epos.x, epos.y, 0.45);
+          b.life=0;spawnParticles(b.x,b.y,'#666666',3);break;
+        }
 
         // ── Bowling ball: pierce, don't kill bullet ──
         if (b.isBowlingBall) {
@@ -1442,6 +1448,7 @@ gs.health -= Math.round(18 * (eb.rmDmgMult || 1) * scale * (gs._enemyDmgMult || 
       if (eb.y>=worldH-4){eb.y=worldH-4;eb.vy=-Math.abs(eb.vy);bounced=true;}
     // FIND the bouncy house bullet push and change it to:
     if (bounced && !eb.friendlyFire) {
+      SFX.playAt('bouncyHit', eb.x, eb.y, 0.45);
       eb.bounces = (eb.bounces||0) + 1;
       spawnParticles(eb.x, eb.y, '#88ffdd', 3);
       bulletsToAdd.push({
@@ -1462,6 +1469,7 @@ const diffMult = (gs._enemyDmgMult || 1.0);
 gs.health -= Math.round(bulletDmg * diffMult);
       SFX.play('playerDamage', 0.5);
       SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.55);
+if (eb.isTear) SFX.playAt('tearHit', eb.x, eb.y, 0.5);
       gs.invincible=CFG.INVINCIBLE_FRAMES; gs.shakeX=10;gs.shakeY=10;
       gs.flawlessThisWave=false; triggerSFPHit();
       spawnParticles(ppos.x,ppos.y,'#ff69b4',10); updateHUD();
@@ -1477,7 +1485,9 @@ function sysFieldItemPickup() {
   for (let i=gs.fieldItems.length-1;i>=0;i--) {
     const fi=gs.fieldItems[i];
     if (Math.hypot(ppos.x-fi.x,ppos.y-fi.y)<34) {
-      const def=ITEM_DEFS[fi.id]; gs.itemCooldowns[fi.id]=Date.now(); gs.fieldItems.splice(i,1); def.effect(gs);
+      const def=ITEM_DEFS[fi.id]; gs.itemCooldowns[fi.id]=Date.now(); gs.fieldItems.splice(i,1);
+      SFX.playAt('itemConfirm', ppos.x, ppos.y, 0.65);
+      def.effect(gs);
       // Show Clippy pickup tip
       if (CLIPPY_PICKUP_TIPS[fi.id]) {
         gs.clippyPickupMsg = CLIPPY_PICKUP_TIPS[fi.id];
@@ -1613,6 +1623,7 @@ if (gs.glowExplosionTimer > 0) gs.glowExplosionTimer--;
         if (gs.health<=0){gameOver();return;}
         if (gs.candlesLit<5){
           gs.candlesLit=Math.min(5,gs.candlesLit+1);
+          SFX.play('candleLight', 0.65);
           showMsg(gs.candlesLit===5?"ALL CANDLES LIT! +10 BULLETS PER SHOT":`CANDLE LIT! +${gs.candlesLit*2} BULLETS PER SHOT`);
         }
         updateHUD();

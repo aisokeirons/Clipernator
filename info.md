@@ -125,20 +125,20 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 | `Shoot1.mp3`–`Shoot4.mp3` | Wired: randomized player shot sounds. |
 | `ReloadStart1.mp3`–`ReloadStart3.mp3` | Wired: randomized reload-start cue. |
 | `ReloadFinish.mp3` | Wired: reload completes. |
-| `RelicAquire.mp3` | Wired: Glowsticks, the current permanent relic/upgrade, are unlocked. Filename spelling matches the asset. |
 | `SpeedUp.mp3` | Unused for now; reserved for a future speed-up event. |
+| `RelicAquire.mp3` | Wired: Glowsticks, the current permanent relic/upgrade, are unlocked. Filename spelling matches the asset. |
 
 ### Bullets
 
 | File | Intended event / status |
 |---|---|
-| `NormalHit1.mp3`, `NormalHit2.mp3` | Wired: ordinary player bullet hits an enemy; randomized between the two. |
+| `NormalHit1.mp3`, `NormalBulletHit.mp3` | Wired: ordinary player bullet hits an enemy; randomized between the two available impact sounds. |
 | `2xHit.mp3`, `3xHit.mp3`, `4xHit.mp3` | Wired: player bullets hit with the corresponding damage multiplier. |
 | `BowlingBallBounce.mp3` | Wired: bowling ball bounces. |
 | `BowlingBallHit.mp3` | Wired: bowling ball hits an enemy. |
-| `DudHit.mp3` | Unused: intended for a dud bullet impact. |
-| `TearHit.mp3` | Unused: intended for a tear projectile impact. |
-| `BouncyHit.mp3` | Unused: intended for a bouncy projectile impact. |
+| `DudHit.mp3` | Wired: dud player bullets hit an enemy. |
+| `TearHit.mp3` | Wired: an enemy tear projectile hits the player. |
+| `BouncyBullet.mp3` | Wired: a bullet ricochets from a wall while Bouncy House is active. |
 | `bullets/Shoot1.mp3` | Unused: player firing already uses the four files under `player/`; this duplicate is not layered over them. |
 
 ### Enemies
@@ -167,14 +167,16 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 | `Chips/ChipPickup.mp3` | Wired: a normal chip is collected. |
 | `Chips/GoldenChipTarget.mp3` | Wired as a loop: plays while at least one golden chip is magnetized and homing toward the player. |
 | `Chips/GoldenChipPickup.mp3` | Wired: a golden chip is collected, including from Chippy. |
-| `items/ItemConfirm.mp3` | Unusable placeholder (1 byte). Item choices temporarily use the valid `opening/confirm.mp3` sound in the opening item draft and in-game item-choice cards instead. |
+| `items/ItemConfirm.mp3` | Wired: confirms an item in the opening draft or in-game choice, and plays when an item is picked up or Glowsticks are unlocked. |
+| `items/ItemReveal.mp3` | Wired: plays when in-game item choices appear; cards reveal immediately, at +1 second, and at +2 seconds. The fourth Floor 2 card reveals with the third. |
+| `misc/CandleLight.mp3` | Wired: plays whenever one of the player's Cursed Candles relights. Reuse this cue for future boss-candle lighting events. |
 
 ### Interface and Opening Sequence
 
 | File | Intended event / status |
 |---|---|
 | `misc/PauseSound.mp3` | Wired: entering the pause menu. Starts directly from the pause key event; pausing the game loop does not prevent audio playback. |
-| `misc/WaveComplete.mp3` | Wired: a wave is completed. |
+| `misc/Waves/WaveComplete.mp3` | Wired: a wave is completed. |
 | `misc/CreepySound.mp3`, `misc/OMINI.mp3` | Unused, as requested; reserved for later. |
 | `opening/bluescreen.mp3` | Wired: opening sequence blue-screen effect. |
 | `opening/click.mp3` | Wired: opening/interface click. |

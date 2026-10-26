@@ -77,13 +77,13 @@ const SFX = {
 };
 
 SFX.load('normalHit1',       'sounds/soundeffects/bullets/NormalHit1.mp3');
-SFX.load('normalHit2',       'sounds/soundeffects/bullets/NormalHit2.mp3');
+SFX.load('normalHit2',       'sounds/soundeffects/bullets/NormalBulletHit.mp3');
 SFX.load('hit2x',            'sounds/soundeffects/bullets/2xHit.mp3');
 SFX.load('hit3x',            'sounds/soundeffects/bullets/3xHit.mp3');
 SFX.load('hit4x',            'sounds/soundeffects/bullets/4xHit.mp3');
 SFX.load('dudHit',           'sounds/soundeffects/bullets/DudHit.mp3');
 SFX.load('tearHit',          'sounds/soundeffects/bullets/TearHit.mp3');
-SFX.load('bouncyHit',        'sounds/soundeffects/bullets/BouncyHit.mp3');
+SFX.load('bouncyHit',        'sounds/soundeffects/bullets/BouncyBullet.mp3');
 SFX.load('bowlingBallBounce','sounds/soundeffects/bullets/BowlingBallBounce.mp3');
 SFX.load('bowlingBallHit',   'sounds/soundeffects/bullets/BowlingBallHit.mp3');
 
@@ -116,8 +116,10 @@ SFX.load('partyHatRide2',    'sounds/soundeffects/enemies/PartyHat/PartyHatRide2
 SFX.load('partyHatSpawn',    'sounds/soundeffects/enemies/PartyHat/PartyHatSpawn.mp3');
 
 SFX.load('pause',            'sounds/soundeffects/misc/PauseSound.mp3');
-SFX.load('waveComplete',     'sounds/soundeffects/misc/WaveComplete.mp3');
-SFX.load('itemConfirm',      'sounds/soundeffects/opening/confirm.mp3');
+SFX.load('waveComplete',     'sounds/soundeffects/misc/Waves/WaveComplete.mp3');
+SFX.load('candleLight',      'sounds/soundeffects/misc/CandleLight.mp3');
+SFX.load('itemConfirm',      'sounds/soundeffects/items/ItemConfirm.mp3');
+SFX.load('itemReveal',       'sounds/soundeffects/items/ItemReveal.mp3');
 
 SFX.load('chippyClick',      'sounds/soundeffects/objects/Chippy/ChippyClick.mp3');
 SFX.load('chippyFinish',     'sounds/soundeffects/objects/Chippy/ChippyFinish.mp3');

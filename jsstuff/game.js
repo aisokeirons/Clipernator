@@ -1382,6 +1382,11 @@ document.getElementById('floor-btn').addEventListener('click', () => {
 // ITEM CHOICE (uses Win2k card style from index.html CSS)
 // ================================================================
 function offerItemChoice() {
+  const revealTimers = [];
+  const clearRevealTimers = () => {
+    for (const timer of revealTimers) clearTimeout(timer);
+    revealTimers.length = 0;
+  };
   gs.pendingChoice = true; gameRunning = false; cancelAnimationFrame(animId); draw();
   const choiceEl = document.getElementById('item-choice');
   const cardsEl  = document.getElementById('item-cards');
@@ -1411,6 +1416,7 @@ function offerItemChoice() {
   }
   offered = [...new Set(offered)].slice(0, slotCount);
 
+  const cards = [];
   for (const id of offered) {
     const def     = ITEM_DEFS[id];
     const isOwned = gs.unlockedItems.includes(id);
@@ -1427,8 +1433,11 @@ function offerItemChoice() {
       <div class="ic-desc">${def.desc.replace(/\n/g,'<br>')}${isOwned ? '<br><i>(owned)</i>' : ''}</div>
     `;
 
+    cards.push(card);
+
  if (!isOwned) {
   card.addEventListener('click', () => {
+    clearRevealTimers();
     SFX.play('itemConfirm', 0.65);
     gs.unlockedItems.push(id);
     def.effect(gs);
@@ -1450,10 +1459,22 @@ function offerItemChoice() {
   }
 
   choiceEl.style.display = 'flex';
+  if (cards.length > 0) {
+    SFX.play('itemReveal', 0.65);
+    cards.forEach((card, index) => {
+      const delay = Math.min(index, 2) * 1000;
+      if (delay === 0) {
+        card.classList.add('revealed');
+      } else {
+        revealTimers.push(setTimeout(() => card.classList.add('revealed'), delay));
+      }
+    });
+  }
   const skipBtn  = document.getElementById('skip-btn');
   const allOwned = offered.length === 0 || offered.every(id => gs.unlockedItems.includes(id));
   skipBtn.style.display = allOwned ? 'block' : 'none';
   skipBtn.onclick = () => {
+    clearRevealTimers();
     choiceEl.style.display = 'none';
     gs.pendingChoice = false;
     cancelAnimationFrame(animId); 
