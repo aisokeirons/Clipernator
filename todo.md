@@ -4,7 +4,7 @@
 * replace the cake boss etc with cartoon style and make fight better
 
 
- 
+ * Progressively update the lock sprite to have more cracks
   
 * the cake boss should not mindlessly go to the center all the time. it should just hover around the stage as a idle animation
 * i dont know if cutscenes are possible in html, but if so  I would like a animation of the cake boss falling from the sky
