@@ -172,7 +172,7 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 | `Chips/GoldenChipPickup.mp3` | Wired: a golden chip is collected, including from Chippy. |
 | `items/ItemConfirm.mp3` | Wired: confirms an item in the opening draft or in-game choice, and plays when an item is picked up or Glowsticks are unlocked. |
 | `items/BirthdayParty/BirthdayParty.mp3` | Wired: intended to play when the Birthday Party item effect activates and freezes enemy movement. The current file is 1 byte and needs valid audio data to be audible. |
-| `items/ItemReveal.mp3` | Wired: plays 1.5x faster when in-game item choices appear; cards reveal immediately, at about +0.67 seconds, and at about +1.33 seconds. The fourth Floor 2 card reveals with the third. |
+| `items/ItemReveal.mp3` | Wired: plays at normal speed when in-game item choices appear; cards reveal immediately, at about +0.67 seconds, and at about +1.33 seconds. The fourth Floor 2 card reveals with the third. |
 | `misc/CandleLight.mp3` | Wired: plays whenever one of the player's Cursed Candles relights. Reuse this cue for future boss-candle lighting events. |
 
 ### Interface and Opening Sequence

@@ -13,14 +13,13 @@ const SFX = {
     this._cache[key] = audio;
   },
 
-  play(key, volumeOverride, playbackRate) {
+  play(key, volumeOverride) {
     if (this._muted) return;
     const src = this._cache[key];
     if (!src) return;
     try {
       const clone = src.cloneNode();
       clone.volume = volumeOverride !== undefined ? volumeOverride : 0.6;
-      if (playbackRate !== undefined) clone.playbackRate = playbackRate;
       clone.play().catch(() => {});
     } catch(e) {}
   },

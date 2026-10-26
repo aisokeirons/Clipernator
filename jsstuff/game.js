@@ -1465,7 +1465,7 @@ function offerItemChoice() {
   choiceEl.style.display = 'flex';
   if (cards.length > 0) {
     const revealSpeed = 1.5;
-    SFX.play('itemReveal', 0.65, revealSpeed);
+    SFX.play('itemReveal', 0.65);
     cards.forEach((card, index) => {
       const delay = Math.min(index, 2) * 1000 / revealSpeed;
       if (delay === 0) {
