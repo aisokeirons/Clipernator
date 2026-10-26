@@ -966,8 +966,8 @@ setTimeout(() => {
   }, 2200);
 }
 
-  function drawDesktop() {
-    const c = getCtx(); if (!c) return;
+  function drawDesktop(targetCtx = getCtx()) {
+    const c = targetCtx; if (!c) return;
     const W = 960, H = 600;
     c.fillStyle = '#008080'; c.fillRect(0, 0, W, H);
     for (let y = 0; y < H; y += 2) { c.fillStyle = 'rgba(0,0,0,0.04)'; c.fillRect(0, y, W, 1); }
@@ -1584,6 +1584,26 @@ setTimeout(() => {
       if (onDone) onDone();
       return;
     }
+
+    const desktopCanvas = document.createElement('canvas');
+    desktopCanvas.id = 'persistent-desktop';
+    desktopCanvas.width = 960;
+    desktopCanvas.height = 600;
+    desktopCanvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:0;image-rendering:pixelated;image-rendering:crisp-edges;';
+    document.body.insertBefore(desktopCanvas, document.body.firstChild);
+    const desktopCtx = desktopCanvas.getContext('2d');
+    if (!desktopCtx) throw new Error('Unable to create persistent desktop canvas context.');
+    const redrawDesktop = () => drawDesktop(desktopCtx);
+    desktopCanvas.addEventListener('click', (e) => {
+      const rect = desktopCanvas.getBoundingClientRect();
+      handleDesktopClick(
+        (e.clientX - rect.left) * (desktopCanvas.width / rect.width),
+        (e.clientY - rect.top) * (desktopCanvas.height / rect.height)
+      );
+      redrawDesktop();
+    });
+    redrawDesktop();
+    setInterval(redrawDesktop, 60000);
 
     let alpha = 0;
     const fadeInterval = setInterval(() => {
