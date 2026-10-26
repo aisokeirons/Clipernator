@@ -1047,8 +1047,10 @@ function renderOffscreenWindows() {
     const bodyWidth = width - 8;
     card.style.width = `${width}px`;
     card.style.height = `${height}px`;
-    preview.width = Math.round((width - 8) * dpr);
-    preview.height = Math.round(bodyHeight * dpr);
+    const previewWidth = Math.round(bodyWidth * dpr);
+    const previewHeight = Math.round(bodyHeight * dpr);
+    if (preview.width !== previewWidth) preview.width = previewWidth;
+    if (preview.height !== previewHeight) preview.height = previewHeight;
     const previewCtx = preview.getContext('2d');
     const minX = Math.min(...members.map(member => member.pos.x));
     const maxX = Math.max(...members.map(member => member.pos.x));

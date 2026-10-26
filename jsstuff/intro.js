@@ -311,7 +311,9 @@ function stopSound(key) {
   let gameWindowPhase = 'opening';
   let gameWindowTimer = 0;
   let introEnemyX = 0, introEnemyY = 0, introEnemyVx = 0.6, introEnemyVy = 0.4;
-  let introEnemyId = null;
+  let introEnemyPos = null;
+  let introPlayerPos = null;
+  let gameWrapper = null;
   let clippyJumpProgress = -1;
   let gameWindowOpacity = 0;
   let persistentDesktopInstalled = false;
@@ -1254,16 +1256,17 @@ setTimeout(() => {
     clippyAnim = 'watching'; clippyAnimFrame = 0; clippyDialogVisible = false;
     installPersistentDesktop();
     if (overlayEl) overlayEl.style.display = 'none';
-    const gameWrapper = document.getElementById('wrapper');
+    gameWrapper = document.getElementById('wrapper');
     if (gameWrapper) gameWrapper.style.opacity = '0';
     initGameState(false);
-    const playerPos = ECS.get(gs.playerId, 'pos');
-    if (playerPos) { gunX = playerPos.x; gunY = playerPos.y; }
+    introPlayerPos = ECS.get(gs.playerId, 'pos');
+    if (introPlayerPos) { gunX = introPlayerPos.x; gunY = introPlayerPos.y; }
     introEnemyX = worldW * 0.68; introEnemyY = worldH * 0.55;
     introEnemyVx = 0.6; introEnemyVy = 0.4;
-    introEnemyId = ECS.createEntity();
+    const introEnemyId = ECS.createEntity();
+    introEnemyPos = { x: introEnemyX, y: introEnemyY, angle: 0 };
     ECS.add(introEnemyId, 'enemy', { type: 'giftBox' });
-    ECS.add(introEnemyId, 'pos', { x: introEnemyX, y: introEnemyY, angle: 0 });
+    ECS.add(introEnemyId, 'pos', introEnemyPos);
     ECS.add(introEnemyId, 'vel', { vx: 0, vy: 0 });
     ECS.add(introEnemyId, 'hp', { hp: 3, maxHp: 3, hitFlash: 0 });
     ECS.add(introEnemyId, 'ai', {});
@@ -1287,24 +1290,20 @@ setTimeout(() => {
   function gameWindowLoop() {
     if (stage !== 'GAME_WINDOW') return;
     gameWindowTimer++;
-    if (gameWindowOpacity < 1) gameWindowOpacity = Math.min(1, gameWindowOpacity + 0.04);
-    const gameWrapper = document.getElementById('wrapper');
-    if (gameWrapper) gameWrapper.style.opacity = String(gameWindowOpacity);
+    if (gameWindowOpacity < 1) {
+      gameWindowOpacity = Math.min(1, gameWindowOpacity + 0.04);
+      if (gameWrapper) gameWrapper.style.opacity = String(gameWindowOpacity);
+    }
     if (gameWindowPhase === 'enemy_spawn' || gameWindowPhase === 'clippy_ask') {
       introEnemyX += introEnemyVx; introEnemyY += introEnemyVy;
       if (introEnemyX < 40 || introEnemyX > worldW - 40) introEnemyVx *= -1;
       if (introEnemyY < 50 || introEnemyY > worldH - 40) introEnemyVy *= -1;
-      const enemyPos = ECS.get(introEnemyId, 'pos');
-      if (enemyPos) { enemyPos.x = introEnemyX; enemyPos.y = introEnemyY; }
+      introEnemyPos.x = introEnemyX; introEnemyPos.y = introEnemyY;
     }
     if (gameWindowPhase === 'clippy_jump') {
-      const playerPos = ECS.get(gs.playerId, 'pos');
-      if (playerPos) {
-        introEnemyX += (playerPos.x - introEnemyX) * 0.08;
-        introEnemyY += (playerPos.y - introEnemyY) * 0.08;
-        const enemyPos = ECS.get(introEnemyId, 'pos');
-        if (enemyPos) { enemyPos.x = introEnemyX; enemyPos.y = introEnemyY; }
-      }
+      introEnemyX += (introPlayerPos.x - introEnemyX) * 0.08;
+      introEnemyY += (introPlayerPos.y - introEnemyY) * 0.08;
+      introEnemyPos.x = introEnemyX; introEnemyPos.y = introEnemyY;
       clippyJumpProgress += 0.04;
       clippyAnimFrame = clippyJumpProgress > 0.8 ? 1 : 0; 
       if (clippyJumpProgress > 1) {
@@ -1606,8 +1605,10 @@ setTimeout(() => {
     detachDesktopClicks();
     stopAllMusic();
     installPersistentDesktop();
-    const gameWrapper = document.getElementById('wrapper');
     if (gameWrapper) gameWrapper.style.opacity = '';
+    gameWrapper = null;
+    introEnemyPos = null;
+    introPlayerPos = null;
 
     if (skippyMode) {
       if (overlayEl) { overlayEl.parentNode.removeChild(overlayEl); overlayEl = null; }
