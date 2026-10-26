@@ -1254,12 +1254,14 @@ function handleChippyClick(worldX, worldY) {
 
     const playerPos = ECS.get(gs.playerId, 'pos');
     if (Math.hypot(playerPos.x - pos.x, playerPos.y - pos.y) > CFG.CHIPPY_INTERACT_RANGE) {
+      SFX.play('notAllowed', 0.65);
       showMsg('MOVE CLOSER TO CHIPPY!');
       return true;
     }
 
     if (machine.phase === 'idle') {
       if (gs.maxHealth <= 20) {
+        SFX.play('notAllowed', 0.65);
         showMsg('CHIPPY NEEDS MORE THAN 20 MAX HP!');
         return true;
       }
@@ -1285,6 +1287,8 @@ function handleChippyClick(worldX, worldY) {
       spawnPartyParticles(pos.x, pos.y);
       beginChippyTransition(machine, 'spinning', 'spin', machine.restFrame);
       showMsg('+1 GOLDEN CHIP');
+    } else {
+      SFX.play('notAllowed', 0.65);
     }
     return true;
   }
@@ -1460,9 +1464,10 @@ function offerItemChoice() {
 
   choiceEl.style.display = 'flex';
   if (cards.length > 0) {
-    SFX.play('itemReveal', 0.65);
+    const revealSpeed = 1.5;
+    SFX.play('itemReveal', 0.65, revealSpeed);
     cards.forEach((card, index) => {
-      const delay = Math.min(index, 2) * 1000;
+      const delay = Math.min(index, 2) * 1000 / revealSpeed;
       if (delay === 0) {
         card.classList.add('revealed');
       } else {

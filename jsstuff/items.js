@@ -10,6 +10,7 @@ const ITEM_DEFS = {
     color: '#ff69b4', shadowColor: '#ff69b4', spawnCooldown: 18000,
     effect(gs) {
       gs.partyFreezeTimer = CFG.PARTY_FREEZE_FRAMES;
+      SFX.play('birthdayParty', 0.65);
       const enemies = ECS.query('enemy', 'pos');
       spawnPartyParticles(CFG.W/2, CFG.H/2);
       for (const id of enemies) { const p = ECS.get(id,'pos'); spawnPartyParticles(p.x, p.y); }

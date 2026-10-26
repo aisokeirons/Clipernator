@@ -150,7 +150,11 @@ function unlockGlowsticks() {
 }
 
 function swingGlowsticks() {
-  if (!gs.hasGlowsticks || gs.glowCooldown > 0) return;
+  if (!gs.hasGlowsticks) return;
+  if (gs.glowCooldown > 0) {
+    SFX.play('notAllowed', 0.65);
+    return;
+  }
 
   // Activate the melee window — cooldown only applied on miss
   meleeSwingTimer = CFG.MELEE_SWING_FRAMES;
@@ -1959,6 +1963,7 @@ const total = [...ECS.query('enemy')].length;
   }
   spawnParticles(x, y, '#ff4400', 10);
 if (type === 'utensil') SFX.playAt('utensilSpawn', x, y, 0.45);
+if (type === 'waterballoon') SFX.playAt('balloonSpawn', x, y, 0.5);
 if (type === 'partyHat') SFX.playAt('partyHatSpawn', x, y, 0.5);
 }
 
@@ -2187,7 +2192,11 @@ function tryDropTicket(x, y) {
 }
 
 function spinPrizeWheel() {
-  if (gs.floor!==2||gs.tickets<3||!gameRunning) return;
+  if (!gameRunning) return;
+  if (gs.floor!==2||gs.tickets<3) {
+    SFX.play('notAllowed', 0.65);
+    return;
+  }
   gs.tickets-=3; updateHUD();
   const roll=Math.random(); let name;
   if(roll<0.18){name="🔴 CURSED SPIN! ENEMIES ENRAGED!";gs.cursedSpinTimer=480;for(const eid of ECS.query('enemy','physics','ai')){const ephy=ECS.get(eid,'physics');ephy._cursedBase=ephy._cursedBase||ephy.speed;ephy.speed=ephy._cursedBase*1.5;ECS.get(eid,'ai').cursedDmgBoost=true;}spawnParticles(ECS.get(gs.playerId,'pos').x,ECS.get(gs.playerId,'pos').y,'#ff0000',20);gs.prizeEffect={name,timer:480};}

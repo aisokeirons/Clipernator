@@ -122,6 +122,7 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 | `ClippyDamage.mp3` | Wired: Clippy takes damage; used alongside `PlayerDamage` on relevant hits. |
 | `ClippyDeath.mp3` | Wired: game over. |
 | `ClippySpeak.mp3` | Wired: plays with Clippy’s randomized reaction whenever paying Chippy’s health cost. |
+| `NotAllowed.mp3` | Wired: plays when an attempted interaction cannot succeed under current conditions, such as Chippy rejecting a health payment, Chippy being out of range or busy, Glowsticks being on cooldown, or using the prize wheel on the wrong floor or without enough tickets. |
 | `Shoot1.mp3`–`Shoot4.mp3` | Wired: randomized player shot sounds. |
 | `ReloadStart1.mp3`–`ReloadStart3.mp3` | Wired: randomized reload-start cue. |
 | `ReloadFinish.mp3` | Wired: reload completes. |
@@ -147,6 +148,7 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 |---|---|
 | `Utensil/UtensilSpawn.mp3` | Wired: a Utensil spawns. |
 | `Utensil/Fork/ForkHit.mp3` | Wired: a fork makes contact with its target. |
+| `Utensil/Fork/ForkAttack.mp3` | Wired: a fork launches toward its target, separate from the hit and grab sounds. |
 | `Utensil/Fork/ForkGrab.mp3`, `ForkGrab2.mp3` | Wired: randomized cue when the fork grabs the player. |
 | `Utensil/Spoon/SpoonDamage.mp3` | Wired: a spoon damages the player. |
 | `PartyHat/PartyHatSpawn.mp3` | Wired: a Party Hat spawns. |
@@ -154,6 +156,7 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 | `PartyHat/PartyHatRide.mp3`, `PartyHatRide2.mp3` | Wired: randomized cue when a Party Hat rides an enemy. |
 | `PartyHat/PartyHatDrop.mp3` | Wired: a Party Hat loses its ride target. |
 | `PartyHat/PartyHatDie.mp3` | Wired: a Party Hat entity is destroyed. |
+| `WaterBalloon/BalloonSpawn.mp3` | Wired: a Water Balloon enemy spawns. |
 | `CakeBoss/FrostingLaunch.mp3` | Wired: the Cake Boss launches frosting projectiles. |
 | `CakeBoss/FrostingHit.mp3` | Wired: a frosting projectile lands. |
 
@@ -168,7 +171,8 @@ Sound effects are registered in `jsstuff/sounds.js`. “Wired” means the sound
 | `Chips/GoldenChipTarget.mp3` | Wired as a loop: plays while at least one golden chip is magnetized and homing toward the player. |
 | `Chips/GoldenChipPickup.mp3` | Wired: a golden chip is collected, including from Chippy. |
 | `items/ItemConfirm.mp3` | Wired: confirms an item in the opening draft or in-game choice, and plays when an item is picked up or Glowsticks are unlocked. |
-| `items/ItemReveal.mp3` | Wired: plays when in-game item choices appear; cards reveal immediately, at +1 second, and at +2 seconds. The fourth Floor 2 card reveals with the third. |
+| `items/BirthdayParty/BirthdayParty.mp3` | Wired: intended to play when the Birthday Party item effect activates and freezes enemy movement. The current file is 1 byte and needs valid audio data to be audible. |
+| `items/ItemReveal.mp3` | Wired: plays 1.5x faster when in-game item choices appear; cards reveal immediately, at about +0.67 seconds, and at about +1.33 seconds. The fourth Floor 2 card reveals with the third. |
 | `misc/CandleLight.mp3` | Wired: plays whenever one of the player's Cursed Candles relights. Reuse this cue for future boss-candle lighting events. |
 
 ### Interface and Opening Sequence

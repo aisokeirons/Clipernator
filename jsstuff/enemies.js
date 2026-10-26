@@ -159,6 +159,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
           }
           ai.uTravelTimer = 0;
           ai.uState = 'FORK_REACHING';
+          SFX.playAt('forkAttack', pos.x, pos.y, 0.5);
           spawnParticles(pos.x, pos.y, '#ffcc88', 8);
         }
       }
@@ -338,6 +339,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
           ai.uTipVy = ai.uLaunchDir.y * 9;
           ai.uTravelTimer = 0;
           ai.uState = 'LAUNCH';
+          SFX.playAt('forkAttack', pos.x, pos.y, 0.5);
           spawnParticles(pos.x, pos.y, '#ffcc88', 10);
         }
       }

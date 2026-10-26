@@ -13,13 +13,14 @@ const SFX = {
     this._cache[key] = audio;
   },
 
-  play(key, volumeOverride) {
+  play(key, volumeOverride, playbackRate) {
     if (this._muted) return;
     const src = this._cache[key];
     if (!src) return;
     try {
       const clone = src.cloneNode();
       clone.volume = volumeOverride !== undefined ? volumeOverride : 0.6;
+      if (playbackRate !== undefined) clone.playbackRate = playbackRate;
       clone.play().catch(() => {});
     } catch(e) {}
   },
@@ -99,12 +100,15 @@ SFX.load('playerDamage',     'sounds/soundeffects/player/PlayerDamage.mp3');
 SFX.load('clippySpeak',      'sounds/soundeffects/player/ClippySpeak.mp3');
 SFX.load('clippyDamage',     'sounds/soundeffects/player/ClippyDamage.mp3');
 SFX.load('clippyDeath',      'sounds/soundeffects/player/ClippyDeath.mp3');
+SFX.load('notAllowed',       'sounds/soundeffects/player/NotAllowed.mp3');
 
 SFX.load('utensilSpawn',     'sounds/soundeffects/enemies/Utensil/UtensilSpawn.mp3');
 SFX.load('forkGrab',         'sounds/soundeffects/enemies/Utensil/Fork/ForkGrab.mp3');
 SFX.load('forkGrab2',        'sounds/soundeffects/enemies/Utensil/Fork/ForkGrab2.mp3');
 SFX.load('forkHit',          'sounds/soundeffects/enemies/Utensil/Fork/ForkHit.mp3');
+SFX.load('forkAttack',       'sounds/soundeffects/enemies/Utensil/Fork/ForkAttack.mp3');
 SFX.load('spoonDamage',      'sounds/soundeffects/enemies/Utensil/Spoon/SpoonDamage.mp3');
+SFX.load('balloonSpawn',     'sounds/soundeffects/enemies/WaterBalloon/BalloonSpawn.mp3');
 
 SFX.load('frostingLaunch',   'sounds/soundeffects/enemies/CakeBoss/FrostingLaunch.mp3');
 SFX.load('frostingHit',      'sounds/soundeffects/enemies/CakeBoss/FrostingHit.mp3');
@@ -118,6 +122,7 @@ SFX.load('partyHatSpawn',    'sounds/soundeffects/enemies/PartyHat/PartyHatSpawn
 SFX.load('pause',            'sounds/soundeffects/misc/PauseSound.mp3');
 SFX.load('waveComplete',     'sounds/soundeffects/misc/Waves/WaveComplete.mp3');
 SFX.load('candleLight',      'sounds/soundeffects/misc/CandleLight.mp3');
+SFX.load('birthdayParty',    'sounds/soundeffects/items/BirthdayParty/BirthdayParty.mp3');
 SFX.load('itemConfirm',      'sounds/soundeffects/items/ItemConfirm.mp3');
 SFX.load('itemReveal',       'sounds/soundeffects/items/ItemReveal.mp3');
 
