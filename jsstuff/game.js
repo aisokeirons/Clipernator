@@ -127,7 +127,7 @@ function playerPos(gs) {
 // ================================================================
 let gs = {};
 
-function initGameState() {
+function initGameState(applyIntroChoices = true) {
   ECS.clear();
   worldW = canvas.clientWidth || CFG.W;
   worldH = canvas.clientHeight || CFG.H;
@@ -240,7 +240,7 @@ clippyPickupTimer: 0,
   ECS.add(chippyId, 'pos', { x: worldW / 2 - 115, y: worldH / 2 + 20 });
 
  //Apply difficulty chosen in intro
-  if (typeof INTRO !== 'undefined') {
+  if (applyIntroChoices && typeof INTRO !== 'undefined') {
     INTRO.applyDifficultyToGs(gs);
     INTRO.applyDraftItemsToGs(gs);
   }
