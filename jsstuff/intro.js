@@ -1570,7 +1570,7 @@ setTimeout(() => {
     desktopCanvas.id = 'persistent-desktop';
     desktopCanvas.width = 960;
     desktopCanvas.height = 600;
-    desktopCanvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:1;image-rendering:pixelated;image-rendering:crisp-edges;';
+    desktopCanvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;margin:0;z-index:1;image-rendering:pixelated;image-rendering:crisp-edges;';
     document.body.insertBefore(desktopCanvas, document.body.firstChild);
     const desktopCtx = desktopCanvas.getContext('2d');
     if (!desktopCtx) throw new Error('Unable to create persistent desktop canvas context.');
@@ -1578,7 +1578,7 @@ setTimeout(() => {
     const dialogCanvas = document.createElement('canvas');
     dialogCanvas.width = 960;
     dialogCanvas.height = 600;
-    dialogCanvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:3;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges;';
+    dialogCanvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;margin:0;background:transparent;z-index:3;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges;';
     document.body.appendChild(dialogCanvas);
     const dialogCtx = dialogCanvas.getContext('2d');
     if (!dialogCtx) throw new Error('Unable to create desktop dialog canvas context.');
