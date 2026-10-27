@@ -779,6 +779,87 @@ const confusedIds = [...ECS.query('enemy', 'pos', 'hp', 'ai')].filter(id => {
   if (toKill.length > 0) setTimeout(() => checkWave(), 0);
 }
      
+function tickCorEnemy(id, type) {
+  const pos = ECS.get(id, 'pos');
+  const vel = ECS.get(id, 'vel');
+  const ai = ECS.get(id, 'ai');
+  const target = ECS.get(gs.playerId, 'pos');
+  if (!pos || !vel || !ai || !target) return;
+  if (gs.frozen) {
+    vel.vx = 0;
+    vel.vy = 0;
+    return;
+  }
+
+  if (type === 'corRed') {
+    if (ai.corTimer === undefined) {
+      const dx = target.x - pos.x, dy = target.y - pos.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      ai.corDirX = dx / distance;
+      ai.corDirY = dy / distance;
+      ai.corTimer = Math.min(42, Math.max(8, Math.ceil(distance / 13)));
+      ai.corGlitchTimer = 0;
+    }
+
+    vel.vx = ai.corDirX * 13;
+    vel.vy = ai.corDirY * 13;
+    ai.corTimer--;
+    ai.corGlitchTimer++;
+    if (ai.corGlitchTimer >= 7) {
+      ai.corGlitchTimer = 0;
+      ai.corGlitchFrames = 4;
+      ai.corGlitchX = pos.x - ai.corDirX * 24;
+      ai.corGlitchY = pos.y - ai.corDirY * 24;
+      spawnParticles(pos.x, pos.y, '#ff3355', 3);
+    }
+    if (ai.corGlitchFrames > 0) ai.corGlitchFrames--;
+    pos.x += vel.vx;
+    pos.y += vel.vy;
+    if (ai.corTimer <= 0) despawnCor(id, pos, '#ff3355');
+    return;
+  }
+
+  ai.corShotTimer = (ai.corShotTimer ?? 12) - 1;
+  if (ai.corShotTimer <= 0 && (ai.corShotsFired || 0) < 5) {
+    const dx = target.x - pos.x, dy = target.y - pos.y;
+    const angle = Math.atan2(dy, dx);
+    const speed = 4.2;
+    gs.enemyBullets.push({
+      x: pos.x,
+      y: pos.y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 150,
+      maxLife: 150,
+      color: '#22ddff',
+      isCorClone: true,
+    });
+    ai.corShotsFired = (ai.corShotsFired || 0) + 1;
+    ai.corShotTimer = 24;
+    spawnParticles(pos.x, pos.y, '#22ddff', 5);
+    if (ai.corShotsFired === 5) ai.corFadeTimer = 14;
+  }
+
+  if (ai.corShotsFired >= 5) {
+    ai.corFadeTimer--;
+    if (ai.corFadeTimer <= 0) {
+      despawnCor(id, pos, '#22ddff');
+      return;
+    }
+  }
+
+  vel.vx = 0;
+  vel.vy = 0;
+}
+
+function despawnCor(id, pos, color) {
+  if (!ECS.has(id, 'enemy')) return;
+  spawnParticles(pos.x, pos.y, color, 12);
+  ECS.destroyEntity(id);
+  gs.waveKills++;
+  setTimeout(() => checkWave(), 0);
+}
+
 function sysAI() {
   gs.frozen=gs.partyFreezeTimer>0;
 
@@ -839,6 +920,10 @@ for (const id of [...ECS.query('enemy','pos','vel','ai','physics')]) {
       continue;
     }
    const type=ECS.get(id,'enemy').type;
+   if (type === 'corRed' || type === 'corBlue') {
+     tickCorEnemy(id, type);
+     continue;
+   }
 const bt=ENEMY_BTS[type];
 if (bt) {
 if (ai2 && ai2.confused) {
@@ -860,6 +945,7 @@ if (ai2 && ai2.confused) {
         const od = Math.hypot(op.x - cpos.x, op.y - cpos.y);
         if (od < nearestDist) { nearestDist = od; nearestPos = op; }
       }
+
       const newBullets = gs.enemyBullets.splice(prevCount);
 for (const nb of newBullets) {
   if (!nearestPos) continue;
@@ -1782,6 +1868,7 @@ function sysOobCleanup() {
     const enemy = ECS.get(id, 'enemy');
     const pos = ECS.get(id, 'pos');
     const ai  = ECS.get(id, 'ai');
+    if (enemy.type === 'corRed' || enemy.type === 'corBlue') continue;
     if (enemy.type === 'utensil' && ai.windowActive) {
       ai._oobTimer = 0;
       continue;
@@ -1897,7 +1984,9 @@ const total = [...ECS.query('enemy')].length;
   if (gs.waveKills+total>=gs.waveEnemiesLeft) return;
   let type='utensil';
   const roll=Math.random();
-  if (gs.floor === 2) {
+  if (gs.wave >= 15 && roll < 0.18) {
+    type = Math.random() < 0.5 ? 'corRed' : 'corBlue';
+  } else if (gs.floor === 2) {
     // Wave-gated unlock curve — new enemy type introduced each bracket
     // Cannonball unlocks first (wave 1 of floor 2 = wave 12+)
     // Juggler unlocks wave 14+, Ringmaster wave 17+, Clown Car wave 20+
@@ -1950,18 +2039,35 @@ const total = [...ECS.query('enemy')].length;
   ECS.add(id,'enemy',{type,subtype:type==='utensil'?subtypes[Math.floor(Math.random()*3)]:undefined});
   ECS.add(id,'pos',{x,y,angle:0}); ECS.add(id,'vel',{vx:0,vy:0});
 
- 
- const hpMult = (gs._enemyHpMult || 1.0);
- ECS.add(id,'hp',{hp:Math.ceil(baseHp*def.hpMult*hpMult), maxHp:Math.ceil(baseHp*def.hpMult*hpMult), hitFlash:0});
+  const isCor = type === 'corRed' || type === 'corBlue';
+  if (!isCor) {
+    const hpMult = (gs._enemyHpMult || 1.0);
+    ECS.add(id,'hp',{hp:Math.ceil(baseHp*def.hpMult*hpMult), maxHp:Math.ceil(baseHp*def.hpMult*hpMult), hitFlash:0});
+  }
 
- 
   ECS.add(id,'physics',{speed:(1.2+Math.random()*0.6+gs.wave*0.12)*def.speedMult});
-  const ai = ECS.add(id,'ai',{shootCooldown:120,ambushTimer:0,diveTimer:0,dashHit:false,balloonOrient:type==='waterballoon'?Math.floor(Math.random()*4):0});
+  const ai = ECS.add(id,'ai',{
+    shootCooldown:120,
+    ambushTimer:0,
+    diveTimer:0,
+    dashHit:false,
+    balloonOrient:type==='waterballoon'?Math.floor(Math.random()*4):0,
+  });
+  if (type === 'corRed') {
+    const dx = ppos.x - x, dy = ppos.y - y, distance = Math.hypot(dx, dy) || 1;
+    ai.corDirX = dx / distance;
+    ai.corDirY = dy / distance;
+    ai.corTimer = Math.min(42, Math.max(8, Math.ceil(distance / 13)));
+    ai.corGlitchTimer = 0;
+  } else if (type === 'corBlue') {
+    ai.corShotTimer = 12;
+    ai.corShotsFired = 0;
+  }
   if (type === 'utensil') {
     ai.windowActive = x < 0 || x > worldW || y < 0 || y > worldH;
     if (ai.windowActive) ai.windowGroup = ++utensilWindowGroupSequence;
   }
-  spawnParticles(x, y, '#ff4400', 10);
+  spawnParticles(x, y, isCor ? def.color : '#ff4400', isCor ? 14 : 10);
 if (type === 'utensil') SFX.playAt('utensilSpawn', x, y, 0.45);
 if (type === 'waterballoon') SFX.playAt('balloonSpawn', x, y, 0.5);
 if (type === 'partyHat') SFX.playAt('partyHatSpawn', x, y, 0.5);
@@ -2114,18 +2220,6 @@ function checkWave() {
     updateHUD();
    
 gs.wave++;
-
-if (completed === CFG.BOSS_WAVE) {
-  gs.bossActive = true;
-  spawnBoss();
-  gs.waveEnemiesLeft = 5;
-  gs.waveKills = 0;
-  gs.spawnInterval = Math.max(120, CFG.SPAWN_INTERVAL_BASE * 2);
-  gs.flawlessThisWave = true;
-  showMsg('BOSS INCOMING — WAVE ' + gs.wave + '!');
-  updateHUD();
-  return;
-}
 
 if (gs.floor === 2 && gs.wave === CFG.BOSS2_WAVE) {
       // ... boss2 spawn 

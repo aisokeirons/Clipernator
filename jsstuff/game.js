@@ -951,7 +951,10 @@ function renderOffscreenWindows() {
     return;
   }
 
-  const enemyIds = [...ECS.query('enemy', 'pos', 'ai')];
+  const enemyIds = [...ECS.query('enemy', 'pos', 'ai')].filter(id => {
+    const type = ECS.get(id, 'enemy').type;
+    return type !== 'corRed' && type !== 'corBlue';
+  });
   for (const id of enemyIds) {
     const pos = ECS.get(id, 'pos');
     const ai = ECS.get(id, 'ai');

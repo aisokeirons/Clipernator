@@ -106,7 +106,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
             for (const eid of ECS.query('enemy', 'pos')) {
               if (eid === id) continue;
               const etype = ECS.get(eid, 'enemy').type;
-              if (etype === 'miniClown') continue; // too small to grab
+              if (etype === 'miniClown' || etype === 'corRed' || etype === 'corBlue') continue;
               const ep = ECS.get(eid, 'pos');
               const d  = Math.hypot(ep.x - pos.x, ep.y - pos.y);
               if (d < 260 && d < nearestEnemyDist) {
@@ -747,6 +747,8 @@ const BT_JUGGLER = new BTSelector(
     if (ai.juggleSlots.length < ai.juggleMax) {
       for (const eid of ECS.query('enemy','pos','ai')) {
         if (eid === id || eid === gs.playerId) continue;
+        const etype = ECS.get(eid, 'enemy').type;
+        if (etype === 'corRed' || etype === 'corBlue') continue;
         const eai = ECS.get(eid,'ai');
         if (eai.juggled) continue;
         const epos = ECS.get(eid,'pos');
@@ -1986,4 +1988,6 @@ const ENEMY_DEFS = {
   juggler:        { hpMult: 2.0, speedMult: 0.55, size: 36, color: '#ffdd00' },
   clownCar:  { hpMult: 2.5, speedMult: 1.0, size: 36, color: '#ffdd00' },
 miniClown: { hpMult: 0.1, speedMult: 1.2, size: 16, color: '#ff4400' },
+  corRed:   { hpMult: 0, speedMult: 1, size: 25, color: '#ff2244' },
+  corBlue:  { hpMult: 0, speedMult: 1, size: 25, color: '#22ddff' },
 };

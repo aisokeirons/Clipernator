@@ -889,6 +889,59 @@ function drawMiniClown(epos, ehp, ai, frozen) {
 
 }
 
+function drawCor(pos, ai, type) {
+  const { x, y } = pos;
+  const isRed = type === 'corRed';
+  const color = isRed ? '#ff244f' : '#22ddff';
+  const accent = isRed ? '#ffb2c2' : '#c7fbff';
+  const tick = Math.floor(Date.now() / 55);
+  const jitter = tick % 5 === 0 ? ((tick % 3) - 1) * 3 : 0;
+  const fade = ai.corShotsFired >= 5 ? Math.max(0, ai.corFadeTimer / 14) : 1;
+
+  ctx.save();
+  ctx.globalAlpha *= fade;
+
+  if (isRed && ai.corGlitchFrames > 0) {
+    const baseAlpha = ctx.globalAlpha;
+    ctx.globalAlpha *= 0.45;
+    ctx.fillStyle = '#22ddff';
+    ctx.fillRect(ai.corGlitchX - 10, ai.corGlitchY - 16, 20, 32);
+    ctx.globalAlpha = baseAlpha;
+  }
+
+  ctx.translate(x + jitter, y);
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 18;
+  ctx.fillStyle = isRed ? '#5d1028' : '#103a5b';
+  ctx.beginPath();
+  ctx.moveTo(0, -19);
+  ctx.lineTo(15, -9);
+  ctx.lineTo(12, 12);
+  ctx.lineTo(0, 19);
+  ctx.lineTo(-12, 12);
+  ctx.lineTo(-15, -9);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = accent;
+  ctx.fillRect(-8, -8, 16, 3);
+  ctx.fillRect(-5, -2, 10, 3);
+  ctx.fillRect(-8, 5, 5, 3);
+  ctx.fillRect(3, 5, 5, 3);
+
+  ctx.globalAlpha *= 0.75;
+  ctx.fillStyle = color;
+  for (let i = 0; i < 4; i++) {
+    const offset = ((tick + i * 7) % 17) - 8;
+    ctx.fillRect(-22 + (i % 2) * 7, offset, 7 + (i % 3) * 3, 2);
+  }
+  ctx.restore();
+}
+
 // ============================================================
 // PLAYER DRAW
 // ============================================================
@@ -1423,6 +1476,20 @@ if (b.isArcBall) {
   // Enemy bullets
   for(const eb of gs.enemyBullets) {
     ctx.save(); ctx.globalAlpha=eb.life/eb.maxLife;
+    if (eb.isCorClone) {
+      ctx.translate(eb.x, eb.y);
+      ctx.rotate(Math.atan2(eb.vy, eb.vx));
+      ctx.shadowColor = '#22ddff';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#22ddff';
+      ctx.fillRect(-9, -7, 18, 14);
+      ctx.fillStyle = '#d9ffff';
+      ctx.fillRect(-4, -4, 9, 8);
+      ctx.fillStyle = '#ff4f99';
+      ctx.fillRect(-12, -9, 7, 2);
+      ctx.restore();
+      continue;
+    }
     // ── Arc ball: draw ground shadow first, then ball ──
     if (eb.isArcBall) {
       ctx.save();
@@ -1481,6 +1548,13 @@ if (tearSrc.complete && tearSrc.naturalWidth > 0) {
   // Chippy playtest spawn
   for (const id of ECS.query('chippyMachine', 'pos')) {
     drawChippyMachine(ECS.get(id, 'pos'), ECS.get(id, 'chippyMachine'));
+  }
+
+  for (const id of ECS.query('enemy', 'pos', 'ai')) {
+    const type = ECS.get(id, 'enemy').type;
+    if (type === 'corRed' || type === 'corBlue') {
+      drawCor(ECS.get(id, 'pos'), ECS.get(id, 'ai'), type);
+    }
   }
 
   // Enemies
