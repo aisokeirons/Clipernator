@@ -13,14 +13,16 @@ const SFX = {
     this._cache[key] = audio;
   },
 
-  play(key, volumeOverride) {
+  play(key, volumeOverride, onStarted) {
     if (this._muted) return;
     const src = this._cache[key];
     if (!src) return;
     try {
       const clone = src.cloneNode();
       clone.volume = volumeOverride !== undefined ? volumeOverride : 0.6;
-      clone.play().catch(() => {});
+      const playback = clone.play();
+      if (onStarted) playback.then(onStarted).catch(() => {});
+      else playback.catch(() => {});
     } catch(e) {}
   },
 
@@ -120,6 +122,8 @@ SFX.load('partyHatSpawn',    'sounds/soundeffects/enemies/PartyHat/PartyHatSpawn
 
 SFX.load('pause',            'sounds/soundeffects/misc/PauseSound.mp3');
 SFX.load('waveComplete',     'sounds/soundeffects/misc/Waves/WaveComplete.mp3');
+SFX.load('waveOverload',     'sounds/soundeffects/misc/Waves/WaveOverload.mp3');
+SFX.load('omini',            'sounds/soundeffects/misc/OMINI.mp3');
 SFX.load('candleLight',      'sounds/soundeffects/misc/CandleLight.mp3');
 SFX.load('birthdayParty',    'sounds/soundeffects/items/BirthdayParty/BirthdayParty.mp3');
 SFX.load('itemConfirm',      'sounds/soundeffects/items/ItemConfirm.mp3');

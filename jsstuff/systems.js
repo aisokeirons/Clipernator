@@ -2066,7 +2066,13 @@ function checkWave() {
   const total = ECS.query('enemy').size;
   if (gs.waveKills + total < gs.waveEnemiesLeft || total > 0) return;
   const completed = gs.wave;
-  SFX.play('waveComplete', 0.55);
+  if (completed === CFG.BOSS_WAVE) {
+    SFX.play('omini', 0.55, () => {
+      setTimeout(() => INTRO.spawnAntipieApp(), 4500);
+    });
+  } else {
+    SFX.play(completed > CFG.BOSS_WAVE ? 'waveOverload' : 'waveComplete', 0.55);
+  }
   if (gs.flawlessThisWave) {
     gs.flawlessWaveStreak++;
     if (gs.flawlessWaveStreak >= CFG.GOLDEN_CHIP_WAVE_STREAK) {

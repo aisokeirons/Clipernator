@@ -244,6 +244,8 @@ function stopSound(key) {
   let desktopLoadDots = 0;
   let desktopLoadDotsTimer = 0;
   let desktopClickedData = false;
+  let persistentDesktopRedraw = null;
+  let antipieAppSpawned = false;
 
   const DESKTOP_APPS = [
     { id: 'mycomputer',  label: 'My Computer',  sprite: 'computer',    x: 24,  y: 30  },
@@ -256,6 +258,13 @@ function stopSound(key) {
     { id: 'folder1',     label: 'Projects',     sprite: 'folder',      x: 110, y: 30  },
     { id: 'folder2',     label: 'Downloads',    sprite: 'folder',      x: 110, y: 100 },
   ];
+
+  function spawnAntipieApp() {
+    if (antipieAppSpawned) return;
+    antipieAppSpawned = true;
+    DESKTOP_APPS.push({ id: 'antipie', label: 'ANTIPIE', sprite: 'antipie', x: 196, y: 30 });
+    if (persistentDesktopRedraw) persistentDesktopRedraw();
+  }
 
   const ERROR_MESSAGES = {
     mycomputer:  'This operation has been blocked\nby an unknown process.\n\nError code: 0xC0000034',
@@ -1569,6 +1578,7 @@ setTimeout(() => {
     if (!dialogCtx) throw new Error('Unable to create desktop dialog canvas context.');
 
     const redrawDesktop = () => drawDesktop(desktopCtx, false);
+    persistentDesktopRedraw = redrawDesktop;
     const redrawDialog = () => {
       dialogCtx.clearRect(0, 0, dialogCanvas.width, dialogCanvas.height);
       dialogCanvas.style.pointerEvents = desktopErrorVisible ? 'auto' : 'none';
@@ -1640,5 +1650,5 @@ setTimeout(() => {
     setTimeout(() => startBIOS(), 200);
   }
 
-  return { start, applyDifficultyToGs, applyDraftItemsToGs };
+  return { start, applyDifficultyToGs, applyDraftItemsToGs, spawnAntipieApp };
 })();
