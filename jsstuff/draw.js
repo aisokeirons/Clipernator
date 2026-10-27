@@ -890,55 +890,76 @@ function drawMiniClown(epos, ehp, ai, frozen) {
 }
 
 function drawCor(pos, ai, type) {
-  const { x, y } = pos;
   const isRed = type === 'corRed';
-  const color = isRed ? '#ff244f' : '#22ddff';
-  const accent = isRed ? '#ffb2c2' : '#c7fbff';
-  const tick = Math.floor(Date.now() / 55);
-  const jitter = tick % 5 === 0 ? ((tick % 3) - 1) * 3 : 0;
-  const fade = ai.corShotsFired >= 5 ? Math.max(0, ai.corFadeTimer / 14) : 1;
+  const sprite = isRed ? redCorImg : blueCorImg;
+  if (!sprite.complete || sprite.naturalWidth === 0) return;
+
+  for (const fragment of ai.corTrail || []) {
+    ctx.save();
+    ctx.globalAlpha *= fragment.life / fragment.maxLife * 0.2;
+    ctx.translate(fragment.x, fragment.y);
+    ctx.rotate(fragment.angle);
+    ctx.scale(fragment.scaleX, fragment.scaleY);
+    ctx.filter = 'hue-rotate(155deg) saturate(2)';
+    ctx.drawImage(redCorImg, -48, -36, 96, 72);
+    ctx.filter = 'none';
+    ctx.globalAlpha *= 2.1;
+    ctx.drawImage(redCorImg, -52, -39, 104, 78);
+    ctx.restore();
+  }
+
+  if (!isRed) {
+    for (const fragment of ai.corParticles || []) {
+      ctx.save();
+      ctx.globalAlpha *= fragment.life / fragment.maxLife;
+      ctx.translate(fragment.x, fragment.y);
+      ctx.rotate(fragment.angle);
+      ctx.drawImage(
+        blueCorImg,
+        fragment.sx, fragment.sy, fragment.sw, fragment.sh,
+        -fragment.size / 2, -fragment.size / 2, fragment.size, fragment.size,
+      );
+      ctx.restore();
+    }
+  }
+
+  let x = pos.x, y = pos.y;
+  let angle = 0, scaleX = 1, scaleY = 1, alpha = 1;
+  const width = isRed ? 104 : 78;
+  const height = width * (sprite.naturalHeight / sprite.naturalWidth);
+
+  if (isRed) {
+    angle = ai.corAngle || 0;
+    if (ai.corState === 'warning') {
+      const pulse = 1 + Math.sin(Date.now() / 120) * 0.035;
+      scaleX = pulse;
+      scaleY = 2 - pulse;
+    } else if (ai.corState === 'dash') {
+      scaleX = 1.28;
+      scaleY = 0.78;
+    } else if (ai.corState === 'shake') {
+      const shake = (ai.corStateTimer % 3 - 1) * 5;
+      x += shake;
+      alpha = Math.min(1, ai.corStateTimer / 12);
+    }
+  } else if (ai.corState === 'shoot' && ai.corStretchTimer > 0) {
+    const stretch = ai.corStretchTimer / 10;
+    scaleX = 1 - 0.28 * stretch;
+    scaleY = 1 + 0.45 * stretch;
+  } else if (ai.corState === 'spin') {
+    angle = ai.corSpinAngle;
+    alpha = Math.min(1, ai.corStateTimer / 14);
+  }
 
   ctx.save();
-  ctx.globalAlpha *= fade;
-
-  if (isRed && ai.corGlitchFrames > 0) {
-    const baseAlpha = ctx.globalAlpha;
-    ctx.globalAlpha *= 0.45;
-    ctx.fillStyle = '#22ddff';
-    ctx.fillRect(ai.corGlitchX - 10, ai.corGlitchY - 16, 20, 32);
-    ctx.globalAlpha = baseAlpha;
-  }
-
-  ctx.translate(x + jitter, y);
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 18;
-  ctx.fillStyle = isRed ? '#5d1028' : '#103a5b';
-  ctx.beginPath();
-  ctx.moveTo(0, -19);
-  ctx.lineTo(15, -9);
-  ctx.lineTo(12, 12);
-  ctx.lineTo(0, 19);
-  ctx.lineTo(-12, 12);
-  ctx.lineTo(-15, -9);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = accent;
-  ctx.fillRect(-8, -8, 16, 3);
-  ctx.fillRect(-5, -2, 10, 3);
-  ctx.fillRect(-8, 5, 5, 3);
-  ctx.fillRect(3, 5, 5, 3);
-
-  ctx.globalAlpha *= 0.75;
-  ctx.fillStyle = color;
-  for (let i = 0; i < 4; i++) {
-    const offset = ((tick + i * 7) % 17) - 8;
-    ctx.fillRect(-22 + (i % 2) * 7, offset, 7 + (i % 3) * 3, 2);
-  }
+  ctx.globalAlpha *= alpha;
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.scale(scaleX, scaleY);
+  if (isRed && ai.corWhiteFlash) ctx.filter = 'brightness(0) invert(1)';
+  ctx.shadowColor = isRed ? '#ff2233' : '#286aff';
+  ctx.shadowBlur = 22;
+  ctx.drawImage(sprite, -width / 2, -height / 2, width, height);
   ctx.restore();
 }
 
@@ -1479,14 +1500,11 @@ if (b.isArcBall) {
     if (eb.isCorClone) {
       ctx.translate(eb.x, eb.y);
       ctx.rotate(Math.atan2(eb.vy, eb.vx));
-      ctx.shadowColor = '#22ddff';
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = '#22ddff';
-      ctx.fillRect(-9, -7, 18, 14);
-      ctx.fillStyle = '#d9ffff';
-      ctx.fillRect(-4, -4, 9, 8);
-      ctx.fillStyle = '#ff4f99';
-      ctx.fillRect(-12, -9, 7, 2);
+      if (blueCorImg.complete && blueCorImg.naturalWidth > 0) {
+        ctx.shadowColor = '#22ddff';
+        ctx.shadowBlur = 12;
+        ctx.drawImage(blueCorImg, -15, -11, 30, 22);
+      }
       ctx.restore();
       continue;
     }

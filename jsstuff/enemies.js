@@ -1988,6 +1988,6 @@ const ENEMY_DEFS = {
   juggler:        { hpMult: 2.0, speedMult: 0.55, size: 36, color: '#ffdd00' },
   clownCar:  { hpMult: 2.5, speedMult: 1.0, size: 36, color: '#ffdd00' },
 miniClown: { hpMult: 0.1, speedMult: 1.2, size: 16, color: '#ff4400' },
-  corRed:   { hpMult: 0, speedMult: 1, size: 25, color: '#ff2244' },
-  corBlue:  { hpMult: 0, speedMult: 1, size: 25, color: '#22ddff' },
+  corRed:   { hpMult: 0, speedMult: 1, size: 52, color: '#ff2244' },
+  corBlue:  { hpMult: 0, speedMult: 1, size: 38, color: '#22ddff' },
 };

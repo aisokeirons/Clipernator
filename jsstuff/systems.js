@@ -791,65 +791,151 @@ function tickCorEnemy(id, type) {
     return;
   }
 
+  ai.corParticles = (ai.corParticles || []).filter((fragment) => {
+    fragment.x += fragment.vx;
+    fragment.y += fragment.vy;
+    fragment.vx *= 0.94;
+    fragment.vy *= 0.94;
+    fragment.life--;
+    return fragment.life > 0;
+  });
+
   if (type === 'corRed') {
-    if (ai.corTimer === undefined) {
-      const dx = target.x - pos.x, dy = target.y - pos.y;
-      const distance = Math.hypot(dx, dy) || 1;
-      ai.corDirX = dx / distance;
-      ai.corDirY = dy / distance;
-      ai.corTimer = Math.min(42, Math.max(8, Math.ceil(distance / 13)));
-      ai.corGlitchTimer = 0;
+    ai.corStateTimer--;
+    if (ai.corState === 'warning') {
+      ai.corWhiteFlash = ai.corStateTimer <= 18 && Math.floor(ai.corStateTimer / 3) % 2 === 0;
+      if (ai.corStateTimer <= 0) {
+        const dx = target.x - pos.x, dy = target.y - pos.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        ai.corDirX = dx / distance;
+        ai.corDirY = dy / distance;
+        ai.corAngle = Math.atan2(dy, dx);
+        ai.corState = 'dash';
+        ai.corStateTimer = 22;
+        ai.corDashFrame = 0;
+        ai.corWhiteFlash = false;
+      }
+    } else if (ai.corState === 'dash') {
+      ai.corDashFrame++;
+      const speed = ai.corDashFrame <= 14 ? 13 : 13 * Math.max(0, (22 - ai.corDashFrame) / 8);
+      vel.vx = ai.corDirX * speed;
+      vel.vy = ai.corDirY * speed;
+      pos.x += vel.vx;
+      pos.y += vel.vy;
+      if (ai.corDashFrame % 2 === 0) {
+        ai.corTrail.push({
+          x: pos.x,
+          y: pos.y,
+          life: 16,
+          maxLife: 16,
+          angle: ai.corAngle,
+          scaleX: 1.25,
+          scaleY: 0.8,
+        });
+      }
+      if (ai.corStateTimer <= 0) {
+        ai.corState = 'stop';
+        ai.corStateTimer = 8;
+        vel.vx = 0;
+        vel.vy = 0;
+      }
+    } else if (ai.corState === 'stop') {
+      vel.vx = 0;
+      vel.vy = 0;
+      if (ai.corStateTimer <= 0) {
+        ai.corState = 'shake';
+        ai.corStateTimer = 30;
+      }
+    } else if (ai.corState === 'shake') {
+      vel.vx = 0;
+      vel.vy = 0;
+      if (ai.corStateTimer <= 0) {
+        despawnCor(id, pos, '#ff3355');
+        return;
+      }
     }
 
-    vel.vx = ai.corDirX * 13;
-    vel.vy = ai.corDirY * 13;
-    ai.corTimer--;
-    ai.corGlitchTimer++;
-    if (ai.corGlitchTimer >= 7) {
-      ai.corGlitchTimer = 0;
-      ai.corGlitchFrames = 4;
-      ai.corGlitchX = pos.x - ai.corDirX * 24;
-      ai.corGlitchY = pos.y - ai.corDirY * 24;
-      spawnParticles(pos.x, pos.y, '#ff3355', 3);
-    }
-    if (ai.corGlitchFrames > 0) ai.corGlitchFrames--;
-    pos.x += vel.vx;
-    pos.y += vel.vy;
-    if (ai.corTimer <= 0) despawnCor(id, pos, '#ff3355');
+    ai.corTrail = ai.corTrail.filter((fragment) => {
+      fragment.life--;
+      return fragment.life > 0;
+    });
     return;
   }
 
-  ai.corShotTimer = (ai.corShotTimer ?? 12) - 1;
-  if (ai.corShotTimer <= 0 && (ai.corShotsFired || 0) < 5) {
-    const dx = target.x - pos.x, dy = target.y - pos.y;
-    const angle = Math.atan2(dy, dx);
-    const speed = 4.2;
-    gs.enemyBullets.push({
-      x: pos.x,
-      y: pos.y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      life: 150,
-      maxLife: 150,
-      color: '#22ddff',
-      isCorClone: true,
-    });
-    ai.corShotsFired = (ai.corShotsFired || 0) + 1;
-    ai.corShotTimer = 24;
-    spawnParticles(pos.x, pos.y, '#22ddff', 5);
-    if (ai.corShotsFired === 5) ai.corFadeTimer = 14;
+  if (ai.corState === 'hover') {
+    ai.corStateTimer--;
+    ai.corHoverTime++;
+    pos.x = ai.corOriginX + Math.sin(ai.corHoverTime * 0.07) * 12;
+    pos.y = ai.corOriginY + Math.sin(ai.corHoverTime * 0.11) * 8;
+    if (ai.corStateTimer <= 0) {
+      ai.corState = 'shoot';
+      ai.corShotTimer = 1;
+    }
   }
 
-  if (ai.corShotsFired >= 5) {
-    ai.corFadeTimer--;
-    if (ai.corFadeTimer <= 0) {
+  if (ai.corState === 'shoot') {
+    ai.corShotTimer--;
+    if (ai.corShotTimer <= 0 && ai.corShotsFired < 5) {
+      const dx = target.x - pos.x, dy = target.y - pos.y;
+      const angle = Math.atan2(dy, dx);
+      gs.enemyBullets.push({
+        x: pos.x,
+        y: pos.y,
+        vx: Math.cos(angle) * 4.2,
+        vy: Math.sin(angle) * 4.2,
+        life: 150,
+        maxLife: 150,
+        color: '#22ddff',
+        isCorClone: true,
+      });
+      ai.corShotsFired++;
+      ai.corStretchTimer = 10;
+      ai.corShotTimer = 26;
+      spawnParticles(pos.x, pos.y, '#22ddff', 5);
+      if (ai.corShotsFired === 5) {
+        ai.corState = 'spin';
+        ai.corStateTimer = 42;
+      }
+    }
+  }
+
+  if (ai.corState === 'spin') {
+    ai.corStateTimer--;
+    ai.corSpinAngle += 0.35;
+    if (ai.corStateTimer <= 0) {
       despawnCor(id, pos, '#22ddff');
       return;
     }
   }
 
+  if (ai.corStretchTimer > 0) ai.corStretchTimer--;
   vel.vx = 0;
   vel.vy = 0;
+}
+
+function spawnCorSpriteFragments(pos, sprite, count) {
+  const width = sprite.naturalWidth || 1200;
+  const height = sprite.naturalHeight || 896;
+  const fragments = [];
+  for (let i = 0; i < count; i++) {
+    const sw = 80 + Math.random() * 100;
+    const sh = 60 + Math.random() * 80;
+    fragments.push({
+      sx: Math.random() * Math.max(0, width - sw),
+      sy: Math.random() * Math.max(0, height - sh),
+      sw,
+      sh,
+      x: pos.x,
+      y: pos.y,
+      vx: (Math.random() - 0.5) * 7,
+      vy: (Math.random() - 0.5) * 7,
+      life: 28 + Math.floor(Math.random() * 10),
+      maxLife: 38,
+      size: 12 + Math.random() * 10,
+      angle: Math.random() * Math.PI * 2,
+    });
+  }
+  return fragments;
 }
 
 function despawnCor(id, pos, color) {
@@ -2019,7 +2105,12 @@ const total = [...ECS.query('enemy')].length;
 
   const ppos=ECS.get(gs.playerId,'pos');
   let x,y;
-  if (type === 'utensil') {
+  if (type === 'corRed' || type === 'corBlue') {
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 205 + Math.random() * 65;
+    x = Math.max(CFG.WALL_PAD + 55, Math.min(worldW - CFG.WALL_PAD - 55, ppos.x + Math.cos(angle) * distance));
+    y = Math.max(CFG.WALL_PAD + 55, Math.min(worldH - CFG.WALL_PAD - 55, ppos.y + Math.sin(angle) * distance));
+  } else if (type === 'utensil') {
     const rect = canvas.getBoundingClientRect();
     const screenX = Math.random() * window.innerWidth;
     const screenY = Math.random() * window.innerHeight;
@@ -2054,14 +2145,18 @@ const total = [...ECS.query('enemy')].length;
     balloonOrient:type==='waterballoon'?Math.floor(Math.random()*4):0,
   });
   if (type === 'corRed') {
-    const dx = ppos.x - x, dy = ppos.y - y, distance = Math.hypot(dx, dy) || 1;
-    ai.corDirX = dx / distance;
-    ai.corDirY = dy / distance;
-    ai.corTimer = Math.min(42, Math.max(8, Math.ceil(distance / 13)));
-    ai.corGlitchTimer = 0;
+    ai.corState = 'warning';
+    ai.corStateTimer = 60;
+    ai.corTrail = [];
   } else if (type === 'corBlue') {
-    ai.corShotTimer = 12;
+    ai.corState = 'hover';
+    ai.corStateTimer = 42;
+    ai.corOriginX = x;
+    ai.corOriginY = y;
+    ai.corHoverTime = Math.random() * 10;
     ai.corShotsFired = 0;
+    ai.corSpinAngle = 0;
+    ai.corParticles = spawnCorSpriteFragments({ x, y }, blueCorImg, 12);
   }
   if (type === 'utensil') {
     ai.windowActive = x < 0 || x > worldW || y < 0 || y > worldH;

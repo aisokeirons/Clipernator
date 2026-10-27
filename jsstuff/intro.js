@@ -141,6 +141,7 @@ function stopSound(key) {
   let bootInputEl = null;
   let keyHandler = null;
   let skippyMode = false;
+  let tippyMode = false;
 
   // ── BIOS state ──
   let biosPhase = 'typing';
@@ -461,7 +462,8 @@ setTimeout(() => {
         const response = bootInputEl.value.trim().toLowerCase();
         if (response === 'y') {
           continueBIOSAfterPrompt();
-        } else if (response === 'skippy') {
+        } else if (response === 'skippy' || response === 'tippy') {
+          tippyMode = response === 'tippy';
           skippyMode = true;
           difficultySelected = 1;
           biosPhase = 'difficulty';
@@ -1546,6 +1548,13 @@ setTimeout(() => {
     } else {
       gsRef._difficultyLabel = 'NORMAL'; gsRef._enemyHpMult = 1.0; gsRef._enemyDmgMult = 1.0;
     }
+    if (tippyMode) {
+      gsRef.wave = 9;
+      gsRef.waveKills = 0;
+      gsRef.waveEnemiesLeft = CFG.WAVE_ENEMIES_BASE + gsRef.wave * CFG.WAVE_ENEMIES_GROWTH;
+      gsRef.spawnInterval = Math.max(55, CFG.SPAWN_INTERVAL_BASE - gsRef.wave * CFG.WAVE_SPAWN_SPEEDUP);
+      tippyMode = false;
+    }
   }
 
   function applyDraftItemsToGs(gsRef) {
@@ -1646,6 +1655,7 @@ setTimeout(() => {
     onDone = callback;
     _introDone = false;
     skippyMode = false;
+    tippyMode = false;
     buildOverlay();
     setTimeout(() => startBIOS(), 200);
   }

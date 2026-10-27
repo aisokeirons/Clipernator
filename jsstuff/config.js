@@ -236,6 +236,12 @@ waterBalloonShootSheetRed.src = '/Clipernator/sprites/enemies/WaterBalloon/Water
 const maskSheetImg = new Image();
 maskSheetImg.src = '/Clipernator/sprites/enemies/Mask/MaskSheet.png';
 
+const redCorImg = new Image();
+redCorImg.src = '/Clipernator/sprites/enemies/COR/RedCOR.png';
+
+const blueCorImg = new Image();
+blueCorImg.src = '/Clipernator/sprites/enemies/COR/BlueCOR.png';
+
 // Water balloon sprite sheets (mask enemy)
 // All sheets: 1024×1024 per frame
 const WB_IDLE_COLS   = 3;  WB_IDLE_FW   = 1024; // 3072-wide sheet
