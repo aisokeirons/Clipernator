@@ -1243,6 +1243,19 @@ const BT_CAKEBOSS = new BTSelector(
     ai.spiralAngle  = ai.spiralAngle  || 0;
     ai.bounceCount  = ai.bounceCount  || 0;
 
+    if (ai.antipieBoss && ai.layerDashTimer >= 0) {
+      const dashTime = ai.layerDashTimer++;
+      ai.layerDashOffsets = [0, 1, 2].map((layerIndex) => {
+        const layerTime = dashTime - layerIndex * 8;
+        if (layerTime < 0 || layerTime >= 24) return 0;
+        return (ai.layerDashDirection || 1) * 72 * Math.sin(Math.PI * layerTime / 24);
+      });
+      if (dashTime >= 40) {
+        ai.layerDashTimer = -1;
+        ai.layerDashOffsets = [0, 0, 0];
+      }
+    }
+
     const dx = pp.x - pos.x, dy = pp.y - pos.y;
 
     // ── Permanent spiral overlay at 1 candle ──
@@ -1260,11 +1273,20 @@ const BT_CAKEBOSS = new BTSelector(
 
     // ── IDLE: drift toward center, tick down to next attack ──
     if (ai.bossPhase === 'IDLE') {
-      const cx = worldW / 2, cy = worldH / 2;
-      const toCX = cx - pos.x, toCY = cy - pos.y;
-      const d = Math.hypot(toCX, toCY) || 1;
-      vel.vx = (vel.vx || 0) * 0.88 + (toCX / d) * phy.speed * 0.15;
-      vel.vy = (vel.vy || 0) * 0.88 + (toCY / d) * phy.speed * 0.15;
+      if (ai.antipieBoss) {
+        ai.windowOrbitTimer++;
+        const windowSide = ai.bossWindowDirection || 1;
+        pos.x = ai.bossHomeX + windowSide * Math.abs(Math.sin(ai.windowOrbitTimer * 0.018)) * 34;
+        pos.y = ai.bossHomeY + Math.sin(ai.windowOrbitTimer * 0.026) * 18;
+        vel.vx = 0;
+        vel.vy = 0;
+      } else {
+        const cx = worldW / 2, cy = worldH / 2;
+        const toCX = cx - pos.x, toCY = cy - pos.y;
+        const d = Math.hypot(toCX, toCY) || 1;
+        vel.vx = (vel.vx || 0) * 0.88 + (toCX / d) * phy.speed * 0.15;
+        vel.vy = (vel.vy || 0) * 0.88 + (toCY / d) * phy.speed * 0.15;
+      }
 
       // Candle shots on their own timer
       ai.candleTimer--;
@@ -1298,9 +1320,17 @@ const BT_CAKEBOSS = new BTSelector(
       if (ai.phaseTimer % 8 === 0) spawnParticles(pos.x, pos.y, '#ff4400', 6);
       if (ai.phaseTimer <= 0) {
         // Launch toward player
-        const dist = Math.hypot(dx, dy) || 1;
-        vel.vx = (dx / dist) * 18;
-        vel.vy = (dy / dist) * 18;
+        if (ai.antipieBoss) {
+          ai.layerDashDirection = Math.random() < 0.5 ? -1 : 1;
+          vel.vx = ai.layerDashDirection * 18;
+          vel.vy = (Math.random() - 0.5) * 5;
+          ai.layerDashTimer = 0;
+          ai.layerDashOffsets = [0, 0, 0];
+        } else {
+          const dist = Math.hypot(dx, dy) || 1;
+          vel.vx = (dx / dist) * 18;
+          vel.vy = (dy / dist) * 18;
+        }
         ai.bossPhase = 'SPIN_BOUNCE';
         ai.bounceCount = 0;
         ai.phaseTimer = 200;
@@ -1314,10 +1344,13 @@ const BT_CAKEBOSS = new BTSelector(
 
       // Wall bounces
       let bounced = false;
-      if (pos.x < 40)          { pos.x = 40;          vel.vx =  Math.abs(vel.vx); bounced = true; }
-      if (pos.x > worldW - 40) { pos.x = worldW - 40; vel.vx = -Math.abs(vel.vx); bounced = true; }
-      if (pos.y < 40)          { pos.y = 40;           vel.vy =  Math.abs(vel.vy); bounced = true; }
-      if (pos.y > worldH - 40) { pos.y = worldH - 40;  vel.vy = -Math.abs(vel.vy); bounced = true; }
+      const bounds = ai.antipieBoss
+        ? { left: ai.bossHomeX - 145, right: ai.bossHomeX + 145, top: ai.bossHomeY - 70, bottom: ai.bossHomeY + 70 }
+        : { left: 40, right: worldW - 40, top: 40, bottom: worldH - 40 };
+      if (pos.x < bounds.left)   { pos.x = bounds.left;   vel.vx =  Math.abs(vel.vx); bounced = true; }
+      if (pos.x > bounds.right)  { pos.x = bounds.right;  vel.vx = -Math.abs(vel.vx); bounced = true; }
+      if (pos.y < bounds.top)    { pos.y = bounds.top;    vel.vy =  Math.abs(vel.vy); bounced = true; }
+      if (pos.y > bounds.bottom) { pos.y = bounds.bottom; vel.vy = -Math.abs(vel.vy); bounced = true; }
 
       if (bounced) {
         ai.bounceCount++;
@@ -1364,6 +1397,10 @@ const BT_CAKEBOSS = new BTSelector(
     // ── SPIN RECOVER ──
     else if (ai.bossPhase === 'SPIN_RECOVER') {
       vel.vx *= 0.85; vel.vy *= 0.85;
+      if (ai.antipieBoss) {
+        ai.layerDashTimer = -1;
+        ai.layerDashOffsets = [0, 0, 0];
+      }
       ai.phaseTimer--;
       if (ai.phaseTimer <= 0) {
         ai.bossPhase = 'IDLE';
@@ -1395,7 +1432,7 @@ const BT_CAKEBOSS = new BTSelector(
     }
 
     // Wall clamping during non-bounce phases
-    if (ai.bossPhase !== 'SPIN_BOUNCE') {
+    if (!ai.antipieBoss && ai.bossPhase !== 'SPIN_BOUNCE') {
       pos.x = Math.max(60, Math.min(worldW - 60, pos.x));
       pos.y = Math.max(60, Math.min(worldH - 60, pos.y));
     }

@@ -242,6 +242,15 @@ redCorImg.src = '/Clipernator/sprites/enemies/COR/RedCOR.png';
 const blueCorImg = new Image();
 blueCorImg.src = '/Clipernator/sprites/enemies/COR/BlueCOR.png';
 
+const antipieLayer1Img = new Image();
+antipieLayer1Img.src = '/Clipernator/sprites/enemies/ANTIPIE/Layer1.png';
+
+const antipieLayer2Img = new Image();
+antipieLayer2Img.src = '/Clipernator/sprites/enemies/ANTIPIE/Layer2.png';
+
+const antipieLayer3Img = new Image();
+antipieLayer3Img.src = '/Clipernator/sprites/enemies/ANTIPIE/Layer3.png';
+
 // Water balloon sprite sheets (mask enemy)
 // All sheets: 1024×1024 per frame
 const WB_IDLE_COLS   = 3;  WB_IDLE_FW   = 1024; // 3072-wide sheet

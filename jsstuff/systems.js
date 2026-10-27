@@ -993,7 +993,7 @@ for (const id of [...ECS.query('enemy','pos','vel','ai','physics')]) {
     }
 
    if (ai2 && ai2.juggled && !ai2.thrownByFork) {
-      const type=ECS.get(id,'enemy').type;
+      const type=enemyType;
       if (type==='waterballoon') {
         const pos2=ECS.get(id,'pos'),pp2=playerPos(gs);
         if (pp2) {
@@ -1286,7 +1286,9 @@ function sysBulletEnemyCollision() {
       const eai=ECS.get(id,'ai');
       if (eai&&eai.phased) continue;
       const epos=ECS.get(id,'pos'),ehp=ECS.get(id,'hp');
-      if (Math.hypot(b.x-epos.x,b.y-epos.y)<30) {
+      const enemyType = ECS.get(id, 'enemy').type;
+      const hitRadius = enemyType === 'cakeBoss' ? 88 : 30;
+      if (Math.hypot(b.x-epos.x,b.y-epos.y)<hitRadius) {
         if (b.isExplosive){detonateExplosiveBullet(b,b.x,b.y);break;}
         if (b.isDud) {
           SFX.playAt('dudHit', epos.x, epos.y, 0.45);
@@ -1417,7 +1419,9 @@ function sysEnemyPlayerCollision() {
  
   for (const id of ECS.query('enemy','pos')) {
     const epos=ECS.get(id,'pos');
-    if (Math.hypot(ppos.x-epos.x,ppos.y-epos.y)<28) {
+    const type = ECS.get(id, 'enemy').type;
+    const contactRadius = type === 'cakeBoss' ? 82 : 28;
+    if (Math.hypot(ppos.x-epos.x,ppos.y-epos.y)<contactRadius) {
 
      const eaiCheck2 = ECS.get(id, 'ai');
 if (eaiCheck2 && eaiCheck2.thrownByFork) {
@@ -1958,6 +1962,7 @@ function sysOobCleanup() {
     const pos = ECS.get(id, 'pos');
     const ai  = ECS.get(id, 'ai');
     if (enemy.type === 'corRed' || enemy.type === 'corBlue') continue;
+    if (enemy.type === 'cakeBoss' && ai.antipieBoss) continue;
     if (enemy.type === 'utensil' && ai.windowActive) {
       ai._oobTimer = 0;
       continue;
@@ -2171,10 +2176,13 @@ if (type === 'waterballoon') SFX.playAt('balloonSpawn', x, y, 0.5);
 if (type === 'partyHat') SFX.playAt('partyHatSpawn', x, y, 0.5);
 }
 
-function spawnBoss() {
-  const ppos = ECS.get(gs.playerId, 'pos');
-  const x = ppos.x > worldW / 2 ? 120 : worldW - 120;
-  const y = ppos.y > worldH / 2 ? 120 : worldH - 120;
+function startAntipieBoss() {
+  if (!gameRunning || gs.floor !== 1 || gs.wave <= CFG.BOSS_WAVE || gs.bossActive) return;
+
+  const mainRect = canvas.getBoundingClientRect();
+  const placeRight = window.innerWidth - mainRect.right >= mainRect.left;
+  const x = placeRight ? worldW + 220 : -220;
+  const y = worldH / 2;
   const id = ECS.createEntity();
   const bossHp = CFG.BOSS_BASE_HP + gs.wave * 12;
   ECS.add(id, 'enemy', { type: 'cakeBoss' });
@@ -2189,9 +2197,20 @@ function spawnBoss() {
     bounceCount: 0, permanentSpiral: false,
     shootCooldown: 0, ambushTimer: 0,
     diveTimer: 0, dashHit: false,
+    antipieBoss: true,
+    bossHomeX: x, bossHomeY: y,
+    bossWindowDirection: placeRight ? 1 : -1,
+    windowActive: true,
+    windowGroup: ++utensilWindowGroupSequence,
+    windowOrbitTimer: 0,
+    layerDashTimer: -1,
+    layerDashOffsets: [0, 0, 0],
   });
   spawnParticles(x, y, '#ff69b4', 20);
   gs.bossId = id;
+  gs.bossActive = true;
+  gs.spawnTimer = 0;
+  showMsg('ANTIPIE HAS ENTERED THE DESKTOP!');
 }
 
 function shoot() {

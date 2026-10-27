@@ -511,55 +511,51 @@ function drawCakeBoss(epos, ehp, ai, frozen) {
   const totalCandles = 5;
   const candlesLit = ai.candlesLit ?? 5;
   const spin = ai.idleSpin || 0;
+  const layerOffsets = ai.layerDashOffsets || [0, 0, 0];
 
   ctx.save();
   ctx.translate(x, y);
-  ctx.rotate(spin);
   if (frozen) ctx.globalAlpha = 0.7;
 
-  // Bottom tier
-  ctx.shadowColor = frozen ? '#aaccff' : '#ff69b4';
-  ctx.shadowBlur = 20;
-  ctx.fillStyle = frozen ? '#4488cc' : '#ff69b4';
-  ctx.fillRect(-36, 10, 72, 22);
-  ctx.fillStyle = frozen ? '#88aadd' : '#ff99cc';
-  ctx.fillRect(-36, 6, 72, 6);
+  const layers = [
+    { image: antipieLayer1Img, width: 210, height: 140, y: 30, spin: 0.28 },
+    { image: antipieLayer2Img, width: 164, height: 164, y: -33, spin: 0.45 },
+    { image: antipieLayer3Img, width: 132, height: 132, y: -90, spin: 0.62 },
+  ];
+  const spritesReady = layers.every(layer => layer.image.complete && layer.image.naturalWidth > 0);
 
-  // Middle tier
-  ctx.fillStyle = frozen ? '#5599dd' : '#ff4499';
-  ctx.fillRect(-26, -10, 52, 18);
-  ctx.fillStyle = frozen ? '#88aadd' : '#ff88bb';
-  ctx.fillRect(-26, -14, 52, 6);
-
-  // Top tier
-  ctx.fillStyle = frozen ? '#6699cc' : '#cc2277';
-  ctx.fillRect(-16, -26, 32, 14);
-  ctx.fillStyle = frozen ? '#88aadd' : '#ff66aa';
-  ctx.fillRect(-16, -30, 32, 6);
-
-  // Frosting drips
-  ctx.fillStyle = frozen ? '#aaccff' : '#ffffff';
-  for (let i = 0; i < 5; i++) {
-    ctx.beginPath();
-    ctx.arc(-28 + i * 14, 6, 5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  for (let i = 0; i < 4; i++) {
-    ctx.beginPath();
-    ctx.arc(-20 + i * 13, -14, 4, 0, Math.PI * 2);
-    ctx.fill();
+  if (spritesReady) {
+    ctx.shadowColor = frozen ? '#aaccff' : '#ff69b4';
+    ctx.shadowBlur = 18;
+    layers.forEach((layer, index) => {
+      ctx.save();
+      ctx.translate(layerOffsets[index] || 0, layer.y);
+      ctx.rotate(spin * layer.spin);
+      ctx.drawImage(layer.image, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
+      ctx.restore();
+    });
+    ctx.shadowBlur = 0;
+  } else {
+    ctx.fillStyle = frozen ? '#4488cc' : '#ff69b4';
+    ctx.fillRect(-62, 18, 124, 38);
+    ctx.fillStyle = frozen ? '#5599dd' : '#ff4499';
+    ctx.fillRect(-47, -38, 94, 30);
+    ctx.fillStyle = frozen ? '#6699cc' : '#cc2277';
+    ctx.fillRect(-34, -88, 68, 28);
   }
 
-  // Candles
+  // Candles sit on the top cake layer and its supporting middle layer.
   for (let i = 0; i < totalCandles; i++) {
-    const angle = (i / totalCandles) * Math.PI * 2;
-    const cr = 11;
-    const cx2 = Math.cos(angle) * cr;
-    const cy2 = Math.sin(angle) * cr - 30;
+    const onTopLayer = i < 3;
+    const candleX = onTopLayer ? (i - 1) * 34 : (i === 3 ? -42 : 42);
+    const candleLayer = layers[onTopLayer ? 2 : 1];
+    const candleY = onTopLayer ? -59 : -71;
     const isLit = i < candlesLit;
 
     ctx.save();
-    ctx.translate(cx2, cy2);
+    ctx.translate(layerOffsets[onTopLayer ? 2 : 1] || 0, candleLayer.y);
+    ctx.rotate(spin * candleLayer.spin);
+    ctx.translate(candleX, candleY);
 
     // Candle body
     ctx.fillStyle = isLit ? '#f5deb3' : '#666666';
@@ -617,7 +613,7 @@ function drawCakeBoss(epos, ehp, ai, frozen) {
     ctx.shadowColor = '#ff4400';
     ctx.shadowBlur = 20;
     ctx.beginPath();
-    ctx.arc(x, y, 44, 0, Math.PI * 2);
+    ctx.arc(x, y, 118, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
@@ -639,9 +635,9 @@ function drawCakeBoss(epos, ehp, ai, frozen) {
   // HP bar
   const bw = 80;
   ctx.fillStyle = '#330000';
-  ctx.fillRect(x - bw / 2, y - 62, bw, 8);
+  ctx.fillRect(x - bw / 2, y - 175, bw, 8);
   ctx.fillStyle = ehp.hp < ehp.maxHp * 0.3 ? '#ff2200' : '#ff69b4';
-  ctx.fillRect(x - bw / 2, y - 62, bw * (ehp.hp / ehp.maxHp), 8);
+  ctx.fillRect(x - bw / 2, y - 175, bw * (ehp.hp / ehp.maxHp), 8);
 
   // Candle pip indicators under HP bar
   for (let i = 0; i < totalCandles; i++) {
@@ -650,7 +646,7 @@ function drawCakeBoss(epos, ehp, ai, frozen) {
     ctx.shadowColor = isLit ? '#ffaa00' : 'transparent';
     ctx.shadowBlur = isLit ? 6 : 0;
     ctx.beginPath();
-    ctx.arc(x - 16 + i * 8, y - 68, 3, 0, Math.PI * 2);
+    ctx.arc(x - 16 + i * 8, y - 182, 3, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.shadowBlur = 0;

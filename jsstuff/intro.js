@@ -942,6 +942,8 @@ setTimeout(() => {
         playSound('click');
         if (app.id === 'data') {
           handleDataClick();
+        } else if (app.id === 'antipie' && _introDone) {
+          startAntipieBoss();
         } else if (app.sprite === 'folder') {
           desktopErrorVisible = true;
           desktopErrorApp = app.label;

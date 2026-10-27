@@ -984,6 +984,8 @@ function renderOffscreenWindows() {
       const secondId = outsideEnemies[j];
       const secondPos = ECS.get(secondId, 'pos');
       const secondAi = ECS.get(secondId, 'ai');
+      if (ECS.get(firstId, 'enemy').type === 'cakeBoss'
+        || ECS.get(secondId, 'enemy').type === 'cakeBoss') continue;
       if (firstAi.windowGroup === secondAi.windowGroup
         || Math.hypot(firstPos.x - secondPos.x, firstPos.y - secondPos.y) >= 110) continue;
       const oldGroup = secondAi.windowGroup;
@@ -1010,7 +1012,9 @@ function renderOffscreenWindows() {
     let card = offscreenWindowElements.get(groupId);
     if (!card) {
       card = document.createElement('div');
-      card.className = 'utensil-window';
+      card.className = members.some(member => member.enemy.type === 'cakeBoss')
+        ? 'utensil-window antipie-window'
+        : 'utensil-window';
       card.innerHTML = '<div class="utensil-window-title"></div><div class="utensil-window-body"><canvas></canvas></div>';
       layer.appendChild(card);
       makeFloatingWindowDraggable(card, (deltaX, deltaY) => {
@@ -1025,6 +1029,10 @@ function renderOffscreenWindows() {
           const pos = ECS.get(id, 'pos');
           pos.x += worldDeltaX;
           pos.y += worldDeltaY;
+          if (ai.antipieBoss) {
+            ai.bossHomeX += worldDeltaX;
+            ai.bossHomeY += worldDeltaY;
+          }
           if (ai.uTipX !== undefined) ai.uTipX += worldDeltaX;
           if (ai.uTipY !== undefined) ai.uTipY += worldDeltaY;
         }
@@ -1034,6 +1042,7 @@ function renderOffscreenWindows() {
 
     const title = members.map(member => {
       const type = member.enemy.type;
+      if (type === 'cakeBoss') return 'ANTIPIE — THE CAKE BOSS';
       if (type === 'utensil') return 'Utensil';
       if (type === 'miniClown') return 'Mini Clown';
       return type.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, char => char.toUpperCase());
@@ -1043,8 +1052,9 @@ function renderOffscreenWindows() {
     titleElement.title = title;
 
     const preview = card.lastElementChild.firstElementChild;
-    const width = Math.min(560, Math.max(220, members.length * 112 + 108));
-    const height = 190;
+    const isCakeBossWindow = members.some(member => member.enemy.type === 'cakeBoss');
+    const width = isCakeBossWindow ? 440 : Math.min(560, Math.max(220, members.length * 112 + 108));
+    const height = isCakeBossWindow ? 340 : 190;
     const dpr = window.devicePixelRatio || 1;
     const bodyHeight = height - 26;
     const bodyWidth = width - 8;
@@ -1062,7 +1072,7 @@ function renderOffscreenWindows() {
     const cameraX = (minX + maxX) / 2;
     const cameraY = (minY + maxY) / 2;
     const cameraWidth = Math.max(
-      260,
+      isCakeBossWindow ? 500 : 260,
       maxX - minX + 180,
       (maxY - minY + 180) * bodyWidth / bodyHeight
     );
@@ -1102,6 +1112,10 @@ function renderOffscreenWindows() {
         member.ai.windowActive = false;
         member.ai.windowGroup = null;
         member.ai.windowMergeTimer = 0;
+        if (member.ai.antipieBoss) {
+          member.ai.bossHomeX = member.pos.x;
+          member.ai.bossHomeY = member.pos.y;
+        }
       });
       card.remove();
       offscreenWindowElements.delete(groupId);
