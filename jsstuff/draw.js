@@ -507,10 +507,6 @@ function drawGiftBox(epos, ehp, ai, frozen, advanceVisualState = true) {
 
 function drawCakeBoss(epos, ehp, ai, frozen) {
   const { x, y } = epos;
-  const t = Date.now() / 300;
-  const totalCandles = 5;
-  const candlesLit = ai.candlesLit ?? 5;
-  const spin = ai.idleSpin || 0;
   const layerOffsets = ai.layerDashOffsets || [0, 0, 0];
 
   ctx.save();
@@ -518,9 +514,9 @@ function drawCakeBoss(epos, ehp, ai, frozen) {
   if (frozen) ctx.globalAlpha = 0.7;
 
   const layers = [
-    { image: antipieLayer1Img, width: 210, height: 140, y: 30, spin: 0.28 },
-    { image: antipieLayer2Img, width: 164, height: 164, y: -33, spin: 0.45 },
-    { image: antipieLayer3Img, width: 132, height: 132, y: -90, spin: 0.62 },
+    { image: antipieLayer1Img, width: 210, height: 140, y: 30 },
+    { image: antipieLayer2Img, width: 164, height: 164, y: -33 },
+    { image: antipieLayer3Img, width: 132, height: 132, y: -90 },
   ];
   const spritesReady = layers.every(layer => layer.image.complete && layer.image.naturalWidth > 0);
 
@@ -530,7 +526,6 @@ function drawCakeBoss(epos, ehp, ai, frozen) {
     layers.forEach((layer, index) => {
       ctx.save();
       ctx.translate(layerOffsets[index] || 0, layer.y);
-      ctx.rotate(spin * layer.spin);
       ctx.drawImage(layer.image, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
       ctx.restore();
     });
@@ -542,64 +537,6 @@ function drawCakeBoss(epos, ehp, ai, frozen) {
     ctx.fillRect(-47, -38, 94, 30);
     ctx.fillStyle = frozen ? '#6699cc' : '#cc2277';
     ctx.fillRect(-34, -88, 68, 28);
-  }
-
-  // Candles sit on the top cake layer and its supporting middle layer.
-  for (let i = 0; i < totalCandles; i++) {
-    const onTopLayer = i < 3;
-    const candleX = onTopLayer ? (i - 1) * 34 : (i === 3 ? -42 : 42);
-    const candleLayer = layers[onTopLayer ? 2 : 1];
-    const candleY = onTopLayer ? -59 : -71;
-    const isLit = i < candlesLit;
-
-    ctx.save();
-    ctx.translate(layerOffsets[onTopLayer ? 2 : 1] || 0, candleLayer.y);
-    ctx.rotate(spin * candleLayer.spin);
-    ctx.translate(candleX, candleY);
-
-    // Candle body
-    ctx.fillStyle = isLit ? '#f5deb3' : '#666666';
-    ctx.shadowColor = isLit ? '#ff8800' : 'transparent';
-    ctx.shadowBlur = isLit ? 8 : 0;
-    ctx.fillRect(-3, -10, 6, 14);
-
-    // Wick
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, -10);
-    ctx.lineTo(0, -13);
-    ctx.stroke();
-
-    // Flame
-    if (isLit && !frozen) {
-      const flicker = Math.sin(t * 8 + i * 1.3) * 1.5;
-      ctx.fillStyle = '#ffff88';
-      ctx.shadowColor = '#ff8800';
-      ctx.shadowBlur = 14 + flicker;
-      ctx.beginPath();
-      ctx.ellipse(0, -16 + flicker * 0.3, 3, 5 + flicker, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.ellipse(0, -16 + flicker * 0.3, 1.2, 2.5, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Snuffed smoke wisp
-    if (!isLit) {
-      ctx.globalAlpha = 0.4 + Math.sin(t * 2 + i) * 0.2;
-      ctx.strokeStyle = '#aaaaaa';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(0, -12);
-      ctx.quadraticCurveTo(3, -18, 0, -24);
-      ctx.stroke();
-      ctx.globalAlpha = frozen ? 0.7 : 1;
-    }
-
-    ctx.restore();
   }
 
   ctx.restore();
@@ -639,17 +576,6 @@ function drawCakeBoss(epos, ehp, ai, frozen) {
   ctx.fillStyle = ehp.hp < ehp.maxHp * 0.3 ? '#ff2200' : '#ff69b4';
   ctx.fillRect(x - bw / 2, y - 175, bw * (ehp.hp / ehp.maxHp), 8);
 
-  // Candle pip indicators under HP bar
-  for (let i = 0; i < totalCandles; i++) {
-    const isLit = i < candlesLit;
-    ctx.fillStyle = isLit ? '#ffdd00' : '#333333';
-    ctx.shadowColor = isLit ? '#ffaa00' : 'transparent';
-    ctx.shadowBlur = isLit ? 6 : 0;
-    ctx.beginPath();
-    ctx.arc(x - 16 + i * 8, y - 182, 3, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.shadowBlur = 0;
 }
 
 function drawCannonball(epos, ehp, ai, frozen) {

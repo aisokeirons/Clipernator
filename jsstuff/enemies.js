@@ -1218,9 +1218,6 @@ const BT_CAKEBOSS = new BTSelector(
     const pp  = playerPos(gs);
     if (!pp || !pos || !vel) return BT.FAILURE;
 
-    // ── Idle spin always ticks ──
-    ai.idleSpin = (ai.idleSpin || 0) + 0.008;
-
     // ── Candle count from HP thresholds ──
     const hpRatio = hp.hp / hp.maxHp;
     const newCandles = hpRatio > 0.8 ? 5 : hpRatio > 0.6 ? 4 : hpRatio > 0.4 ? 3 : hpRatio > 0.2 ? 2 : 1;
@@ -1230,7 +1227,7 @@ const BT_CAKEBOSS = new BTSelector(
       gs.shakeX = 18; gs.shakeY = 18;
       hp.hitFlash = 30;
       spawnPartyParticles(pos.x, pos.y);
-      showMsg(newCandles === 1 ? '⚠️ LAST CANDLE! THE CAKE RAGES!' : `CANDLE SNUFFED! ${newCandles} REMAINING!`);
+      showMsg(newCandles === 1 ? 'THE CAKE IS FURIOUS!' : `CAKE DAMAGED! ${newCandles} STAGES REMAIN!`);
       // Last candle: enter permanent spiral layer
       if (newCandles === 1) ai.permanentSpiral = true;
     }
@@ -1245,12 +1242,18 @@ const BT_CAKEBOSS = new BTSelector(
 
     if (ai.antipieBoss && ai.layerDashTimer >= 0) {
       const dashTime = ai.layerDashTimer++;
+      const layerDashDuration = 36;
+      const layerDashDistance = 100;
       ai.layerDashOffsets = [0, 1, 2].map((layerIndex) => {
-        const layerTime = dashTime - layerIndex * 8;
-        if (layerTime < 0 || layerTime >= 24) return 0;
-        return (ai.layerDashDirection || 1) * 72 * Math.sin(Math.PI * layerTime / 24);
+        const layerTime = dashTime - layerIndex * layerDashDuration;
+        if (layerTime < 0 || layerTime >= layerDashDuration) return 0;
+        const progress = layerTime < layerDashDuration / 2
+          ? layerTime / (layerDashDuration / 2)
+          : 1 - (layerTime - layerDashDuration / 2) / (layerDashDuration / 2);
+        const easedProgress = progress * progress * (3 - 2 * progress);
+        return (ai.layerDashDirection || 1) * layerDashDistance * easedProgress;
       });
-      if (dashTime >= 40) {
+      if (dashTime >= layerDashDuration * 3) {
         ai.layerDashTimer = -1;
         ai.layerDashOffsets = [0, 0, 0];
       }
@@ -1303,7 +1306,7 @@ const BT_CAKEBOSS = new BTSelector(
           ai.bossPhase = 'SPIN_TELEGRAPH';
           ai.phaseTimer = 45;
           vel.vx *= 0.2; vel.vy *= 0.2;
-          showMsg('⚠️ THE CAKE SPINS UP!');
+          showMsg('⚠️ THE CAKE LAYERS ARE SHIFTING!');
         } else {
           ai.bossPhase = 'FROSTING_CHARGE';
           ai.phaseTimer = 60;
@@ -1315,15 +1318,13 @@ const BT_CAKEBOSS = new BTSelector(
     // ── SPIN TELEGRAPH ──
     else if (ai.bossPhase === 'SPIN_TELEGRAPH') {
       vel.vx *= 0.85; vel.vy *= 0.85;
-      ai.idleSpin += 0.06; // spin faster during telegraph
       ai.phaseTimer--;
       if (ai.phaseTimer % 8 === 0) spawnParticles(pos.x, pos.y, '#ff4400', 6);
       if (ai.phaseTimer <= 0) {
-        // Launch toward player
         if (ai.antipieBoss) {
           ai.layerDashDirection = Math.random() < 0.5 ? -1 : 1;
-          vel.vx = ai.layerDashDirection * 18;
-          vel.vy = (Math.random() - 0.5) * 5;
+          vel.vx = 0;
+          vel.vy = 0;
           ai.layerDashTimer = 0;
           ai.layerDashOffsets = [0, 0, 0];
         } else {
@@ -1339,38 +1340,43 @@ const BT_CAKEBOSS = new BTSelector(
 
     // ── SPIN BOUNCE ──
     else if (ai.bossPhase === 'SPIN_BOUNCE') {
-      ai.idleSpin += 0.18; // fast spin visually
       ai.phaseTimer--;
 
-      // Wall bounces
-      let bounced = false;
-      const bounds = ai.antipieBoss
-        ? { left: ai.bossHomeX - 145, right: ai.bossHomeX + 145, top: ai.bossHomeY - 70, bottom: ai.bossHomeY + 70 }
-        : { left: 40, right: worldW - 40, top: 40, bottom: worldH - 40 };
-      if (pos.x < bounds.left)   { pos.x = bounds.left;   vel.vx =  Math.abs(vel.vx); bounced = true; }
-      if (pos.x > bounds.right)  { pos.x = bounds.right;  vel.vx = -Math.abs(vel.vx); bounced = true; }
-      if (pos.y < bounds.top)    { pos.y = bounds.top;    vel.vy =  Math.abs(vel.vy); bounced = true; }
-      if (pos.y > bounds.bottom) { pos.y = bounds.bottom; vel.vy = -Math.abs(vel.vy); bounced = true; }
-
-      if (bounced) {
-        ai.bounceCount++;
-        // Burst of bullets on each bounce
-        spawnParticles(pos.x, pos.y, '#ff4400', 18);
-        gs.shakeX = 12; gs.shakeY = 12;
-        const bulletCount = 10;
-        for (let i = 0; i < bulletCount; i++) {
-          const a = (i / bulletCount) * Math.PI * 2;
-          gs.enemyBullets.push({
-            x: pos.x, y: pos.y,
-            vx: Math.cos(a) * 1.4, vy: Math.sin(a) * 1.4,
-            life: 140, maxLife: 140, color: '#ff6600'
-          });
-        }
-        if (ai.bounceCount >= 5) {
-          vel.vx *= 0.1; vel.vy *= 0.1;
+      if (ai.antipieBoss) {
+        vel.vx = 0;
+        vel.vy = 0;
+        if (ai.layerDashTimer < 0) {
           ai.bossPhase = 'SPIN_RECOVER';
           ai.phaseTimer = 70;
           showMsg('CAKE STUNNED! HIT IT!');
+        }
+      } else {
+        const bounds = { left: 40, right: worldW - 40, top: 40, bottom: worldH - 40 };
+        let bounced = false;
+        if (pos.x < bounds.left)   { pos.x = bounds.left;   vel.vx =  Math.abs(vel.vx); bounced = true; }
+        if (pos.x > bounds.right)  { pos.x = bounds.right;  vel.vx = -Math.abs(vel.vx); bounced = true; }
+        if (pos.y < bounds.top)    { pos.y = bounds.top;    vel.vy =  Math.abs(vel.vy); bounced = true; }
+        if (pos.y > bounds.bottom) { pos.y = bounds.bottom; vel.vy = -Math.abs(vel.vy); bounced = true; }
+
+        if (bounced) {
+          ai.bounceCount++;
+          spawnParticles(pos.x, pos.y, '#ff4400', 18);
+          gs.shakeX = 12; gs.shakeY = 12;
+          const bulletCount = 10;
+          for (let i = 0; i < bulletCount; i++) {
+            const a = (i / bulletCount) * Math.PI * 2;
+            gs.enemyBullets.push({
+              x: pos.x, y: pos.y,
+              vx: Math.cos(a) * 1.4, vy: Math.sin(a) * 1.4,
+              life: 140, maxLife: 140, color: '#ff6600'
+            });
+          }
+          if (ai.bounceCount >= 5) {
+            vel.vx *= 0.1; vel.vy *= 0.1;
+            ai.bossPhase = 'SPIN_RECOVER';
+            ai.phaseTimer = 70;
+            showMsg('CAKE STUNNED! HIT IT!');
+          }
         }
       }
 
@@ -1386,7 +1392,7 @@ const BT_CAKEBOSS = new BTSelector(
         if (gs.health <= 0) { gameOver(); return BT.FAILURE; }
       }
 
-      if (ai.phaseTimer <= 0) {
+      if (!ai.antipieBoss && ai.phaseTimer <= 0) {
         // Safety fallback if somehow 5 bounces not hit
         vel.vx *= 0.1; vel.vy *= 0.1;
         ai.bossPhase = 'SPIN_RECOVER';
