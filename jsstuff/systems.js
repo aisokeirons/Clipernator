@@ -811,13 +811,13 @@ function tickCorEnemy(id, type) {
         ai.corDirY = dy / distance;
         ai.corAngle = Math.atan2(dy, dx);
         ai.corState = 'dash';
-        ai.corStateTimer = 22;
+        ai.corStateTimer = 29;
         ai.corDashFrame = 0;
         ai.corWhiteFlash = false;
       }
     } else if (ai.corState === 'dash') {
       ai.corDashFrame++;
-      const speed = ai.corDashFrame <= 14 ? 13 : 13 * Math.max(0, (22 - ai.corDashFrame) / 8);
+      const speed = ai.corDashFrame <= 18 ? 13 : 13 * Math.max(0, (29 - ai.corDashFrame) / 11);
       vel.vx = ai.corDirX * speed;
       vel.vy = ai.corDirY * speed;
       pos.x += vel.vx;
@@ -832,6 +832,9 @@ function tickCorEnemy(id, type) {
           scaleX: 1.25,
           scaleY: 0.8,
         });
+      }
+      if (ai.corDashFrame % 3 === 0) {
+        spawnParticles(pos.x, pos.y, Math.random() < 0.5 ? '#ff3355' : '#22ddff', 2);
       }
       if (ai.corStateTimer <= 0) {
         ai.corState = 'stop';

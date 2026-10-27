@@ -896,15 +896,13 @@ function drawCor(pos, ai, type) {
 
   for (const fragment of ai.corTrail || []) {
     ctx.save();
-    ctx.globalAlpha *= fragment.life / fragment.maxLife * 0.2;
+    ctx.globalAlpha *= fragment.life / fragment.maxLife * 0.32;
     ctx.translate(fragment.x, fragment.y);
     ctx.rotate(fragment.angle);
     ctx.scale(fragment.scaleX, fragment.scaleY);
-    ctx.filter = 'hue-rotate(155deg) saturate(2)';
-    ctx.drawImage(redCorImg, -48, -36, 96, 72);
+    ctx.filter = 'hue-rotate(150deg) saturate(3)';
+    ctx.drawImage(redCorImg, -58, -43, 116, 86);
     ctx.filter = 'none';
-    ctx.globalAlpha *= 2.1;
-    ctx.drawImage(redCorImg, -52, -39, 104, 78);
     ctx.restore();
   }
 
@@ -960,6 +958,29 @@ function drawCor(pos, ai, type) {
   ctx.shadowColor = isRed ? '#ff2233' : '#286aff';
   ctx.shadowBlur = 22;
   ctx.drawImage(sprite, -width / 2, -height / 2, width, height);
+  ctx.shadowBlur = 0;
+
+  const glitching = (isRed && ai.corState === 'dash') || (ai.corState === 'spin') || Math.random() < 0.1;
+  if (glitching) {
+    ctx.globalAlpha *= isRed && ai.corState === 'dash' ? 0.75 : 0.42;
+    ctx.filter = 'hue-rotate(155deg) saturate(3)';
+    ctx.drawImage(sprite, -width / 2 + 5, -height / 2 - 2, width, height);
+    ctx.filter = 'none';
+    const bandCount = isRed && ai.corState === 'dash' ? 7 : 3;
+    for (let i = 0; i < bandCount; i++) {
+      const sourceY = Math.random() * sprite.naturalHeight;
+      const sourceHeight = 12 + Math.random() * 62;
+      const destinationY = (sourceY / sprite.naturalHeight) * height - height / 2;
+      const destinationHeight = (sourceHeight / sprite.naturalHeight) * height;
+      const offsetX = (Math.random() - 0.5) * (isRed && ai.corState === 'dash' ? 32 : 14);
+      ctx.globalAlpha *= 0.82;
+      ctx.drawImage(
+        sprite,
+        0, sourceY, sprite.naturalWidth, sourceHeight,
+        -width / 2 + offsetX, destinationY, width, destinationHeight,
+      );
+    }
+  }
   ctx.restore();
 }
 
