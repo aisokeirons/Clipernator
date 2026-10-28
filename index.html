@@ -7,7 +7,7 @@
   
   @font-face {
   font-family: 'MS Sans Serif';
-  src: url('fonts/ms-sans-serif.otf') format('truetype');
+  src: url('fonts/ms-sans-serif.otf') format('opentype');
 }
 
   @font-face {
@@ -77,6 +77,7 @@ body::before { display: none; }
   height: 0;
   min-height: 180px;
   margin: 0;
+  image-rendering: auto;
 }
 
 #bottom-bar { flex: 0 0 4px; }
@@ -214,8 +215,6 @@ body::before { display: none; }
 canvas {
   display: block;
   background: #000;
-  image-rendering: pixelated;
- 
   margin: 4px;
 }
 
@@ -230,7 +229,7 @@ canvas {
     z-index: 50;
   }
   #overlay h1 {
-    font-size: 22px;
+    font-size: 30px;
     color: var(--green);
     text-shadow: 0 0 20px var(--green), 0 0 40px var(--green2);
     margin-bottom: 10px;
@@ -242,7 +241,7 @@ canvas {
     0%,95%,100%{opacity:1;}96%{opacity:0.7;}97%{opacity:1;}98%{opacity:0.5;}99%{opacity:1;}
   }
   #overlay .sub {
-    font-size: 8px;
+    font-size: 12px;
     color: var(--yellow);
     text-shadow: 0 0 8px var(--yellow);
     margin-bottom: 24px;
@@ -250,7 +249,7 @@ canvas {
     line-height: 2.2;
   }
   #overlay .controls {
-    font-size: 7px;
+    font-size: 12px;
     color: var(--green2);
     line-height: 2.4;
     text-align: left;
@@ -279,13 +278,14 @@ canvas {
     position: absolute;
     top: 70px; left: 50%;
     transform: translateX(-50%);
-    font-size: 9px;
+    font-size: 13px;
     color: var(--pink);
     text-shadow: 0 0 10px var(--pink);
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s;
-    white-space: nowrap;
+    max-width: calc(100% - 24px);
+    text-align: center;
     z-index: 60;
   }
 
@@ -374,8 +374,8 @@ canvas {
     padding: 9px 5px 7px 7px;
   }
   .item-card .ic-icon { font-size: 22px; line-height: 1; }
-  .item-card .ic-name { font-size: 9px; color: #000080; text-align: center; line-height: 1.4; font-weight: bold; font-family:'MS Sans Serif',Arial,sans-serif; }
-  .item-card .ic-desc { font-size: 10px; color: #000000; text-align: center; line-height: 1.4; font-family:'Fixedsys',Monospace; }
+  .item-card .ic-name { font-size: 12px; color: #000080; text-align: center; line-height: 1.4; font-weight: bold; font-family:'MS Sans Serif',Arial,sans-serif; }
+  .item-card .ic-desc { font-size: 12px; color: #000000; text-align: center; line-height: 1.4; font-family:'Fixedsys',Monospace; }
   .item-card.already-owned { opacity: 0; pointer-events: none; }
   .item-card.already-owned.revealed { opacity: 0.42; }
   #skip-btn {
@@ -412,14 +412,14 @@ canvas {
     animation: flicker 2s infinite;
   }
   #floor-transition .ft-sub {
-    font-size: 7px;
+    font-size: 12px;
     color: #ffaa44;
     text-shadow: 0 0 8px #ff6600;
     text-align: center;
     line-height: 2.2;
   }
   #floor-transition .ft-enemies {
-    font-size: 6px;
+    font-size: 11px;
     color: #ff6644;
     border: 1px solid #662200;
     padding: 10px 18px;
@@ -440,7 +440,7 @@ canvas {
   }
   #floor-btn:hover { transform: translate(2px,2px); box-shadow: 2px 2px 0 #aa2200; }
   #floor-hud {
-    font-size: 6px;
+    font-size: 11px;
     color: #ff6600;
     text-shadow: 0 0 6px #ff4400;
     letter-spacing: 1px;
@@ -468,6 +468,28 @@ canvas {
     padding: 4px 13px 2px 15px;
   }
   .w2k-btn:focus { outline: 1px dotted #000; outline-offset: -3px; }
+  .pause-status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 2px;
+    cursor: pointer;
+    background: #d4d0c8;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+  }
+  .pause-status-icon:active {
+    border-top-color: #404040;
+    border-left-color: #404040;
+    border-right-color: #fff;
+    border-bottom-color: #fff;
+  }
+  .pause-status-icon:focus-visible { outline: 2px solid #000080; outline-offset: 1px; }
+  .pause-status-icon img { display: block; width: 24px; height: 24px; }
 
   /* Keybind screen */
   #keybind-screen {
@@ -592,7 +614,7 @@ canvas {
       <!-- Controls -->
       <fieldset style="border:1px solid #808080; padding:4px 10px 8px 10px; margin:0; width:100%;">
         <legend style="font-size:11px; color:#000; padding:0 4px; font-family:'MS Sans Serif',Arial,sans-serif;">Controls</legend>
-        <div style="font-family:'MS Sans Serif',Arial,sans-serif; font-size:11px; color:#000; line-height:1.8;">
+        <div style="font-family:'MS Sans Serif',Arial,sans-serif; font-size:13px; color:#000; line-height:1.8;">
           <b>WASD</b> — Move &nbsp;&nbsp;&nbsp; <b>Mouse</b> — Aim &nbsp;&nbsp;&nbsp; <b>Click</b> — Shoot<br>
           <b>R</b> — Reload &nbsp;&nbsp;&nbsp; <b>Shift</b> — Dash &nbsp;&nbsp;&nbsp; <b>F / Right-click</b> — Glowstick<br>
           <b>P</b> — Pause
@@ -618,7 +640,7 @@ canvas {
 </span>
       </div>
       <div style="padding:10px 12px 6px 12px;">
-        <div style="font-size:10px; color:#444; margin-bottom:8px; font-family:'MS Sans Serif',Arial,sans-serif;">Select a permanent upgrade. Consumables will appear on the field.</div>
+        <div style="font-size:12px; color:#444; margin-bottom:8px; font-family:'MS Sans Serif',Arial,sans-serif;">Select a permanent upgrade. Consumables will appear on the field.</div>
         <!-- horizontal rule -->
         <div style="height:1px; background:#808080; border-bottom:1px solid #fff; margin-bottom:8px;"></div>
         <div id="item-cards"></div>
@@ -684,7 +706,7 @@ canvas {
             <button class="w2k-btn" onclick="(()=>{_removePauseClippyCanvas(); document.getElementById('pause-menu').style.display='none'; isPaused=false; gameRunning=false; document.getElementById('overlay').style.display='flex';})()">Quit</button>
           </div>
         </div>
-        <div style="font-size:10px; color:#666; font-family:'MS Sans Serif',Arial,sans-serif; text-align:center;">Press <b>P</b> to resume &nbsp;·&nbsp; Press <b>ESC</b> to quit to title</div>
+        <div style="font-size:12px; color:#666; font-family:'MS Sans Serif',Arial,sans-serif; text-align:center;">Press <b>P</b> to resume &nbsp;·&nbsp; Press <b>ESC</b> to quit to title</div>
       </div>
     </div>
   </div>
@@ -700,7 +722,7 @@ canvas {
         <button onclick="closeKeybindScreen()" style="font-family:'Marlett',Arial,sans-serif; font-size:9px; width:16px; height:14px; background:#d4d0c8; border-top:1px solid #fff; border-left:1px solid #fff; border-right:1px solid #404040; border-bottom:1px solid #404040; cursor:pointer; color:#000; padding:0; line-height:14px;">&#x72;</button>
       </div>
       <div style="padding:10px 14px; display:flex; flex-direction:column; gap:8px;">
-        <div style="font-size:10px; color:#444; font-family:'MS Sans Serif',Arial,sans-serif;">Click an action, then press a new key. ESC to cancel.</div>
+        <div style="font-size:12px; color:#444; font-family:'MS Sans Serif',Arial,sans-serif;">Click an action, then press a new key. ESC to cancel.</div>
         <div style="height:1px; background:#808080; border-bottom:1px solid #fff;"></div>
         <div id="keybind-rows" style="display:flex; flex-direction:column; gap:4px;"></div>
         <div id="keybind-listening-hint" style="font-size:10px; color:#000080; height:16px; font-family:'MS Sans Serif',Arial,sans-serif; opacity:0; transition:opacity 0.2s; font-weight:bold;">Press a key...</div>

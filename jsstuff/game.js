@@ -565,16 +565,17 @@ function renderPauseMenu() {
   const statusEffectsEl = document.getElementById('pause-status-effects');
   statusEffectsEl.replaceChildren();
   if (gs.leakingTimer > 0) {
-    const leakingStatus = document.createElement('div');
-    leakingStatus.style.cssText = 'display:flex; align-items:center; gap:5px; font-size:11px; color:#000;';
-    leakingStatus.title = `Leaking: ${Math.ceil(gs.leakingTimer / 60)} seconds remaining`;
+    const leakingStatus = document.createElement('button');
+    leakingStatus.type = 'button';
+    leakingStatus.className = 'pause-status-icon';
+    leakingStatus.title = `Leaking: ${Math.ceil(gs.leakingTimer / 60)} seconds remaining. Click to ask Clippy.`;
+    leakingStatus.setAttribute('aria-label', leakingStatus.title);
+    leakingStatus.addEventListener('click', () => clippyExplainStatusEffect('leaking'));
 
     const leakingIcon = document.createElement('img');
     leakingIcon.src = 'sprites/ui/StatusEffects/Leaking.png';
-    leakingIcon.alt = 'Leaking';
-    leakingIcon.width = 24;
-    leakingIcon.height = 24;
-    leakingStatus.append(leakingIcon, document.createTextNode(`Leaking ${Math.ceil(gs.leakingTimer / 60)}s`));
+    leakingIcon.alt = '';
+    leakingStatus.appendChild(leakingIcon);
     statusEffectsEl.appendChild(leakingStatus);
   }
   const dmgLabel = gs.hasQuadCake ? '4x (50% dud)' : gs.hasTripleCake ? '3x (45% dud)' :
@@ -660,6 +661,10 @@ const CLIPPY_ITEM_TIPS = {
   popcornbowl:  "It looks like you want bigger frenzies! MEGA POPCORN only needs 3 kernels and lasts 6 seconds.",
 };
 
+const CLIPPY_STATUS_TIPS = {
+  leaking: "Leaking makes you lose 5% of your max health once per second for 3 seconds. Another knife hit adds 3 more seconds.",
+};
+
 let _clippyBubbleText = "It looks like you discovered how to PAUSE! Click an item to learn what it does.";
 
 // Legacy canvas kept for compatibility (hidden)
@@ -672,6 +677,11 @@ function clippyExplain(itemId) {
   if (tip) {
     _clippyBubbleText = tip;
   }
+}
+
+function clippyExplainStatusEffect(statusId) {
+  const tip = CLIPPY_STATUS_TIPS[statusId];
+  if (tip) _clippyBubbleText = tip;
 }
 
 // Random idle Clippy tips shown in pause menu

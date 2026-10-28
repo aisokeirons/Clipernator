@@ -752,7 +752,7 @@ function drawClownCar(epos, ehp, ai, frozen) {
   if (ai.ejectTimer < 30) {
     ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 10;
     ctx.fillStyle = '#ffffff';
-    ctx.font = '6px "Press Start 2P"';
+    ctx.font = '10px "Fixedsys", monospace';
     ctx.textAlign = 'center';
     ctx.fillText('HONK!', 0, -32);
   }
@@ -920,7 +920,7 @@ if (gs.clippyIntroLines && !gs.clippyIntroDone) {
     const bx = ppos.x + 18;
     const by = ppos.y - 90;
     const bw = 200;
-    const bh = 42;
+    const bh = 48;
     ctx.save();
     // Bubble background
     ctx.fillStyle = '#ffffcc';
@@ -949,7 +949,7 @@ if (gs.clippyIntroLines && !gs.clippyIntroDone) {
     ctx.fillRect(bx + 7, by + bh - 2, 18, 3);
     // Text
     ctx.fillStyle = '#000000';
-    ctx.font = '7px "MS Sans Serif", Arial, sans-serif';
+    ctx.font = '10px "MS Sans Serif", Arial, sans-serif';
     ctx.textAlign = 'left';
     // Word-wrap across 2 lines max
     const words = line.split(' ');
@@ -961,8 +961,8 @@ if (gs.clippyIntroLines && !gs.clippyIntroDone) {
       else { l1 = measuring; measuring = w; }
     }
     if (!l1) { l1 = measuring; measuring = ''; } else { l2 = measuring; }
-    ctx.fillText(l1, bx + 8, by + 16);
-    if (l2) ctx.fillText(l2, bx + 8, by + 30);
+    ctx.fillText(l1, bx + 8, by + 19);
+    if (l2) ctx.fillText(l2, bx + 8, by + 34);
     ctx.restore();
   }
 }
@@ -1689,7 +1689,7 @@ if (advanceVisualState) gs.clippyPickupTimer--;
   const bx = ppos2.x + 18;
   const by = ppos2.y - 110;
   const bw = 210;
-  const bh = 48;
+  const bh = 56;
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.fillStyle = '#ffffcc';
@@ -1714,7 +1714,7 @@ if (advanceVisualState) gs.clippyPickupTimer--;
   ctx.fillRect(bx + 7, by + bh - 2, 18, 3);
   // Text
   ctx.fillStyle = '#000000';
-  ctx.font = '7px "MS Sans Serif", Arial, sans-serif';
+  ctx.font = '10px "MS Sans Serif", Arial, sans-serif';
   ctx.textAlign = 'left';
   const words = (gs.clippyPickupMsg || '').split(' ');
   let l1 = '', l2 = '', measuring = '';
@@ -1724,8 +1724,8 @@ if (advanceVisualState) gs.clippyPickupTimer--;
     else { l1 = measuring; measuring = w; }
   }
   if (!l1) { l1 = measuring; } else { l2 = measuring; }
-  ctx.fillText(l1, bx + 8, by + 16);
-  if (l2) ctx.fillText(l2, bx + 8, by + 28);
+  ctx.fillText(l1, bx + 8, by + 19);
+  if (l2) ctx.fillText(l2, bx + 8, by + 35);
   ctx.restore();
 }
 
@@ -1923,14 +1923,14 @@ if (gs.drivingCar !== null) {
   ctx.fillRect(worldW/2 - bw/2, worldH - 28, bw * ratio, 8);
   ctx.shadowBlur = 0;
   ctx.fillStyle = '#ffffff';
-  ctx.font = '6px "Press Start 2P"';
+  ctx.font = '10px "Fixedsys", monospace';
   ctx.textAlign = 'center';
   ctx.fillText('CAR EXPLODING SOON', worldW/2, worldH - 32);
 }
 
   // Freeze label
   if (gs.partyFreezeTimer > 0) {
-    ctx.save(); ctx.font='7px "Press Start 2P"'; ctx.textAlign='center';
+    ctx.save(); ctx.font='10px "Fixedsys", monospace'; ctx.textAlign='center';
     ctx.fillStyle='#ff69b4'; ctx.shadowColor='#ff69b4'; ctx.shadowBlur=12;
     ctx.fillText('PARTY TIME! ENEMIES FROZEN!', CFG.W/2, CFG.H-16); ctx.restore();
   }
@@ -1940,7 +1940,7 @@ if (gs.drivingCar !== null) {
     const ratio = gs.prizeEffect.timer / 600;
     const alpha = Math.min(1, ratio * 4);
     ctx.save(); ctx.globalAlpha = alpha;
-    ctx.font = '7px "Press Start 2P"'; ctx.textAlign = 'center';
+    ctx.font = '10px "Fixedsys", monospace'; ctx.textAlign = 'center';
     ctx.fillStyle = '#ffdd00'; ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 14;
     ctx.fillText(gs.prizeEffect.name, worldW/2, 32);
     const bw = 120;

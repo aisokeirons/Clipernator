@@ -41,7 +41,7 @@ const ITEM_DEFS = {
         ctx.fillStyle=cols[i%cols.length]; ctx.shadowColor=cols[i%cols.length]; ctx.shadowBlur=4;
         ctx.fillRect(Math.cos(ca)*cr-2,Math.sin(ca)*cr-2,4,4);
       }
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('BIRTHDAY',0,28); ctx.fillText('PARTY',0,38); ctx.restore();
     }
   },
@@ -66,9 +66,9 @@ const ITEM_DEFS = {
       ctx.fillStyle='#ffcc00'; ctx.beginPath(); ctx.arc(0,0,19,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#ffeeaa'; ctx.beginPath(); ctx.arc(-6,-6,6,0,Math.PI*2); ctx.fill();
       ctx.beginPath(); ctx.arc(7,-5,5,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#ff8800'; ctx.font='bold 11px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.fillStyle='#ff8800'; ctx.font='bold 14px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('G', 0, 6);
-      ctx.shadowBlur=0; ctx.fillStyle='#ffffff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#ffffff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('GOLDEN',0,29); ctx.fillText('COOKIE',0,38); ctx.restore();
     }
   },
@@ -90,7 +90,7 @@ const ITEM_DEFS = {
       ctx.beginPath(); ctx.arc(11,-14,5,0,Math.PI*2); ctx.fill();
       ctx.shadowBlur=15; ctx.fillStyle='#ffff77';
       for(let i=0;i<7;i++){const a=t*2.2+i*.9,r=23; ctx.fillRect(Math.cos(a)*r-1.5,Math.sin(a)*r-18,3,3);}
-      ctx.shadowBlur=0; ctx.fillStyle='#ffffff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#ffffff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('DOUBLE',0,32); ctx.fillText('LAYERED',0,40); ctx.restore();
     }
   },
@@ -118,7 +118,7 @@ const ITEM_DEFS = {
       ctx.beginPath(); ctx.arc(11,-14,5,0,Math.PI*2); ctx.fill();
       ctx.shadowBlur=15; ctx.fillStyle='#ffff77';
       for(let i=0;i<7;i++){const a=t*2.2+i*.9,r=23; ctx.fillRect(Math.cos(a)*r-1.5,Math.sin(a)*r-18,3,3);}
-      ctx.shadowBlur=0; ctx.fillStyle='#ffffff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#ffffff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('TRIPLE',0,32); ctx.fillText('LAYERED',0,40); ctx.restore();
     }
   },
@@ -146,7 +146,7 @@ const ITEM_DEFS = {
       ctx.beginPath(); ctx.arc(11,-14,5,0,Math.PI*2); ctx.fill();
       ctx.shadowBlur=15; ctx.fillStyle='#ffff77';
       for(let i=0;i<7;i++){const a=t*2.2+i*.9,r=23; ctx.fillRect(Math.cos(a)*r-1.5,Math.sin(a)*r-18,3,3);}
-      ctx.shadowBlur=0; ctx.fillStyle='#ffffff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#ffffff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('QUAD',0,32); ctx.fillText('LAYERED',0,40); ctx.restore();
     }
   },
@@ -172,7 +172,7 @@ const ITEM_DEFS = {
       ctx.beginPath(); ctx.moveTo(32+ab,5); ctx.lineTo(26+ab,-2); ctx.lineTo(26+ab,12); ctx.closePath(); ctx.fill();
       const sc=['#ffffff','#ffdd00','#ff69b4'];
       for(let i=0;i<4;i++){const sx=-18+i*12,sy=-22+Math.sin(t*3+i)*2; ctx.fillStyle=sc[i%sc.length]; ctx.shadowColor=sc[i%sc.length]; ctx.shadowBlur=4; ctx.beginPath(); ctx.arc(sx,sy,1.5,0,Math.PI*2); ctx.fill();}
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.scale(1,1/sq); ctx.fillText('BOUNCY',0,30); ctx.fillText('HOUSE',0,40); ctx.restore();
     }
   },
@@ -200,7 +200,7 @@ const ITEM_DEFS = {
       for(let i=0;i<10;i++){const ba=-1.2+i*.18+Math.sin(t*2+i)*.12,br=18+Math.sin(t*3+i*.7)*6; ctx.fillStyle=bc[i%bc.length]; ctx.shadowColor=bc[i%bc.length]; ctx.shadowBlur=4; ctx.fillRect(Math.cos(ba)*br-2+6,Math.sin(ba)*br-2-22,4,4);}
       ctx.fillStyle='#ffdd00'; ctx.shadowColor='#ffdd00'; ctx.shadowBlur=8;
       for(let i=0;i<3;i++){const sa=t*2+i*2.09,sr=26+Math.sin(t+i)*4; ctx.beginPath(); ctx.arc(Math.cos(sa)*sr+4,Math.sin(sa)*sr-14,2.5,0,Math.PI*2); ctx.fill();}
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('PARTY',0,24); ctx.fillText('POPPER',0,34); ctx.restore();
     }
   },
@@ -227,7 +227,7 @@ const ITEM_DEFS = {
       for(let i=0;i<5;i++){const bx=-7+i*4,by=-8+Math.sin(t*3+i*1.2)*4; ctx.fillStyle=bc[i%bc.length]; ctx.shadowBlur=6; ctx.beginPath(); ctx.arc(bx,by,2.5,0,Math.PI*2); ctx.fill();}
       ctx.shadowColor='#ffcc00'; ctx.shadowBlur=10;
       for(let i=0;i<4;i++){const fx=-6+i*4,fy=-24+Math.sin(t*4+i)*3; ctx.fillStyle='#ffee88'; ctx.fillRect(fx-1,fy,2,6);}
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('SHAKE',0,24); ctx.fillText('FIZZLE',0,32); ctx.restore();
     }
   },
@@ -258,7 +258,7 @@ const ITEM_DEFS = {
       ctx.beginPath(); ctx.arc(0,-28,5,0,Math.PI*2); ctx.fill();
       ctx.strokeStyle='#44cc44'; ctx.lineWidth=1.5;
       ctx.beginPath(); ctx.moveTo(0,-23); ctx.quadraticCurveTo(8,-20,5,-15); ctx.stroke();
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('FLAWLESS',0,30); ctx.fillText('BAKING',0,40); ctx.restore();
     }
   },
@@ -318,7 +318,7 @@ const ITEM_DEFS = {
         ctx.beginPath();ctx.moveTo(cx-4,cy);ctx.lineTo(cx+4,cy+3);ctx.stroke();
         ctx.fillStyle='rgba(255,34,68,0.4)'; ctx.beginPath(); ctx.arc(cx,cy,4,0,Math.PI*2); ctx.fill();
       }
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('PAPER',0,28); ctx.fillText('CUTS',0,38); ctx.restore();
     }
   },
@@ -352,7 +352,7 @@ const ITEM_DEFS = {
         ctx.beginPath(); ctx.moveTo(0,-14); ctx.arcTo(10,-14,10,0,8); ctx.arcTo(10,8,-2,8,8); ctx.arcTo(-2,8,-2,-6,8); ctx.arcTo(-2,-6,6,-6,8); ctx.stroke();
         ctx.restore();
       }
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('EXTRA',0,28); ctx.fillText('CLIPS',0,38); ctx.restore();
     }
   },
@@ -387,7 +387,7 @@ const ITEM_DEFS = {
       ctx.globalAlpha=1;
       const sc=['#ffffff','#8899ff','#ccddff'];
       for(let i=0;i<5;i++){const a=t*2+i*1.26,r=22; ctx.fillStyle=sc[i%sc.length]; ctx.shadowColor=sc[i%sc.length]; ctx.shadowBlur=5; ctx.fillRect(Math.cos(a)*r-1.5,Math.sin(a)*r-1.5,3,3);}
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('MIRROR',0,26); ctx.fillText('MAZE',0,36); ctx.restore();
     }
   },
@@ -409,7 +409,7 @@ const ITEM_DEFS = {
       ctx.beginPath(); ctx.moveTo(6,6); ctx.lineTo(5,-14); ctx.stroke();
       ctx.fillStyle='#fffacc'; ctx.shadowColor='#ffdd00'; ctx.shadowBlur=8;
       for(let i=0;i<4;i++){const a=t*1.5+i*1.57,px=Math.cos(a)*8,py=Math.sin(a)*4-18; ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2); ctx.fill();}
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('POPCORN',0,28); ctx.fillText('BUCKET',0,38); ctx.restore();
     }
   },
@@ -438,7 +438,7 @@ const ITEM_DEFS = {
       // Star
       ctx.fillStyle='#ffdd00'; ctx.shadowColor='#ff8800'; ctx.shadowBlur=10;
       ctx.font='12px serif'; ctx.textAlign='center'; ctx.fillText('⭐',14,-22);
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('MEGA',0,30); ctx.fillText('POPCORN',0,40); ctx.restore();
     }
   },
@@ -473,7 +473,7 @@ const ITEM_DEFS = {
       // Bullets orbiting
       ctx.shadowBlur=0;
       for(let i=0;i<8;i++){const ba=t*2+(i/8)*Math.PI*2; ctx.fillStyle='#4488ff'; ctx.shadowColor='#4488ff'; ctx.shadowBlur=4; ctx.fillRect(Math.cos(ba)*28-2,Math.sin(ba)*28-10,4,2);}
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('FULL CLOWN',0,22); ctx.fillText('MODE',0,32); ctx.restore();
     }
   },
@@ -502,7 +502,7 @@ const ITEM_DEFS = {
       ctx.fillStyle=ringColors[r]; ctx.shadowColor=ringColors[r]; ctx.shadowBlur=8;
       ctx.beginPath(); ctx.arc(Math.cos(speed)*rr, Math.sin(speed)*rr-4, 3, 0, Math.PI*2); ctx.fill();
     }
-    ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+    ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
     ctx.fillText('RAGING',0,22); ctx.fillText('RINGS',0,32); ctx.restore();
   }
 },
@@ -535,7 +535,7 @@ const ITEM_DEFS = {
         const a=spin+i*2.09;
         ctx.beginPath(); ctx.arc(Math.cos(a)*7,Math.sin(a)*7-6,3,0,Math.PI*2); ctx.fill();
       }
-      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('BOWLING',0,20); ctx.fillText('BALL',0,30); ctx.restore();
     }
   },
@@ -556,7 +556,7 @@ const ITEM_DEFS = {
       ctx.fillStyle='#0066aa'; ctx.fillRect(6,2,12,14); ctx.fillRect(4,12,16,6);
       ctx.fillStyle='#00ccff'; ctx.fillRect(6,2,12,5);
       for(let i=0;i<4;i++){const a=t*3+i*1.57,r=22; ctx.fillStyle='#aaffff'; ctx.globalAlpha=0.5+Math.sin(t*4+i)*0.3; ctx.beginPath(); ctx.arc(Math.cos(a)*r,Math.sin(a)*r,2,0,Math.PI*2); ctx.fill();}
-      ctx.globalAlpha=1; ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='5px "Press Start 2P"'; ctx.textAlign='center';
+      ctx.globalAlpha=1; ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.font='8px "Fixedsys", monospace'; ctx.textAlign='center';
       ctx.fillText('TIGHTROPE',0,28); ctx.fillText('BOOTS',0,38); ctx.restore();
     }
   },
