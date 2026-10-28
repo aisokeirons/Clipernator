@@ -413,10 +413,10 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
 
       if (playerHit && gs.invincible <= 0) {
         if (subtype === 'knife') {
-          gs.health -= 25; gs.invincible = CFG.INVINCIBLE_FRAMES;
+          gs.invincible = CFG.INVINCIBLE_FRAMES;
           SFX.playAt('clippyDamage', ppos2.x, ppos2.y, 0.55);
           gs.shakeX = 16; gs.shakeY = 16; gs.flawlessThisWave = false;
-          gs.knifeBleedTimer = 180; triggerSFPHit(); updateHUD();
+          applyLeakingStatus(gs.playerId, gs); triggerSFPHit(); updateHUD();
           showMsg('KNIFE SLASH! YOU\'RE BLEEDING!');
           spawnParticles(ppos2.x, ppos2.y, '#ff2244', 16);
           if (gs.health <= 0) { gameOver(); return BT.FAILURE; }
@@ -457,6 +457,7 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
             if (subtype === 'knife') {
               ehp.hp -= 15; ehp.hitFlash = 12; spawnParticles(epos.x, epos.y, '#ff2244', 8);
               if (ehp.hp <= 0) killedEnemy = { eid, x: epos.x, y: epos.y };
+              else applyLeakingStatus(eid, gs);
             } else if (subtype === 'spoon') {
               ehp.hp -= 8; ehp.hitFlash = 10;
               const kd = Math.hypot(epos.x - ai.uTipX, epos.y - ai.uTipY) || 1;

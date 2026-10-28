@@ -138,6 +138,7 @@ function initGameState(applyIntroChoices = true) {
     score: 0, wave: 1,
     chips: 0, goldenChips: 0, chipDrops: [], flawlessWaveStreak: 0,
     health: CFG.MAX_HEALTH, maxHealth: CFG.MAX_HEALTH,
+    leakingTimer: 0, leakingTickTimer: 0,
     ammo: CFG.MAX_AMMO, maxAmmo: CFG.MAX_AMMO,
     reloading: false, reloadTimer: 0,
     invincible: 0,
@@ -561,6 +562,21 @@ function togglePause() {
 
 function renderPauseMenu() {
   const statsEl = document.getElementById('pause-stat-lines');
+  const statusEffectsEl = document.getElementById('pause-status-effects');
+  statusEffectsEl.replaceChildren();
+  if (gs.leakingTimer > 0) {
+    const leakingStatus = document.createElement('div');
+    leakingStatus.style.cssText = 'display:flex; align-items:center; gap:5px; font-size:11px; color:#000;';
+    leakingStatus.title = `Leaking: ${Math.ceil(gs.leakingTimer / 60)} seconds remaining`;
+
+    const leakingIcon = document.createElement('img');
+    leakingIcon.src = 'sprites/ui/StatusEffects/Leaking.png';
+    leakingIcon.alt = 'Leaking';
+    leakingIcon.width = 24;
+    leakingIcon.height = 24;
+    leakingStatus.append(leakingIcon, document.createTextNode(`Leaking ${Math.ceil(gs.leakingTimer / 60)}s`));
+    statusEffectsEl.appendChild(leakingStatus);
+  }
   const dmgLabel = gs.hasQuadCake ? '4x (50% dud)' : gs.hasTripleCake ? '3x (45% dud)' :
                    gs.hasDoubleCake ? '2x (40% dud)' : '1x';
   const speedMult = gs.speedBoostTimer > 0 ? (gs.speedBoostMult || CFG.SPEED_BOOST_MULT) :

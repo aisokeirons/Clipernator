@@ -23,6 +23,10 @@
 
 ---
 
+## Status Effects
+- **Leaking** — applied by the Utensil's knife; deals 5% of the player's max health once per second for 3 seconds. Reapplications add another 3 seconds. Affected entities are tinted grey, and active player status is shown in the pause menu.
+
+---
 
   
 

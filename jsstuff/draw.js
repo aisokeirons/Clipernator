@@ -1011,6 +1011,7 @@ ctx.save();
 ctx.translate(x, y + bob);
 ctx.rotate(lean);
 if (movingLeft) ctx.scale(-1, 1);
+ctx.filter = gs.leakingTimer > 0 ? 'grayscale(1)' : 'none';
 ctx.drawImage(
   sourceImg,
   0, 0, 959, 959,        // use full image, no crop
@@ -1535,6 +1536,7 @@ for(const id of ECS.query('enemy','pos','hp')) {
 
   ctx.save();
   ctx.globalAlpha = alpha;
+  ctx.filter = ai && ai.leakingTimer > 0 ? 'grayscale(1)' : 'none';
 
   if (evel && !frozen) {
     const speed = Math.hypot(evel.vx, evel.vy);

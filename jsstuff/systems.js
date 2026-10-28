@@ -1747,7 +1747,81 @@ function sysPopcorn() {
   });
 }
 
+const LEAKING_DURATION_FRAMES = 3 * 60;
+const LEAKING_TICK_FRAMES = 60;
+
+function applyLeakingStatus(entityId, gameState) {
+  if (entityId === gameState.playerId) {
+    gameState.leakingTimer = (gameState.leakingTimer || 0) + LEAKING_DURATION_FRAMES;
+    return;
+  }
+
+  const ai = ECS.get(entityId, 'ai');
+  if (!ai) return;
+  ai.leakingTimer = (ai.leakingTimer || 0) + LEAKING_DURATION_FRAMES;
+}
+
+function tickLeakingStatusEffects() {
+  if (gs.leakingTimer > 0) {
+    gs.leakingTimer--;
+    gs.leakingTickTimer = (gs.leakingTickTimer || 0) + 1;
+    if (gs.leakingTickTimer >= LEAKING_TICK_FRAMES) {
+      gs.leakingTickTimer -= LEAKING_TICK_FRAMES;
+      gs.health -= gs.maxHealth * 0.05;
+      gs.flawlessThisWave = false;
+      updateHUD();
+      if (gs.health <= 0) {
+        gameOver();
+        return true;
+      }
+    }
+  } else {
+    gs.leakingTickTimer = 0;
+  }
+
+  for (const id of ECS.query('enemy', 'pos', 'hp', 'ai')) {
+    const ai = ECS.get(id, 'ai');
+    if (!(ai.leakingTimer > 0)) {
+      ai.leakingTickTimer = 0;
+      continue;
+    }
+
+    ai.leakingTimer--;
+    ai.leakingTickTimer = (ai.leakingTickTimer || 0) + 1;
+    if (ai.leakingTickTimer < LEAKING_TICK_FRAMES) continue;
+
+    ai.leakingTickTimer -= LEAKING_TICK_FRAMES;
+    const hp = ECS.get(id, 'hp');
+    const pos = ECS.get(id, 'pos');
+    hp.hp -= gs.maxHealth * 0.05;
+    hp.hitFlash = 12;
+    spawnParticles(pos.x, pos.y, '#999999', 5);
+    if (hp.hp > 0) continue;
+
+    const enemyType = ECS.get(id, 'enemy').type;
+    if (enemyType === 'boss' || enemyType === 'cakeBoss') handleBossDeath(id);
+    spawnParticles(pos.x, pos.y, '#ff2222', 18);
+    if (gs.hasPopcornBucket && Math.random() < 0.22) {
+      gs.popcornKernels.push({ x: pos.x + (Math.random() - 0.5) * 20, y: pos.y + (Math.random() - 0.5) * 20 });
+    }
+    if (gs.hasMirrorMaze) {
+      gs.mirrorShards.push({ orbiting: false, x: pos.x, y: pos.y, angle: Math.random() * Math.PI * 2 });
+      spawnParticles(pos.x, pos.y, '#ccddff', 10);
+    }
+    ECS.destroyEntity(id);
+    gs.score += Math.round(10 * gs.wave);
+    gs.waveKills++;
+    tryDropTicket(pos.x, pos.y);
+    gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
+    updateHUD();
+    checkWave();
+  }
+  return false;
+}
+
 function sysTimers() {
+  if (tickLeakingStatusEffects()) return;
+
   // ── Always run these regardless of transition state ──
   for (const p of gs.particles){p.x+=p.vx;p.y+=p.vy;p.vx*=0.91;p.vy*=0.91;p.life--;}
   gs.particles=gs.particles.filter(p=>p.life>0);

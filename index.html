@@ -676,10 +676,13 @@ canvas {
         <!-- Separator -->
         <div style="height:1px; background:#808080; border-bottom:1px solid #fff;"></div>
         <!-- Buttons -->
-        <div style="display:flex; gap:6px; justify-content:flex-end;">
-          <button id="pause-keybind-btn" class="w2k-btn" onclick="openKeybindScreen()">Keybinds</button>
-          <button class="w2k-btn" onclick="togglePause()">Resume</button>
-          <button class="w2k-btn" onclick="(()=>{_removePauseClippyCanvas(); document.getElementById('pause-menu').style.display='none'; isPaused=false; gameRunning=false; document.getElementById('overlay').style.display='flex';})()">Quit</button>
+        <div style="display:flex; gap:6px; justify-content:space-between; align-items:center;">
+          <div id="pause-status-effects" aria-live="polite" style="display:flex; align-items:center; gap:5px; min-height:28px;"></div>
+          <div style="display:flex; gap:6px;">
+            <button id="pause-keybind-btn" class="w2k-btn" onclick="openKeybindScreen()">Keybinds</button>
+            <button class="w2k-btn" onclick="togglePause()">Resume</button>
+            <button class="w2k-btn" onclick="(()=>{_removePauseClippyCanvas(); document.getElementById('pause-menu').style.display='none'; isPaused=false; gameRunning=false; document.getElementById('overlay').style.display='flex';})()">Quit</button>
+          </div>
         </div>
         <div style="font-size:10px; color:#666; font-family:'MS Sans Serif',Arial,sans-serif; text-align:center;">Press <b>P</b> to resume &nbsp;·&nbsp; Press <b>ESC</b> to quit to title</div>
       </div>
