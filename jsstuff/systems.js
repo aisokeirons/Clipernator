@@ -77,7 +77,7 @@ function gunMuzzlePos() {
   return { x: gunX + Math.cos(gunAngle)*tipDist, y: gunY + Math.sin(gunAngle)*tipDist };
 }
 
-function detonateExplosiveBullet(b, hitX, hitY) {
+function detonateExplosiveBullet(b, hitX, hitY, playerCredited = true) {
   const EXPLODE_RADIUS = 90;
   const EXPLODE_DMG    = (b.damageMult || 1) * 3;
   spawnPartyParticles(hitX, hitY);
@@ -102,8 +102,13 @@ function detonateExplosiveBullet(b, hitX, hitY) {
     const killedType = ECS.get(eid, 'enemy')?.type;  // read BEFORE destroy
     if (epos) spawnParticles(epos.x, epos.y, '#ff2222', 18);
     ECS.destroyEntity(eid);
-    gs.score += Math.round(15*gs.wave); gs.waveKills++;
-    tryDropTicket(epos.x, epos.y); gs.health = Math.min(gs.maxHealth, gs.health+CFG.HEALTH_REGEN); updateHUD();
+    gs.waveKills++;
+    if (playerCredited) {
+      gs.score += Math.round(15 * gs.wave);
+      tryDropTicket(epos.x, epos.y);
+      gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
+      updateHUD();
+    }
     if (killedType === 'cakeBoss' || killedType === 'boss2') handleBossDeath(eid);
   }
   if (toKill.length > 0) checkWave();
@@ -611,8 +616,7 @@ function _clownCarExplode(id, pos, gs, playerDriving) {
     if (!ECS.has(eid, 'pos')) continue;
     spawnParticles(x, y, '#ff2222', 14);
     ECS.destroyEntity(eid);
-    gs.score += Math.round(10 * gs.wave); gs.waveKills++;
-    tryDropTicket(x, y); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
+    gs.waveKills++;
     updateHUD();
   }
 
@@ -629,7 +633,6 @@ function _clownCarExplode(id, pos, gs, playerDriving) {
   }
 
   if (ECS.has(id, 'pos')) {
-    tryDropTicket(pos.x, pos.y);
     ECS.destroyEntity(id);
     gs.waveKills++;
   }
@@ -770,10 +773,7 @@ const confusedIds = [...ECS.query('enemy', 'pos', 'hp', 'ai')].filter(id => {
     if (!ECS.has(id, 'pos')) continue;
     spawnParticles(x, y, '#ff2222', 14);
     ECS.destroyEntity(id);
-    gs.score += Math.round(10 * gs.wave);
     gs.waveKills++;
-    tryDropTicket(x, y);
-    gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
     updateHUD();
   }
   if (toKill.length > 0) setTimeout(() => checkWave(), 0);
@@ -1140,9 +1140,8 @@ if (ai2&&ai2.reflectedByGlowstick&&ECS.has(id,'enemy')&&ECS.get(id,'enemy').type
     if (nehp.hp <= 0) {
       spawnParticles(nearEnemy.pos.x, nearEnemy.pos.y, '#ff2222', 14);
       ECS.destroyEntity(nearEnemy.id);
-      gs.score += Math.round(10 * gs.wave); gs.waveKills++;
-      tryDropTicket(nearEnemy.pos.x, nearEnemy.pos.y); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
-      updateHUD(); setTimeout(() => checkWave(), 0);
+      gs.waveKills++;
+      setTimeout(() => checkWave(), 0);
     }
   }
 } else {
@@ -1201,8 +1200,8 @@ if (ai2&&ai2.reflectedByGlowstick&&ECS.has(id,'enemy')&&ECS.get(id,'enemy').type
           ehp.hp-=1; ehp.hitFlash=4;
           if (ehp.hp<=0) {
             const epos=ECS.get(id,'pos'); if (epos) spawnParticles(epos.x,epos.y,'#ff2222',10);
-            ECS.destroyEntity(id); gs.score+=Math.round(5*gs.wave); gs.waveKills++;
-            tryDropTicket(epos?.x, epos?.y); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
+            ECS.destroyEntity(id); gs.waveKills++;
+            updateHUD(); checkWave();
           }
         }
       }
@@ -1442,7 +1441,7 @@ const eaiCheck = ECS.get(id,'ai');
 if (eaiCheck && eaiCheck.criticalMass && gs.invincible <= 0) {
   if (!eaiCheck.explodeCooldown || eaiCheck.explodeCooldown <= 0) {
     eaiCheck.explodeCooldown = 120;
-    detonateExplosiveBullet({damageMult: eaiCheck.rmDmgMult || 3, life:1, isExplosive:true}, epos.x, epos.y);
+    detonateExplosiveBullet({damageMult: eaiCheck.rmDmgMult || 3, life:1, isExplosive:true}, epos.x, epos.y, false);
     gs.health -= 20;
     SFX.playAt('clippyDamage', ppos.x, ppos.y, 0.6);
     gs.invincible = CFG.INVINCIBLE_FRAMES;
@@ -1547,7 +1546,7 @@ if (eb.isArcBall) {
 
         // Cannonball arc: big explosion on landing
         if (eb.isCannonball) {
-          detonateExplosiveBullet({ damageMult: (eb.rmDmgMult || 1) * 4, life: 1, isExplosive: true }, eb.x, eb.y);
+          detonateExplosiveBullet({ damageMult: (eb.rmDmgMult || 1) * 4, life: 1, isExplosive: true }, eb.x, eb.y, false);
           spawnParticles(eb.x, eb.y, '#ff4400', Math.round(30 * scale));
           gs.shakeX = Math.round(22 * scale); gs.shakeY = Math.round(22 * scale);
           // Release the carried enemy entity at landing
@@ -1615,8 +1614,8 @@ gs.health -= Math.round(18 * (eb.rmDmgMult || 1) * scale * (gs._enemyDmgMult || 
           spawnParticles(epos2.x,epos2.y,'#4488ff',5);
           if (ehp2.hp<=0) {
             spawnParticles(epos2.x,epos2.y,'#ff2222',14); ECS.destroyEntity(eid);
-            gs.score+=Math.round(8*gs.wave); gs.waveKills++;
-            tryDropTicket(epos2.x, epos2.y); gs.health=Math.min(gs.maxHealth,gs.health+CFG.HEALTH_REGEN); updateHUD(); checkWave();
+            gs.waveKills++;
+            updateHUD(); checkWave();
           }
           return false;
         }
@@ -1809,10 +1808,7 @@ function tickLeakingStatusEffects() {
       spawnParticles(pos.x, pos.y, '#ccddff', 10);
     }
     ECS.destroyEntity(id);
-    gs.score += Math.round(10 * gs.wave);
     gs.waveKills++;
-    tryDropTicket(pos.x, pos.y);
-    gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
     updateHUD();
     checkWave();
   }
@@ -2045,7 +2041,6 @@ function sysOobCleanup() {
     if (oob) {
       ai._oobTimer = (ai._oobTimer || 0) + 1;
       if (ai._oobTimer >= 300) { // 5 seconds at 60fps
-        tryDropTicket(pos.x, pos.y);
         ECS.destroyEntity(id);
         gs.waveKills++;
         checkWave();

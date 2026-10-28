@@ -398,20 +398,32 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
         ai.uTipVx = ai.uLaunchDir.x * 9;
         ai.uTipVy = ai.uLaunchDir.y * 9;
         ai.uTravelTimer = 0;
+        ai.uHitTargets = new Set();
         ai.uState = 'LAUNCH';
         spawnParticles(pos.x, pos.y, warnColor, 10);
       }
     }
-    else if (ai.uState === 'LAUNCH') {
-      ai.uTipX += ai.uTipVx;
-      ai.uTipY += ai.uTipVy;
-      ai.uTravelTimer++;
-      const maxTravel = ai.uTravelTimer > 65;
+    else if (ai.uState === 'LAUNCH' || ai.uState === 'RETURN') {
+      const returning = ai.uState === 'RETURN';
+      if (returning) {
+        const rdx = pos.x - ai.uTipX, rdy = pos.y - ai.uTipY;
+        const rd = Math.hypot(rdx, rdy) || 1;
+        ai.uTipX += (rdx / rd) * 10;
+        ai.uTipY += (rdy / rd) * 10;
+      } else {
+        ai.uTipX += ai.uTipVx;
+        ai.uTipY += ai.uTipVy;
+        ai.uTravelTimer++;
+      }
+      const maxTravel = !returning && ai.uTravelTimer > 65;
+      if (!ai.uHitTargets) ai.uHitTargets = new Set();
 
       const ppos2 = ECS.get(gs.playerId, 'pos');
-      const playerHit = ppos2 && Math.hypot(ai.uTipX - ppos2.x, ai.uTipY - ppos2.y) < 22;
+      const playerHit = ppos2 && !ai.uHitTargets.has(gs.playerId)
+        && Math.hypot(ai.uTipX - ppos2.x, ai.uTipY - ppos2.y) < 22;
 
       if (playerHit && gs.invincible <= 0) {
+        ai.uHitTargets.add(gs.playerId);
         if (subtype === 'knife') {
           gs.invincible = CFG.INVINCIBLE_FRAMES;
           SFX.playAt('clippyDamage', ppos2.x, ppos2.y, 0.55);
@@ -450,10 +462,11 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
       if (!playerHit) {
         let killedEnemy = null;
         for (const eid of ECS.query('enemy', 'pos', 'hp', 'vel')) {
-          if (eid === id) continue;
+          if (eid === id || ai.uHitTargets.has(eid)) continue;
           if (!ECS.has(eid, 'pos')) continue;
           const epos = ECS.get(eid, 'pos'), ehp = ECS.get(eid, 'hp'), evel = ECS.get(eid, 'vel');
           if (Math.hypot(ai.uTipX - epos.x, ai.uTipY - epos.y) < 24) {
+            ai.uHitTargets.add(eid);
             if (subtype === 'knife') {
               ehp.hp -= 15; ehp.hitFlash = 12; spawnParticles(epos.x, epos.y, '#ff2244', 8);
               if (ehp.hp <= 0) killedEnemy = { eid, x: epos.x, y: epos.y };
@@ -472,22 +485,20 @@ vel.vy = (vel.vy || 0) * 0.88 + driftY * phy.speed;
           const { eid, x, y } = killedEnemy;
           if (ECS.has(eid, 'pos')) {
             spawnParticles(x, y, '#ff2222', 14); ECS.destroyEntity(eid);
-            gs.score += Math.round(10 * gs.wave); gs.waveKills++;
-            tryDropTicket(x, y); gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
-            updateHUD(); setTimeout(() => checkWave(), 0);
+            gs.waveKills++;
+            setTimeout(() => checkWave(), 0);
           }
         }
         if (killedEnemy) { ai.uState = 'RETURN'; return BT.RUNNING; }
       }
 
       if (maxTravel) ai.uState = 'RETURN';
-    }
-    else if (ai.uState === 'RETURN') {
-      const rdx = pos.x - ai.uTipX, rdy = pos.y - ai.uTipY;
-      const rd  = Math.hypot(rdx, rdy) || 1;
-      ai.uTipX += (rdx / rd) * 10;
-      ai.uTipY += (rdy / rd) * 10;
-      if (rd < 22) { ai.uState = 'IDLE'; ai.uActiveIdx = -1; spawnParticles(pos.x, pos.y, '#cccccc', 4); }
+      if (returning && Math.hypot(pos.x - ai.uTipX, pos.y - ai.uTipY) < 22) {
+        ai.uState = 'IDLE';
+        ai.uActiveIdx = -1;
+        ai.uHitTargets = null;
+        spawnParticles(pos.x, pos.y, '#cccccc', 4);
+      }
     }
 
     return BT.RUNNING;
@@ -1015,15 +1026,11 @@ function _giftBoxExplode(id, pos, gs) {
     if (!ECS.has(eid, 'pos')) continue;          // guard: another explosion may have beaten us
     spawnParticles(x, y, '#ff2222', 14);
     ECS.destroyEntity(eid);
-    gs.score += Math.round(10 * gs.wave);
     gs.waveKills++;
-    tryDropTicket(x, y);
-    gs.health = Math.min(gs.maxHealth, gs.health + CFG.HEALTH_REGEN);
   }
 
   // Destroy the gift box itself
   if (ECS.has(id, 'pos')) {
-    tryDropTicket(pos.x, pos.y);
     ECS.destroyEntity(id);
     gs.waveKills++;
   }
