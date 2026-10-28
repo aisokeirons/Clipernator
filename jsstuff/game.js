@@ -662,7 +662,7 @@ const CLIPPY_ITEM_TIPS = {
 };
 
 const CLIPPY_STATUS_TIPS = {
-  leaking: "Leaking makes you lose 5% of your max health once per second for 3 seconds. Another knife hit adds 3 more seconds.",
+  leaking: "Leaking makes you lose 5% of your health per second. Don't like it? Imagine how I feel!",
 };
 
 let _clippyBubbleText = "It looks like you discovered how to PAUSE! Click an item to learn what it does.";
